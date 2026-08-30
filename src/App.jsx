@@ -6,6 +6,8 @@ import { loadGames, saveGames } from './gamesApi'
 import { loadPlayers, savePlayers } from './playersApi'
 import { asCommanderList, commandersKey } from './playersMapping'
 import AddGameForm from './AddGameForm'
+import JsonEditor from './JsonEditor'
+import { downloadGamesExcel, downloadGamesJson } from './exportGames'
 
 /** Premier joueur de la liste dont un deck matche les commandants. */
 function findPlayerForCommanders(players, commanders) {
@@ -620,6 +622,7 @@ function App() {
   const [players, setPlayers] = useState(initialPlayers)
   const [showAddForm, setShowAddForm] = useState(false)
   const [cardFloat, setCardFloat] = useState(null)
+  const [activeView, setActiveView] = useState('dashboard')
 
   useEffect(() => {
     loadGames(initialGames).then(setGames)
@@ -673,11 +676,15 @@ function App() {
 
   async function handleAddGame({ game, players: updatedPlayers }) {
     const updatedGames = [...games, game]
-    await saveGames(updatedGames)
+    await saveGames(updatedGames, games)
     await savePlayers(updatedPlayers)
     setGames(updatedGames)
     setPlayers(updatedPlayers)
     setShowAddForm(false)
+  }
+
+  function handleJsonSave(updatedGames) {
+    setGames(updatedGames)
   }
 
   function handleZoom(names, origin) {
@@ -714,15 +721,58 @@ function App() {
           <h1>MagicAddicts Stats</h1>
           <p className="eyebrow">Commander</p>
         </div>
-        <button
-          type="button"
-          className="btn btn-primary btn-add"
-          onClick={() => setShowAddForm(true)}
-        >
-          + Partie
-        </button>
+
+        <nav className="top-bar-nav" aria-label="Navigation">
+          <button
+            type="button"
+            className={`btn btn-tab${activeView === 'dashboard' ? ' is-active' : ''}`}
+            onClick={() => setActiveView('dashboard')}
+          >
+            Dashboard
+          </button>
+          <button
+            type="button"
+            className={`btn btn-tab${activeView === 'json' ? ' is-active' : ''}`}
+            onClick={() => setActiveView('json')}
+          >
+            Édition JSON
+          </button>
+        </nav>
+
+        <div className="top-bar-actions">
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={() => downloadGamesJson(games)}
+          >
+            ↓ JSON
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={() => downloadGamesExcel(games, players)}
+          >
+            ↓ Excel
+          </button>
+          {activeView === 'dashboard' && (
+            <button
+              type="button"
+              className="btn btn-primary btn-add"
+              onClick={() => setShowAddForm(true)}
+            >
+              + Partie
+            </button>
+          )}
+        </div>
       </header>
 
+      {activeView === 'json' ? (
+        <JsonEditor
+          games={games}
+          onSave={handleJsonSave}
+          onCancel={() => setActiveView('dashboard')}
+        />
+      ) : (
       <div className="dashboard">
         <section className="panel panel-stats">
           <div className="panel-header">
@@ -869,6 +919,7 @@ function App() {
           </div>
         </section>
       </div>
+      )}
     </div>
   )
 }
