@@ -1,0 +1,46 @@
+{
+  "Simon": [
+    {
+      "com": "Atraxa, Praetors' Voice",
+      "bracket": 3,
+      "bracketVariation": "high",
+      "deckUrl": "https://moxfield.com/decks/example-atraxa"
+    },
+    {
+      "com": "Kinnan, Bonder Prodigy",
+      "bracket": 4,
+      "bracketVariation": "high",
+      "deckUrl": "https://moxfield.com/decks/example-kinnan"
+    }
+  ],
+  "Alex": [
+    {
+      "com": "Krenko, Mob Boss",
+      "bracket": 3,
+      "bracketVariation": null,
+      "deckUrl": "https://moxfield.com/decks/example-krenko"
+    },
+    {
+      "com": "Najeela, the Blade-Blossom",
+      "bracket": 4,
+      "bracketVariation": null,
+      "deckUrl": "https://moxfield.com/decks/example-najeela"
+    }
+  ],
+  "Jordan": [
+    {
+      "com": "Muldrotha, the Gravetide",
+      "bracket": 3,
+      "bracketVariation": "low",
+      "deckUrl": "https://archidekt.com/decks/example-muldrotha"
+    }
+  ],
+  "Sam": [
+    {
+      "com": "Korvold, Fae-Cursed King",
+      "bracket": 3,
+      "bracketVariation": null,
+      "deckUrl": "https://moxfield.com/decks/example-korvold"
+    }
+  ]
+}
