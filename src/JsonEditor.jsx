@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
-import { listGameBackups, saveGames } from './gamesApi'
+import { useEffect, useMemo, useState } from 'react'
+import { BACKUP_REASON, listGameBackups, rollbackToBackup, saveGames } from './gamesApi'
+import { parseJsonText, tryParseJsonText, validateGamesEdit } from './jsonGuard'
 
 function formatJson(games) {
   return `${JSON.stringify(games, null, 2)}\n`
@@ -20,8 +21,11 @@ export default function JsonEditor({ games, onSave, onCancel }) {
   const [text, setText] = useState(() => formatJson(games))
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+  const [rollingBack, setRollingBack] = useState(null)
   const [backupInfo, setBackupInfo] = useState('')
   const [backups, setBackups] = useState([])
+
+  const syntaxStatus = useMemo(() => tryParseJsonText(text), [text])
 
   async function refreshBackups() {
     setBackups(await listGameBackups())
@@ -48,20 +52,18 @@ export default function JsonEditor({ games, onSave, onCancel }) {
 
     let parsed
     try {
-      parsed = JSON.parse(text)
+      parsed = parseJsonText(text, 'Parties')
+      validateGamesEdit(games, parsed)
     } catch (err) {
-      setError(`JSON invalide : ${err.message}`)
-      return
-    }
-
-    if (!Array.isArray(parsed)) {
-      setError('Le JSON doit être un tableau de parties.')
+      setError(err.message)
       return
     }
 
     setSaving(true)
     try {
-      const result = await saveGames(parsed, games)
+      const result = await saveGames(parsed, games, {
+        reason: BACKUP_REASON.MANUAL_EDIT,
+      })
       onSave(parsed)
       if (result?.backupFile) {
         setBackupInfo(result.backupFile)
@@ -74,6 +76,32 @@ export default function JsonEditor({ games, onSave, onCancel }) {
     }
   }
 
+  async function handleRollback(name) {
+    const ok = window.confirm(
+      `Restaurer « ${name} » ?\n\nL'état actuel sera sauvegardé avant le rollback.`,
+    )
+    if (!ok) return
+
+    setError('')
+    setBackupInfo('')
+    setRollingBack(name)
+
+    try {
+      const { restored, backupFile } = await rollbackToBackup(name, games)
+      onSave(restored)
+      if (backupFile) {
+        setBackupInfo(backupFile)
+      }
+      await refreshBackups()
+    } catch (err) {
+      setError(err.message || 'Impossible de restaurer')
+    } finally {
+      setRollingBack(null)
+    }
+  }
+
+  const busy = saving || rollingBack !== null
+
   return (
     <div className="json-editor">
       <div className="json-editor-header">
@@ -81,9 +109,10 @@ export default function JsonEditor({ games, onSave, onCancel }) {
           <h2>Édition JSON</h2>
           <p className="json-editor-hint">
             À chaque sauvegarde, l&apos;état <strong>avant</strong> modification
-            est copié dans{' '}
-            <code>public/backups/</code> (accessible via{' '}
-            <code>/backups/nom-du-fichier.json</code>).
+            est copié dans <code>public/backups/</code>. Les{' '}
+            <strong>id</strong> de parties et les <strong>deckId</strong> déjà
+            présents ne peuvent ni être supprimés ni modifiés ; de nouvelles
+            parties peuvent être ajoutées.
           </p>
         </div>
         <div className="json-editor-actions">
@@ -99,7 +128,7 @@ export default function JsonEditor({ games, onSave, onCancel }) {
             type="button"
             className="btn btn-primary"
             onClick={handleSave}
-            disabled={saving}
+            disabled={busy}
           >
             {saving ? 'Sauvegarde…' : 'Sauvegarder'}
           </button>
@@ -107,9 +136,16 @@ export default function JsonEditor({ games, onSave, onCancel }) {
       </div>
 
       {error && <p className="json-editor-error">{error}</p>}
+      <p
+        className={
+          syntaxStatus.ok ? 'json-editor-syntax-ok' : 'json-editor-syntax-bad'
+        }
+      >
+        {syntaxStatus.ok ? 'Syntaxe JSON valide.' : syntaxStatus.error}
+      </p>
       {backupInfo && (
         <p className="json-editor-success">
-          Backup pré-édition créé :{' '}
+          Backup pré-modification créé :{' '}
           <a href={`/backups/${backupInfo}`} target="_blank" rel="noreferrer">
             {backupInfo}
           </a>
@@ -134,9 +170,20 @@ export default function JsonEditor({ games, onSave, onCancel }) {
             <ul className="json-editor-backups-list">
               {backups.map(({ name, mtime }) => (
                 <li key={name}>
-                  <a href={`/backups/${name}`} target="_blank" rel="noreferrer">
-                    {name}
-                  </a>
+                  <div className="json-editor-backup-row">
+                    <a href={`/backups/${name}`} target="_blank" rel="noreferrer">
+                      {name}
+                    </a>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-backup-restore"
+                      onClick={() => handleRollback(name)}
+                      disabled={busy}
+                      title="Restaurer cette sauvegarde"
+                    >
+                      {rollingBack === name ? '…' : '↩'}
+                    </button>
+                  </div>
                   <span>{formatBackupDate(mtime)}</span>
                 </li>
               ))}

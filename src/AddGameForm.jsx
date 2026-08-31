@@ -1,42 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
 import { createGameId } from './gamesApi'
 import {
-  getCommanderOptionsFromPlayers,
-  mergeGameDecksIntoPlayers,
+  getActiveUsers,
+  getCommanderOptionsForUser,
+  getDeckOptionById,
+  mergeGameDecksIntoCatalog,
+  formatBracketLine,
 } from './playersMapping'
-
-const BRACKET_OPTIONS = [1, 2, 3, 4].flatMap((b) => [
-  { value: String(b), label: `B${b}` },
-  { value: `${b}-low`, label: `B${b} low` },
-  { value: `${b}-high`, label: `B${b} high` },
-])
-
-/** "3-high" → { bracket: 3, bracketVariation: "high" } */
-function unpackBracket(value) {
-  if (!value) return { bracket: null, bracketVariation: null }
-  const [raw, variation] = String(value).split('-')
-  const bracket = Number(raw)
-  if (Number.isNaN(bracket)) return { bracket: null, bracketVariation: null }
-  return {
-    bracket,
-    bracketVariation: variation === 'low' || variation === 'high' ? variation : null,
-  }
-}
-
-/** { bracket, bracketVariation } → "3-high" */
-function packBracket(bracket, bracketVariation) {
-  if (bracket == null || bracket === '') return ''
-  const base = String(bracket)
-  if (bracketVariation === 'low' || bracketVariation === 'high') {
-    return `${base}-${bracketVariation}`
-  }
-  return base
-}
+import { validateCatalogEdits } from './jsonGuard'
+import Select from './Select'
 
 const emptyDeck = (seatOrder) => ({
-  commanderKey: '',
+  userId: '',
+  deckId: '',
   player: '',
-  bracketKey: '',
   seatOrder,
   result: null,
 })
@@ -47,11 +24,12 @@ function buildGameDraft({
   turns,
   bracket,
   bracketVariation,
-  hadWipe,
+  boardWipes,
   winnerProtectedVictory,
   notes,
   decks,
-  commanderOptions,
+  users,
+  catalogDecks,
 }) {
   const turnsNum = Number(turns)
   const bracketNum = Number(bracket)
@@ -62,16 +40,16 @@ function buildGameDraft({
 
   const resolvedDecks = []
   for (const d of decks) {
-    const opt = commanderOptions.find((o) => o.key === d.commanderKey)
-    if (!opt || !d.player.trim() || !unpackBracket(d.bracketKey).bracket) return null
-    const { bracket: deckBracket, bracketVariation: deckVar } = unpackBracket(d.bracketKey)
+    const opt = getDeckOptionById(users, catalogDecks, d.deckId)
+    if (!opt || !d.player.trim() || opt.bracket == null) return null
     resolvedDecks.push({
       commanders: opt.commanders,
       player: d.player.trim(),
-      bracket: deckBracket,
-      bracketVariation: deckVar,
+      bracket: opt.bracket,
+      bracketVariation: opt.bracketVariation || null,
       seatOrder: d.seatOrder,
       result: d.result,
+      deckId: opt.deckId,
     })
   }
 
@@ -83,36 +61,90 @@ function buildGameDraft({
     turns: turnsNum,
     bracket: bracketNum,
     bracketVariation: bracketVariation || null,
-    hadWipe,
+    boardWipes: Math.max(0, Number(boardWipes) || 0),
     winnerProtectedVictory,
     notes: notes.trim(),
     decks: resolvedDecks,
   }
 }
 
-function AddGameForm({ players, onSave, onClose }) {
-  const [gameId] = useState(() => createGameId())
-  const commanderOptions = useMemo(
-    () => getCommanderOptionsFromPlayers(players),
-    [players],
+function NumberStepper({ value, onChange, min = 0, max, step = 1, ...rest }) {
+  function clamp(n) {
+    let next = n
+    if (max != null) next = Math.min(max, next)
+    return Math.max(min, next)
+  }
+
+  function bump(delta) {
+    onChange(clamp((Number(value) || 0) + delta))
+  }
+
+  function handleChange(e) {
+    const raw = e.target.value
+    if (raw === '') {
+      onChange(min)
+      return
+    }
+    const n = Number.parseInt(raw, 10)
+    onChange(Number.isNaN(n) ? min : clamp(n))
+  }
+
+  return (
+    <div className="number-stepper">
+      <input
+        type="number"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={handleChange}
+        {...rest}
+      />
+      <div className="number-stepper-spin">
+        <button
+          type="button"
+          className="number-stepper-btn"
+          tabIndex={-1}
+          aria-label="Augmenter"
+          onClick={() => bump(step)}
+        >
+          ▲
+        </button>
+        <button
+          type="button"
+          className="number-stepper-btn"
+          tabIndex={-1}
+          aria-label="Diminuer"
+          disabled={value <= min}
+          onClick={() => bump(-step)}
+        >
+          ▼
+        </button>
+      </div>
+    </div>
   )
-  const knownPlayers = useMemo(() => Object.keys(players).sort(), [players])
+}
+
+function AddGameForm({ users, decks, onSave, onClose }) {
+  const [gameId] = useState(() => createGameId())
+  const activeUsers = useMemo(
+    () => getActiveUsers(users).sort((a, b) => a.name.localeCompare(b.name)),
+    [users],
+  )
 
   const [date, setDate] = useState('')
   const [turns, setTurns] = useState('')
   const [bracket, setBracket] = useState('')
   const [bracketVariation, setBracketVariation] = useState('')
-  const [hadWipe, setHadWipe] = useState(false)
+  const [boardWipes, setBoardWipes] = useState(0)
   const [winnerProtectedVictory, setWinnerProtectedVictory] = useState(false)
   const [notes, setNotes] = useState('')
-  const [decks, setDecks] = useState([
+  const [formDecks, setFormDecks] = useState([
     emptyDeck(1),
     emptyDeck(2),
     emptyDeck(3),
     emptyDeck(4),
   ])
-  const [gameJson, setGameJson] = useState('')
-  const [playersJson, setPlayersJson] = useState('')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -124,11 +156,12 @@ function AddGameForm({ players, onSave, onClose }) {
         turns,
         bracket,
         bracketVariation,
-        hadWipe,
+        boardWipes,
         winnerProtectedVictory,
         notes,
-        decks,
-        commanderOptions,
+        decks: formDecks,
+        users,
+        catalogDecks: decks,
       }),
     [
       gameId,
@@ -136,26 +169,19 @@ function AddGameForm({ players, onSave, onClose }) {
       turns,
       bracket,
       bracketVariation,
-      hadWipe,
+      boardWipes,
       winnerProtectedVictory,
       notes,
+      formDecks,
+      users,
       decks,
-      commanderOptions,
     ],
   )
 
-  const playersDraft = useMemo(() => {
-    if (!gameDraft) return players
-    return mergeGameDecksIntoPlayers(players, gameDraft.decks)
-  }, [players, gameDraft])
-
-  useEffect(() => {
-    setGameJson(gameDraft ? JSON.stringify(gameDraft, null, 2) : '')
-  }, [gameDraft])
-
-  useEffect(() => {
-    setPlayersJson(JSON.stringify(playersDraft, null, 2))
-  }, [playersDraft])
+  const catalogDraft = useMemo(() => {
+    if (!gameDraft) return { users, decks }
+    return mergeGameDecksIntoCatalog(users, decks, gameDraft.decks)
+  }, [users, decks, gameDraft])
 
   useEffect(() => {
     function onKey(e) {
@@ -166,24 +192,55 @@ function AddGameForm({ players, onSave, onClose }) {
   }, [onClose])
 
   function updateDeck(index, patch) {
-    setDecks((prev) =>
+    setFormDecks((prev) =>
       prev.map((d, i) => (i === index ? { ...d, ...patch } : d)),
     )
   }
 
-  function setCommander(index, commanderKey) {
-    const opt = commanderOptions.find((o) => o.key === commanderKey)
+  function commanderOptionsForRow(rowIndex, userId, currentDeckId) {
+    const takenDeckIds = new Set(
+      formDecks
+        .filter((_, i) => i !== rowIndex)
+        .map((d) => d.deckId)
+        .filter(Boolean),
+    )
+    let options = getCommanderOptionsForUser(users, decks, userId).filter(
+      (opt) => !takenDeckIds.has(opt.deckId),
+    )
+    if (
+      currentDeckId &&
+      !options.some((opt) => opt.deckId === currentDeckId)
+    ) {
+      const current = getDeckOptionById(users, decks, currentDeckId)
+      if (current) {
+        options = [...options, current].sort((a, b) =>
+          a.label.localeCompare(b.label),
+        )
+      }
+    }
+    return options
+  }
+
+  function setPlayer(index, userId) {
+    const user = activeUsers.find((u) => u.id === userId)
     updateDeck(index, {
-      commanderKey,
-      player: opt?.player ?? '',
-      bracketKey: opt
-        ? packBracket(opt.bracket, opt.bracketVariation || null)
-        : '',
+      userId,
+      player: user?.name ?? '',
+      deckId: '',
+    })
+  }
+
+  function setDeck(index, deckId) {
+    const opt = getDeckOptionById(users, decks, deckId)
+    updateDeck(index, {
+      deckId,
+      userId: opt?.userId ?? formDecks[index].userId,
+      player: opt?.player ?? formDecks[index].player,
     })
   }
 
   function setWinner(index) {
-    setDecks((prev) =>
+    setFormDecks((prev) =>
       prev.map((d, i) => ({
         ...d,
         result: i === index ? 'win' : 'loss',
@@ -201,31 +258,19 @@ function AddGameForm({ players, onSave, onClose }) {
     if (!bracket || Number.isNaN(bracketNum) || bracketNum < 1 || bracketNum > 4) {
       return 'Indique un bracket de table (1–4).'
     }
-    const keys = decks.map((d) => d.commanderKey)
-    if (keys.some((k) => !k) || keys.length !== 4) {
-      return 'Choisis les 4 commandants.'
+    const deckIds = formDecks.map((d) => d.deckId)
+    if (deckIds.some((id) => !id) || deckIds.length !== 4) {
+      return 'Choisis les 4 decks.'
     }
-    if (new Set(keys).size !== 4) {
-      return 'Chaque commandant doit être différent.'
+    if (new Set(deckIds).size !== 4) {
+      return 'Chaque deck doit être différent.'
     }
-    if (decks.some((d) => !d.player.trim())) {
-      return 'Indique un joueur pour chaque deck.'
+    const playerIds = formDecks.map((d) => d.userId)
+    if (playerIds.some((id) => !id) || new Set(playerIds).size !== 4) {
+      return 'Chaque joueur ne peut apparaître qu\'une fois.'
     }
-    if (decks.some((d) => !unpackBracket(d.bracketKey).bracket)) {
-      return 'Indique un bracket pour chaque deck.'
-    }
-    if (!decks.some((d) => d.result === 'win')) {
+    if (!formDecks.some((d) => d.result === 'win')) {
       return 'Sélectionne un gagnant.'
-    }
-    return null
-  }
-
-  function validateGamePayload(game) {
-    if (!game?.id || !game.date || !Array.isArray(game.decks) || game.decks.length !== 4) {
-      return 'JSON partie invalide.'
-    }
-    if (!game.decks.some((d) => d.result === 'win')) {
-      return 'JSON partie : un gagnant requis.'
     }
     return null
   }
@@ -240,30 +285,30 @@ function AddGameForm({ players, onSave, onClose }) {
       return
     }
 
-    let game
-    let updatedPlayers
+    if (!gameDraft) {
+      setError('Formulaire incomplet.')
+      return
+    }
+
     try {
-      game = JSON.parse(gameJson)
-      updatedPlayers = JSON.parse(playersJson)
-    } catch {
-      setError('JSON invalide — vérifie les deux blocs.')
-      return
-    }
-
-    const gameError = validateGamePayload(game)
-    if (gameError) {
-      setError(gameError)
-      return
-    }
-
-    if (!updatedPlayers || typeof updatedPlayers !== 'object' || Array.isArray(updatedPlayers)) {
-      setError('JSON mapping joueurs invalide.')
+      validateCatalogEdits({
+        usersBefore: users,
+        usersAfter: catalogDraft.users,
+        decksBefore: decks,
+        decksAfter: catalogDraft.decks,
+      })
+    } catch (err) {
+      setError(err.message)
       return
     }
 
     setSaving(true)
     try {
-      await onSave({ game, players: updatedPlayers })
+      await onSave({
+        game: gameDraft,
+        users: catalogDraft.users,
+        decks: catalogDraft.decks,
+      })
     } catch (err) {
       setError(err.message)
       setSaving(false)
@@ -277,12 +322,6 @@ function AddGameForm({ players, onSave, onClose }) {
         onClick={(e) => e.stopPropagation()}
         onSubmit={handleSubmit}
       >
-        <datalist id="known-players">
-          {knownPlayers.map((name) => (
-            <option key={name} value={name} />
-          ))}
-        </datalist>
-
         <div className="modal-header">
           <h2>Nouvelle partie</h2>
           <button type="button" className="btn-icon" onClick={onClose}>
@@ -291,7 +330,7 @@ function AddGameForm({ players, onSave, onClose }) {
         </div>
 
         <div className="form-grid">
-          <label className="form-field">
+          <label className="form-field add-game-date">
             <span>Date</span>
             <input
               type="date"
@@ -301,7 +340,7 @@ function AddGameForm({ players, onSave, onClose }) {
             />
           </label>
 
-          <label className="form-field">
+          <label className="form-field add-game-turns">
             <span>Tours</span>
             <input
               type="number"
@@ -313,7 +352,7 @@ function AddGameForm({ players, onSave, onClose }) {
             />
           </label>
 
-          <label className="form-field">
+          <label className="form-field add-game-bracket">
             <span>Bracket table</span>
             <input
               type="number"
@@ -326,29 +365,30 @@ function AddGameForm({ players, onSave, onClose }) {
             />
           </label>
 
-          <label className="form-field">
+          <label className="form-field add-game-variation">
             <span>Variation table</span>
-            <select
+            <Select
               value={bracketVariation}
               onChange={(e) => setBracketVariation(e.target.value)}
             >
               <option value="">—</option>
               <option value="low">low</option>
               <option value="high">high</option>
-            </select>
+            </Select>
           </label>
-        </div>
 
-        <div className="form-checks">
-          <label className="form-check">
-            <input
-              type="checkbox"
-              checked={hadWipe}
-              onChange={(e) => setHadWipe(e.target.checked)}
+          <label className="form-field add-game-wipes">
+            <span>Board wipes</span>
+            <NumberStepper
+              min={0}
+              step={1}
+              inputMode="numeric"
+              value={boardWipes}
+              onChange={setBoardWipes}
             />
-            Board wipe
           </label>
-          <label className="form-check">
+
+          <label className="form-check add-game-protected">
             <input
               type="checkbox"
               checked={winnerProtectedVictory}
@@ -359,61 +399,83 @@ function AddGameForm({ players, onSave, onClose }) {
         </div>
 
         <fieldset className="form-decks">
-          <legend>Decks (com + joueur + bracket + win)</legend>
+          <legend>Decks (joueur + commandant + win)</legend>
           <div className="form-deck-head">
             <span>#</span>
-            <span>Commandant</span>
             <span>Joueur</span>
-            <span>Bracket</span>
+            <span>Commandant</span>
             <span>Win</span>
           </div>
-          {decks.map((deck, i) => (
+          {formDecks.map((deck, i) => {
+            const takenUserIds = new Set(
+              formDecks
+                .filter((_, j) => j !== i)
+                .map((d) => d.userId)
+                .filter(Boolean),
+            )
+            const deckOptions = commanderOptionsForRow(i, deck.userId, deck.deckId)
+            const deckOpt = deck.deckId
+              ? getDeckOptionById(users, decks, deck.deckId)
+              : null
+
+            return (
             <div key={deck.seatOrder} className="form-deck-row">
               <span className="seat-label">#{deck.seatOrder}</span>
-              <select
-                value={deck.commanderKey}
-                onChange={(e) => setCommander(i, e.target.value)}
-                required
-              >
-                <option value="">Commandant…</option>
-                {commanderOptions.map((opt) => (
-                  <option key={opt.key} value={opt.key}>
-                    {opt.label}
+              <label className="form-deck-field">
+                <span className="form-deck-field-label">Joueur</span>
+                <Select
+                  value={deck.userId}
+                  onChange={(e) => setPlayer(i, e.target.value)}
+                  required
+                >
+                  <option value="">Joueur…</option>
+                  {activeUsers.map((user) => (
+                    <option
+                      key={user.id}
+                      value={user.id}
+                      disabled={takenUserIds.has(user.id)}
+                    >
+                      {user.name}
+                    </option>
+                  ))}
+                </Select>
+              </label>
+              <label className="form-deck-field">
+                <span className="form-deck-field-label">Commandant</span>
+                <Select
+                  value={deck.deckId}
+                  onChange={(e) => setDeck(i, e.target.value)}
+                  required
+                  disabled={!deck.userId}
+                >
+                  <option value="">
+                    {deck.userId ? 'Commandant…' : 'Choisis un joueur…'}
                   </option>
-                ))}
-              </select>
-              <input
-                type="text"
-                list="known-players"
-                value={deck.player}
-                onChange={(e) => updateDeck(i, { player: e.target.value })}
-                placeholder="Joueur…"
-                required
-              />
-              <select
-                value={deck.bracketKey}
-                onChange={(e) => updateDeck(i, { bracketKey: e.target.value })}
-                required
-              >
-                <option value="">Bracket…</option>
-                {BRACKET_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-              <label className="form-check win-check">
+                  {deckOptions.map((opt) => (
+                    <option key={opt.deckId} value={opt.deckId}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </Select>
+                {deckOpt ? (
+                  <span className="form-deck-bracket-tag">
+                    {formatBracketLine(deckOpt.bracket, deckOpt.bracketVariation || null)}
+                  </span>
+                ) : null}
+              </label>
+              <label className="form-check win-check form-deck-win">
                 <input
                   type="radio"
                   name="winner"
                   checked={deck.result === 'win'}
                   onChange={() => setWinner(i)}
-                  required={!decks.some((d) => d.result === 'win')}
+                  required={!formDecks.some((d) => d.result === 'win')}
                 />
                 Win
               </label>
             </div>
-          ))}
+            )
+          })}
         </fieldset>
 
         <label className="form-field">
@@ -425,32 +487,6 @@ function AddGameForm({ players, onSave, onClose }) {
             placeholder="Optionnel"
           />
         </label>
-
-        <div className="form-json-grid">
-          <label className="form-field">
-            <span>JSON partie (games_test.json)</span>
-            <textarea
-              className="json-editor"
-              rows={10}
-              value={gameJson}
-              onChange={(e) => setGameJson(e.target.value)}
-              spellCheck={false}
-            />
-          </label>
-          <label className="form-field">
-            <span>JSON mapping joueurs (players.json)</span>
-            <textarea
-              className="json-editor"
-              rows={10}
-              value={playersJson}
-              onChange={(e) => setPlayersJson(e.target.value)}
-              spellCheck={false}
-            />
-          </label>
-        </div>
-        <p className="form-hint">
-          Le mapping se complète si com + bracket + variation diffèrent d&apos;une entrée existante.
-        </p>
 
         {error && <p className="form-error">{error}</p>}
 

@@ -10,11 +10,17 @@ export async function loadGames(fallback) {
   }
 }
 
-export async function backupGames(games) {
+export const BACKUP_REASON = {
+  MANUAL_EDIT: 'manual-edit',
+  ROLLBACK: 'rollback',
+  ADD_GAME: 'add-game',
+}
+
+export async function backupGames(games, reason = BACKUP_REASON.MANUAL_EDIT) {
   const res = await fetch('/api/games/backup', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(games),
+    body: JSON.stringify({ games, reason }),
   })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
@@ -33,10 +39,33 @@ export async function listGameBackups() {
   }
 }
 
-export async function saveGames(newGames, previousGames) {
+export async function loadBackup(name) {
+  const res = await fetch(`/backups/${encodeURIComponent(name)}`)
+  if (!res.ok) {
+    throw new Error('Sauvegarde introuvable')
+  }
+  const data = await res.json()
+  if (!Array.isArray(data)) {
+    throw new Error('La sauvegarde doit être un tableau de parties')
+  }
+  return data
+}
+
+export async function rollbackToBackup(name, currentGames) {
+  const restored = await loadBackup(name)
+  const result = await saveGames(restored, currentGames, {
+    reason: BACKUP_REASON.ROLLBACK,
+  })
+  return { restored, backupFile: result.backupFile }
+}
+
+export async function saveGames(newGames, previousGames, { reason } = {}) {
   let backupFile
   if (previousGames !== undefined) {
-    const backup = await backupGames(previousGames)
+    const backup = await backupGames(
+      previousGames,
+      reason ?? BACKUP_REASON.MANUAL_EDIT,
+    )
     backupFile = backup.filename
   }
 
@@ -55,4 +84,15 @@ export async function saveGames(newGames, previousGames) {
 
 export function createGameId() {
   return uuidv4()
+}
+
+/** Nombre de board wipes (compat legacy `hadWipe` booléen). */
+export function getBoardWipes(game) {
+  if (typeof game.boardWipes === 'number' && !Number.isNaN(game.boardWipes)) {
+    return Math.max(0, game.boardWipes)
+  }
+  if (typeof game.hadWipe === 'boolean') {
+    return game.hadWipe ? 1 : 0
+  }
+  return Math.max(0, Number(game.boardWipes) || 0)
 }

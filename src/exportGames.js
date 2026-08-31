@@ -1,21 +1,6 @@
 import * as XLSX from 'xlsx'
-import { commandersKey } from './playersMapping'
-
-function findPlayerForCommanders(players, commanders) {
-  const key = commandersKey(commanders)
-  for (const [player, decks] of Object.entries(players)) {
-    for (const deck of decks) {
-      if (commandersKey(deck.com) === key) {
-        return {
-          player,
-          bracket: deck.bracket,
-          bracketVariation: deck.bracketVariation ?? null,
-        }
-      }
-    }
-  }
-  return null
-}
+import { getBoardWipes } from './gamesApi'
+import { resolveDeckFromCatalog } from './playersMapping'
 
 function formatBracket(bracket, variation) {
   if (bracket == null || bracket === '') return ''
@@ -46,33 +31,31 @@ export function downloadGamesJson(games) {
   triggerDownload(blob, `games_${exportStamp()}.json`)
 }
 
-function gameToRow(game, players) {
-  const decks = [...game.decks]
+function gameToRow(game, users, decks) {
+  const resolvedDecks = [...game.decks]
     .sort((a, b) => a.seatOrder - b.seatOrder)
     .map((deck) => {
-      const owned = findPlayerForCommanders(players, deck.commanders)
-      const bracket = deck.bracket ?? owned?.bracket
-      const variation =
-        deck.bracketVariation !== undefined
-          ? deck.bracketVariation
-          : (owned?.bracketVariation ?? null)
+      const resolved = resolveDeckFromCatalog(decks, users, deck)
+      const bracket = resolved.bracket
+      const variation = resolved.bracketVariation ?? null
       return {
-        commanders: deck.commanders.join(' / '),
-        player: deck.player || owned?.player || '',
+        commanders: resolved.commanders.join(' / '),
+        player: resolved.player || '',
         bracket: formatBracket(bracket, variation),
         result: deck.result,
         seatOrder: deck.seatOrder,
+        deckId: resolved.deckId ?? deck.deckId ?? '',
       }
     })
 
-  const winner = decks.find((d) => d.result === 'win')
+  const winner = resolvedDecks.find((d) => d.result === 'win')
 
   const row = {
     id: game.id,
     date: game.date,
     turns: game.turns,
     bracket: formatBracket(game.bracket, game.bracketVariation),
-    hadWipe: game.hadWipe,
+    boardWipes: getBoardWipes(game),
     winnerProtectedVictory: game.winnerProtectedVictory,
     notes: game.notes || '',
     winner: winner?.player || '',
@@ -80,20 +63,21 @@ function gameToRow(game, players) {
   }
 
   for (let i = 0; i < 4; i += 1) {
-    const d = decks[i] || {}
+    const d = resolvedDecks[i] || {}
     const n = i + 1
     row[`deck${n}_seat`] = d.seatOrder ?? ''
     row[`deck${n}_commanders`] = d.commanders ?? ''
     row[`deck${n}_player`] = d.player ?? ''
     row[`deck${n}_bracket`] = d.bracket ?? ''
     row[`deck${n}_result`] = d.result ?? ''
+    row[`deck${n}_deckId`] = d.deckId ?? ''
   }
 
   return row
 }
 
-export function downloadGamesExcel(games, players) {
-  const rows = games.map((game) => gameToRow(game, players))
+export function downloadGamesExcel(games, users, decks) {
+  const rows = games.map((game) => gameToRow(game, users, decks))
   const sheet = XLSX.utils.json_to_sheet(rows)
   const book = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(book, sheet, 'Parties')

@@ -3,16 +3,27 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import {
+  parseJsonText,
+  validateDecksEdit,
+  validateGamesEdit,
+  validateUsersEdit,
+} from './src/jsonGuard.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const gamesPath = path.resolve(__dirname, 'src/data/games_test.json')
-const playersPath = path.resolve(__dirname, 'src/data/players.json')
+const usersPath = path.resolve(__dirname, 'src/data/users.json')
+const decksPath = path.resolve(__dirname, 'src/data/decks.json')
 const backupsDir = path.resolve(__dirname, 'public/backups')
 
-function backupFilename() {
+function backupFilename(reason = 'save') {
   const now = new Date()
   const pad = (n) => String(n).padStart(2, '0')
-  return `games_${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}.json`
+  const safeReason = String(reason)
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/^-|-$/g, '') || 'save'
+  return `games_${safeReason}_${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}.json`
 }
 
 function gamesApiPlugin(filePath) {
@@ -47,13 +58,18 @@ function gamesApiPlugin(filePath) {
         })
         req.on('end', () => {
           try {
-            const data = JSON.parse(body)
+            const parsed = JSON.parse(body)
+            const games = Array.isArray(parsed) ? parsed : parsed.games
+            const reason = Array.isArray(parsed) ? 'legacy' : (parsed.reason || 'save')
+            if (!Array.isArray(games)) {
+              throw new Error('Backup invalide : games doit être un tableau')
+            }
             fs.mkdirSync(backupsDir, { recursive: true })
-            const filename = backupFilename()
+            const filename = backupFilename(reason)
             const backupPath = path.join(backupsDir, filename)
-            fs.writeFileSync(backupPath, `${JSON.stringify(data, null, 2)}\n`)
+            fs.writeFileSync(backupPath, `${JSON.stringify(games, null, 2)}\n`)
             res.setHeader('Content-Type', 'application/json')
-            res.end(JSON.stringify({ ok: true, filename }))
+            res.end(JSON.stringify({ ok: true, filename, reason }))
           } catch (err) {
             res.statusCode = 500
             res.end(JSON.stringify({ error: err.message }))
@@ -79,12 +95,14 @@ function gamesApiPlugin(filePath) {
       })
       req.on('end', () => {
         try {
-          const data = JSON.parse(body)
+          const data = parseJsonText(body, 'Parties')
+          const before = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+          validateGamesEdit(before, data)
           fs.writeFileSync(filePath, `${JSON.stringify(data, null, 2)}\n`)
           res.setHeader('Content-Type', 'application/json')
           res.end(JSON.stringify({ ok: true }))
         } catch (err) {
-          res.statusCode = 500
+          res.statusCode = 400
           res.end(JSON.stringify({ error: err.message }))
         }
       })
@@ -95,7 +113,7 @@ function gamesApiPlugin(filePath) {
   }
 }
 
-function jsonFileApiPlugin(filePath) {
+function jsonFileApiPlugin(filePath, validateEdit) {
   return (req, res, next) => {
     if (req.method === 'GET') {
       res.setHeader('Content-Type', 'application/json')
@@ -110,12 +128,14 @@ function jsonFileApiPlugin(filePath) {
       })
       req.on('end', () => {
         try {
-          const data = JSON.parse(body)
+          const data = parseJsonText(body, 'JSON')
+          const before = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+          validateEdit(before, data)
           fs.writeFileSync(filePath, `${JSON.stringify(data, null, 2)}\n`)
           res.setHeader('Content-Type', 'application/json')
           res.end(JSON.stringify({ ok: true }))
         } catch (err) {
-          res.statusCode = 500
+          res.statusCode = 400
           res.end(JSON.stringify({ error: err.message }))
         }
       })
@@ -131,7 +151,8 @@ function dataApiPlugin() {
     name: 'data-api',
     configureServer(server) {
       server.middlewares.use('/api/games', gamesApiPlugin(gamesPath))
-      server.middlewares.use('/api/players', jsonFileApiPlugin(playersPath))
+      server.middlewares.use('/api/users', jsonFileApiPlugin(usersPath, validateUsersEdit))
+      server.middlewares.use('/api/decks', jsonFileApiPlugin(decksPath, validateDecksEdit))
     },
   }
 }
