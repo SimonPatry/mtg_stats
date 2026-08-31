@@ -9,6 +9,9 @@ import {
 } from './playersMapping'
 import { validateCatalogEdits } from './jsonGuard'
 import Select from './Select'
+import NumberStepper from './NumberStepper'
+import { composeGameNotes } from './gameDetails'
+import { WIN_STYLES } from './tempGame'
 
 const emptyDeck = (seatOrder) => ({
   userId: '',
@@ -26,6 +29,12 @@ function buildGameDraft({
   bracketVariation,
   boardWipes,
   winnerProtectedVictory,
+  lastPlayer,
+  lastSeatOrder,
+  winStyle,
+  wipeEvents,
+  deathEvents,
+  manaEvents,
   notes,
   decks,
   users,
@@ -54,6 +63,7 @@ function buildGameDraft({
   }
 
   if (resolvedDecks.length !== 4) return null
+  if (!lastPlayer?.trim()) return null
 
   return {
     id: gameId,
@@ -63,90 +73,61 @@ function buildGameDraft({
     bracketVariation: bracketVariation || null,
     boardWipes: Math.max(0, Number(boardWipes) || 0),
     winnerProtectedVictory,
+    lastPlayer: lastPlayer.trim(),
+    ...(lastSeatOrder != null ? { lastSeatOrder } : {}),
+    ...(winStyle ? { winStyle } : {}),
+    ...(wipeEvents?.length ? { wipeEvents } : {}),
+    ...(manaEvents?.length ? { manaEvents } : {}),
+    ...(deathEvents?.length ? { deathEvents } : {}),
     notes: notes.trim(),
     decks: resolvedDecks,
   }
 }
 
-function NumberStepper({ value, onChange, min = 0, max, step = 1, ...rest }) {
-  function clamp(n) {
-    let next = n
-    if (max != null) next = Math.min(max, next)
-    return Math.max(min, next)
-  }
-
-  function bump(delta) {
-    onChange(clamp((Number(value) || 0) + delta))
-  }
-
-  function handleChange(e) {
-    const raw = e.target.value
-    if (raw === '') {
-      onChange(min)
-      return
-    }
-    const n = Number.parseInt(raw, 10)
-    onChange(Number.isNaN(n) ? min : clamp(n))
-  }
-
-  return (
-    <div className="number-stepper">
-      <input
-        type="number"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={handleChange}
-        {...rest}
-      />
-      <div className="number-stepper-spin">
-        <button
-          type="button"
-          className="number-stepper-btn"
-          tabIndex={-1}
-          aria-label="Augmenter"
-          onClick={() => bump(step)}
-        >
-          ▲
-        </button>
-        <button
-          type="button"
-          className="number-stepper-btn"
-          tabIndex={-1}
-          aria-label="Diminuer"
-          disabled={value <= min}
-          onClick={() => bump(-step)}
-        >
-          ▼
-        </button>
-      </div>
-    </div>
-  )
-}
-
-function AddGameForm({ users, decks, onSave, onClose }) {
-  const [gameId] = useState(() => createGameId())
+function AddGameForm({ users, decks, onSave, onClose, fromTempGame = null }) {
+  const initial = fromTempGame ? fromTempGame : null
+  const [gameId] = useState(() => initial?.gameId ?? createGameId())
   const activeUsers = useMemo(
     () => getActiveUsers(users).sort((a, b) => a.name.localeCompare(b.name)),
     [users],
   )
 
-  const [date, setDate] = useState('')
-  const [turns, setTurns] = useState('')
+  const [date, setDate] = useState(() => initial?.date ?? '')
+  const [turns, setTurns] = useState(() => initial?.turns ?? '')
   const [bracket, setBracket] = useState('')
   const [bracketVariation, setBracketVariation] = useState('')
-  const [boardWipes, setBoardWipes] = useState(0)
+  const [boardWipes, setBoardWipes] = useState(() => initial?.boardWipes ?? 0)
   const [winnerProtectedVictory, setWinnerProtectedVictory] = useState(false)
-  const [notes, setNotes] = useState('')
-  const [formDecks, setFormDecks] = useState([
-    emptyDeck(1),
-    emptyDeck(2),
-    emptyDeck(3),
-    emptyDeck(4),
-  ])
+  const [winStyle, setWinStyle] = useState('')
+  const [lastPlayerIndex, setLastPlayerIndex] = useState(null)
+  const [notes, setNotes] = useState(() => initial?.notes ?? '')
+  const [formDecks, setFormDecks] = useState(() =>
+    initial?.formDecks ?? [emptyDeck(1), emptyDeck(2), emptyDeck(3), emptyDeck(4)],
+  )
+  const [liveWipeEvents] = useState(() => initial?.wipeEvents ?? [])
+  const [liveManaEvents] = useState(() => initial?.manaEvents ?? [])
+  const [liveDeathEvents] = useState(() => initial?.deathEvents ?? [])
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+
+  const lastPlayer =
+    lastPlayerIndex != null ? formDecks[lastPlayerIndex]?.player?.trim() ?? '' : ''
+  const lastSeatOrder =
+    lastPlayerIndex != null ? formDecks[lastPlayerIndex]?.seatOrder ?? null : null
+
+  const eventPayload = useMemo(
+    () => ({
+      wipeEvents: liveWipeEvents,
+      manaEvents: liveManaEvents,
+      deathEvents: liveDeathEvents,
+    }),
+    [liveWipeEvents, liveManaEvents, liveDeathEvents],
+  )
+
+  const composedNotes = useMemo(
+    () => composeGameNotes(notes, eventPayload),
+    [notes, eventPayload],
+  )
 
   const gameDraft = useMemo(
     () =>
@@ -158,7 +139,13 @@ function AddGameForm({ users, decks, onSave, onClose }) {
         bracketVariation,
         boardWipes,
         winnerProtectedVictory,
-        notes,
+        lastPlayer,
+        lastSeatOrder,
+        winStyle: winStyle || null,
+        wipeEvents: liveWipeEvents,
+        manaEvents: liveManaEvents,
+        deathEvents: liveDeathEvents,
+        notes: composedNotes,
         decks: formDecks,
         users,
         catalogDecks: decks,
@@ -171,7 +158,13 @@ function AddGameForm({ users, decks, onSave, onClose }) {
       bracketVariation,
       boardWipes,
       winnerProtectedVictory,
-      notes,
+      lastPlayer,
+      lastSeatOrder,
+      winStyle,
+      liveWipeEvents,
+      liveManaEvents,
+      liveDeathEvents,
+      composedNotes,
       formDecks,
       users,
       decks,
@@ -248,6 +241,10 @@ function AddGameForm({ users, decks, onSave, onClose }) {
     )
   }
 
+  function setLastPlayer(index) {
+    setLastPlayerIndex(index)
+  }
+
   function validateForm() {
     if (!date) return 'Choisis une date.'
     const turnsNum = Number(turns)
@@ -256,7 +253,7 @@ function AddGameForm({ users, decks, onSave, onClose }) {
     }
     const bracketNum = Number(bracket)
     if (!bracket || Number.isNaN(bracketNum) || bracketNum < 1 || bracketNum > 4) {
-      return 'Indique un bracket de table (1–4).'
+      return 'Choisis un bracket de table (B1–B4).'
     }
     const deckIds = formDecks.map((d) => d.deckId)
     if (deckIds.some((id) => !id) || deckIds.length !== 4) {
@@ -271,6 +268,12 @@ function AddGameForm({ users, decks, onSave, onClose }) {
     }
     if (!formDecks.some((d) => d.result === 'win')) {
       return 'Sélectionne un gagnant.'
+    }
+    if (lastPlayerIndex == null || !lastPlayer) {
+      return 'Sélectionne le dernier joueur à avoir joué.'
+    }
+    if (fromTempGame && !winStyle) {
+      return 'Indique le style de victoire.'
     }
     return null
   }
@@ -323,7 +326,7 @@ function AddGameForm({ users, decks, onSave, onClose }) {
         onSubmit={handleSubmit}
       >
         <div className="modal-header">
-          <h2>Nouvelle partie</h2>
+          <h2>{fromTempGame ? 'Finaliser la partie' : 'Nouvelle partie'}</h2>
           <button type="button" className="btn-icon" onClick={onClose}>
             ×
           </button>
@@ -353,20 +356,22 @@ function AddGameForm({ users, decks, onSave, onClose }) {
           </label>
 
           <label className="form-field add-game-bracket">
-            <span>Bracket table</span>
-            <input
-              type="number"
-              min="1"
-              max="4"
+            <span>Bracket</span>
+            <Select
               value={bracket}
               onChange={(e) => setBracket(e.target.value)}
-              placeholder="—"
               required
-            />
+            >
+              <option value="">—</option>
+              <option value="1">B1</option>
+              <option value="2">B2</option>
+              <option value="3">B3</option>
+              <option value="4">B4</option>
+            </Select>
           </label>
 
           <label className="form-field add-game-variation">
-            <span>Variation table</span>
+            <span>Var.</span>
             <Select
               value={bracketVariation}
               onChange={(e) => setBracketVariation(e.target.value)}
@@ -378,7 +383,7 @@ function AddGameForm({ users, decks, onSave, onClose }) {
           </label>
 
           <label className="form-field add-game-wipes">
-            <span>Board wipes</span>
+            <span>Wipes</span>
             <NumberStepper
               min={0}
               step={1}
@@ -398,13 +403,23 @@ function AddGameForm({ users, decks, onSave, onClose }) {
           </label>
         </div>
 
+        {fromTempGame && (liveWipeEvents.length > 0 || liveManaEvents.length > 0 || liveDeathEvents.length > 0) && (
+          <p className="temp-game-prefill-banner">
+            Données live pré-remplies — {liveWipeEvents.length} wipe
+            {liveWipeEvents.length !== 1 ? 's' : ''}, {liveManaEvents.length} mana,{' '}
+            {liveDeathEvents.length} mort
+            {liveDeathEvents.length !== 1 ? 's' : ''}. Il reste les decks et le gagnant.
+          </p>
+        )}
+
         <fieldset className="form-decks">
-          <legend>Decks (joueur + commandant + win)</legend>
+          <legend>Decks (joueur + commandant + win + last)</legend>
           <div className="form-deck-head">
             <span>#</span>
             <span>Joueur</span>
             <span>Commandant</span>
             <span>Win</span>
+            <span>Last</span>
           </div>
           {formDecks.map((deck, i) => {
             const takenUserIds = new Set(
@@ -421,7 +436,7 @@ function AddGameForm({ users, decks, onSave, onClose }) {
             return (
             <div key={deck.seatOrder} className="form-deck-row">
               <span className="seat-label">#{deck.seatOrder}</span>
-              <label className="form-deck-field">
+              <div className="form-deck-player-cell">
                 <span className="form-deck-field-label">Joueur</span>
                 <Select
                   value={deck.userId}
@@ -439,8 +454,8 @@ function AddGameForm({ users, decks, onSave, onClose }) {
                     </option>
                   ))}
                 </Select>
-              </label>
-              <label className="form-deck-field">
+              </div>
+              <div className="form-deck-commander-cell">
                 <span className="form-deck-field-label">Commandant</span>
                 <Select
                   value={deck.deckId}
@@ -462,7 +477,7 @@ function AddGameForm({ users, decks, onSave, onClose }) {
                     {formatBracketLine(deckOpt.bracket, deckOpt.bracketVariation || null)}
                   </span>
                 ) : null}
-              </label>
+              </div>
               <label className="form-check win-check form-deck-win">
                 <input
                   type="radio"
@@ -473,15 +488,39 @@ function AddGameForm({ users, decks, onSave, onClose }) {
                 />
                 Win
               </label>
+              <label className="form-check last-check form-deck-last">
+                <input
+                  type="radio"
+                  name="lastPlayer"
+                  checked={lastPlayerIndex === i}
+                  onChange={() => setLastPlayer(i)}
+                  required={lastPlayerIndex == null}
+                />
+                Last
+              </label>
             </div>
             )
           })}
         </fieldset>
 
-        <label className="form-field">
+        {fromTempGame && (
+          <label className="form-field">
+            <span>Style de victoire</span>
+            <Select value={winStyle} onChange={(e) => setWinStyle(e.target.value)} required>
+              <option value="">Style…</option>
+              {WIN_STYLES.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.label}
+                </option>
+              ))}
+            </Select>
+          </label>
+        )}
+
+        <label className="form-field add-game-notes">
           <span>Notes</span>
           <textarea
-            rows={2}
+            rows={4}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Optionnel"
@@ -495,7 +534,7 @@ function AddGameForm({ users, decks, onSave, onClose }) {
             Annuler
           </button>
           <button type="submit" className="btn btn-primary" disabled={saving}>
-            {saving ? 'Enregistrement…' : 'Ajouter'}
+            {saving ? 'Enregistrement…' : fromTempGame ? 'Enregistrer la partie' : 'Ajouter'}
           </button>
         </div>
       </form>

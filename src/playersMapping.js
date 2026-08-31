@@ -82,6 +82,7 @@ export function buildDeckEntry({
   deckUrl,
   comPrint,
   id,
+  createdAt,
 }) {
   const com = commanders.length === 1 ? commanders[0] : commanders
   const entry = {
@@ -92,6 +93,7 @@ export function buildDeckEntry({
     bracketVariation: bracketVariation ?? null,
     deckUrl: deckUrl || '',
     active: true,
+    createdAt: createdAt ?? new Date().toISOString().slice(0, 10),
   }
   if (comPrint && Object.keys(comPrint).length > 0) {
     entry.comPrint = comPrint
@@ -447,6 +449,68 @@ export function getDeckVersionChain(decks, deckId) {
   }
 
   return chain
+}
+
+/** Date de création d'une version (cataloguée ou déduite). */
+export function getDeckCreatedAt(deck, chain) {
+  if (deck.createdAt) return deck.createdAt
+
+  const firstHistoryDate = [...(deck.history ?? [])]
+    .map((h) => h.date)
+    .filter(Boolean)
+    .sort()[0]
+  if (firstHistoryDate) return firstHistoryDate
+
+  const chainDates = chain
+    .flatMap((d) => (d.history ?? []).map((h) => h.date))
+    .filter(Boolean)
+    .sort()
+  if (chainDates[0]) {
+    const d = new Date(`${chainDates[0]}T12:00:00Z`)
+    d.setUTCDate(d.getUTCDate() - 14)
+    return d.toISOString().slice(0, 10)
+  }
+
+  return new Date().toISOString().slice(0, 10)
+}
+
+/** Historique agrégé de toutes les versions (plus récent en premier). */
+export function getDeckChainHistory(decks, deckId) {
+  const chain = getDeckVersionChain(decks, deckId)
+  const multi = chain.length > 1
+  const items = []
+
+  chain.forEach((record, index) => {
+    const versionLabel = multi ? `Version ${index + 1}` : null
+    for (const entry of record.history ?? []) {
+      items.push({
+        ...describeHistoryEntry(entry),
+        versionLabel,
+        versionIndex: index + 1,
+        deckId: record.id,
+        isCurrentDeck: record.id === deckId,
+      })
+    }
+  })
+
+  if (multi && chain[0] && !(chain[0].history?.length)) {
+    const first = chain[0]
+    const level = formatBracketLine(first.bracket, first.bracketVariation)
+    items.push({
+      date: getDeckCreatedAt(first, chain),
+      previousValue: null,
+      newValue: level,
+      levelTransition: level,
+      cause: 'Version initiale',
+      versionLabel: 'Version 1',
+      versionIndex: 1,
+      deckId: first.id,
+      isInitial: true,
+    })
+  }
+
+  items.sort((a, b) => String(b.date).localeCompare(String(a.date)))
+  return items
 }
 
 export function computeStatsByDeckId(games, users, decks) {

@@ -6,7 +6,8 @@
     "bracket": 2,
     "bracketVariation": null,
     "deckUrl": "https://moxfield.com/decks/atrx-v1",
-    "active": false
+    "active": false,
+    "createdAt": "2026-01-01"
   },
   {
     "id": "d1000001-0000-4000-8000-000000000002",
@@ -16,6 +17,7 @@
     "bracketVariation": null,
     "deckUrl": "https://moxfield.com/decks/d1000001",
     "active": false,
+    "createdAt": "2026-02-01",
     "previousDeckId": "d1000001-0000-4000-8000-000000000001",
     "history": [
       {
@@ -36,6 +38,7 @@
     "bracketVariation": "low",
     "deckUrl": "https://moxfield.com/decks/d1000001",
     "active": false,
+    "createdAt": "2026-03-15",
     "previousDeckId": "d1000001-0000-4000-8000-000000000002",
     "history": [
       {
@@ -56,6 +59,7 @@
     "bracketVariation": "high",
     "deckUrl": "https://moxfield.com/decks/1713151f",
     "active": true,
+    "createdAt": "2026-05-01",
     "previousDeckId": "d1000001-0000-4000-8000-000000000003",
     "history": [
       {
@@ -75,7 +79,8 @@
     "bracket": 4,
     "bracketVariation": "high",
     "deckUrl": "https://moxfield.com/decks/8f2e3f9c",
-    "active": true
+    "active": true,
+    "createdAt": "2025-09-01"
   },
   {
     "id": "5db15ea8-c9fb-453a-ba8e-2a8a20802430",
@@ -85,6 +90,7 @@
     "bracketVariation": "low",
     "deckUrl": "",
     "active": true,
+    "createdAt": "2025-09-01",
     "comPrint": {
       "Krenko, Mob Boss": {
         "scryfallId": "45b2ec40-cb5f-476f-9c23-2c89eb8ff8c1",
@@ -102,7 +108,8 @@
     "bracket": 3,
     "bracketVariation": null,
     "deckUrl": "https://moxfield.com/decks/d1000001",
-    "active": true
+    "active": true,
+    "createdAt": "2025-09-01"
   },
   {
     "id": "d1000001-0000-4000-8000-000000000011",
@@ -111,7 +118,8 @@
     "bracket": 2,
     "bracketVariation": "high",
     "deckUrl": "https://moxfield.com/decks/d1000001",
-    "active": true
+    "active": true,
+    "createdAt": "2025-09-01"
   },
   {
     "id": "cb454f0a-4b75-45e9-a680-76977cfc8edd",
@@ -121,6 +129,7 @@
     "bracketVariation": "high",
     "deckUrl": "https://moxfield.com/decks/cb454f0a",
     "active": false,
+    "createdAt": "2026-01-20",
     "history": [
       {
         "date": "2026-01-20",
@@ -140,6 +149,7 @@
     "bracketVariation": null,
     "deckUrl": "https://moxfield.com/decks/d1000002",
     "active": false,
+    "createdAt": "2026-03-01",
     "previousDeckId": "cb454f0a-4b75-45e9-a680-76977cfc8edd",
     "history": [
       {
@@ -160,6 +170,7 @@
     "bracketVariation": null,
     "deckUrl": "https://moxfield.com/decks/d1000002",
     "active": false,
+    "createdAt": "2026-04-20",
     "previousDeckId": "d1000002-0000-4000-8000-000000000002",
     "history": [
       {
@@ -180,6 +191,7 @@
     "bracketVariation": "high",
     "deckUrl": "https://moxfield.com/decks/85856abe",
     "active": true,
+    "createdAt": "2026-06-10",
     "previousDeckId": "d1000002-0000-4000-8000-000000000003",
     "history": [
       {
@@ -199,7 +211,8 @@
     "bracket": 3,
     "bracketVariation": null,
     "deckUrl": "https://moxfield.com/decks/a60497bf",
-    "active": false
+    "active": false,
+    "createdAt": "2025-12-01"
   },
   {
     "id": "d1000003-0000-4000-8000-000000000002",
@@ -209,6 +222,7 @@
     "bracketVariation": "high",
     "deckUrl": "https://moxfield.com/decks/d1000003",
     "active": false,
+    "createdAt": "2026-02-10",
     "previousDeckId": "a60497bf-9793-4627-a17f-411f8fe95125",
     "history": [
       {
@@ -229,6 +243,7 @@
     "bracketVariation": null,
     "deckUrl": "https://moxfield.com/decks/d1000003",
     "active": false,
+    "createdAt": "2026-04-05",
     "previousDeckId": "d1000003-0000-4000-8000-000000000002",
     "history": [
       {
@@ -249,6 +264,7 @@
     "bracketVariation": "high",
     "deckUrl": "https://moxfield.com/decks/877c74bb",
     "active": true,
+    "createdAt": "2025-09-01",
     "previousDeckId": "d1000003-0000-4000-8000-000000000003"
   },
   {
@@ -258,7 +274,8 @@
     "bracket": 4,
     "bracketVariation": "high",
     "deckUrl": "https://moxfield.com/decks/d1000002",
-    "active": true
+    "active": true,
+    "createdAt": "2025-09-01"
   },
   {
     "id": "d1000002-0000-4000-8000-000000000011",
@@ -267,7 +284,8 @@
     "bracket": 2,
     "bracketVariation": null,
     "deckUrl": "https://moxfield.com/decks/d1000002",
-    "active": true
+    "active": true,
+    "createdAt": "2025-09-01"
   },
   {
     "id": "d1000004-0000-4000-8000-000000000001",
@@ -276,7 +294,8 @@
     "bracket": 2,
     "bracketVariation": "low",
     "deckUrl": "https://archidekt.com/decks/mul-v1",
-    "active": false
+    "active": false,
+    "createdAt": "2026-01-10"
   },
   {
     "id": "d1000004-0000-4000-8000-000000000002",
@@ -286,6 +305,7 @@
     "bracketVariation": "low",
     "deckUrl": "https://moxfield.com/decks/d1000004",
     "active": false,
+    "createdAt": "2026-02-25",
     "previousDeckId": "d1000004-0000-4000-8000-000000000001",
     "history": [
       {
@@ -306,6 +326,7 @@
     "bracketVariation": null,
     "deckUrl": "https://moxfield.com/decks/d1000004",
     "active": false,
+    "createdAt": "2026-04-12",
     "previousDeckId": "d1000004-0000-4000-8000-000000000002",
     "history": [
       {
@@ -326,6 +347,7 @@
     "bracketVariation": null,
     "deckUrl": "https://moxfield.com/decks/e141beb8",
     "active": true,
+    "createdAt": "2026-06-01",
     "previousDeckId": "d1000004-0000-4000-8000-000000000003",
     "history": [
       {
@@ -345,7 +367,8 @@
     "bracket": 3,
     "bracketVariation": "high",
     "deckUrl": "https://moxfield.com/decks/d1000004",
-    "active": true
+    "active": true,
+    "createdAt": "2025-09-01"
   },
   {
     "id": "d1000004-0000-4000-8000-000000000011",
@@ -354,7 +377,8 @@
     "bracket": 3,
     "bracketVariation": null,
     "deckUrl": "https://moxfield.com/decks/d1000004",
-    "active": true
+    "active": true,
+    "createdAt": "2025-09-01"
   },
   {
     "id": "d1000004-0000-4000-8000-000000000012",
@@ -363,7 +387,8 @@
     "bracket": 4,
     "bracketVariation": null,
     "deckUrl": "https://moxfield.com/decks/d1000004",
-    "active": true
+    "active": true,
+    "createdAt": "2025-09-01"
   },
   {
     "id": "d1000005-0000-4000-8000-000000000001",
@@ -372,7 +397,8 @@
     "bracket": 2,
     "bracketVariation": null,
     "deckUrl": "https://moxfield.com/decks/d1000005",
-    "active": false
+    "active": false,
+    "createdAt": "2025-10-15"
   },
   {
     "id": "d1000005-0000-4000-8000-000000000002",
@@ -382,6 +408,7 @@
     "bracketVariation": "low",
     "deckUrl": "https://moxfield.com/decks/d1000005",
     "active": false,
+    "createdAt": "2026-03-05",
     "previousDeckId": "d1000005-0000-4000-8000-000000000001",
     "history": [
       {
@@ -402,6 +429,7 @@
     "bracketVariation": null,
     "deckUrl": "https://moxfield.com/decks/d1000005",
     "active": false,
+    "createdAt": "2026-05-20",
     "previousDeckId": "d1000005-0000-4000-8000-000000000002",
     "history": [
       {
@@ -422,6 +450,7 @@
     "bracketVariation": null,
     "deckUrl": "https://moxfield.com/decks/194fdee1",
     "active": true,
+    "createdAt": "2025-09-01",
     "previousDeckId": "d1000005-0000-4000-8000-000000000003"
   },
   {
@@ -431,7 +460,8 @@
     "bracket": 4,
     "bracketVariation": "high",
     "deckUrl": "https://moxfield.com/decks/d1000005",
-    "active": true
+    "active": true,
+    "createdAt": "2025-09-01"
   },
   {
     "id": "d1000005-0000-4000-8000-000000000011",
@@ -440,7 +470,8 @@
     "bracket": 3,
     "bracketVariation": "high",
     "deckUrl": "https://moxfield.com/decks/d1000005",
-    "active": true
+    "active": true,
+    "createdAt": "2025-09-01"
   },
   {
     "id": "d1000005-0000-4000-8000-000000000012",
@@ -449,7 +480,8 @@
     "bracket": 3,
     "bracketVariation": null,
     "deckUrl": "https://moxfield.com/decks/d1000005",
-    "active": true
+    "active": true,
+    "createdAt": "2025-09-01"
   },
   {
     "id": "d1000006-0000-4000-8000-000000000001",
@@ -458,7 +490,8 @@
     "bracket": 4,
     "bracketVariation": null,
     "deckUrl": "https://moxfield.com/decks/d1000006",
-    "active": true
+    "active": true,
+    "createdAt": "2025-09-01"
   },
   {
     "id": "d1000006-0000-4000-8000-000000000002",
@@ -467,7 +500,8 @@
     "bracket": 3,
     "bracketVariation": "high",
     "deckUrl": "https://moxfield.com/decks/d1000006",
-    "active": true
+    "active": true,
+    "createdAt": "2025-09-01"
   },
   {
     "id": "d1000006-0000-4000-8000-000000000003",
@@ -476,7 +510,8 @@
     "bracket": 2,
     "bracketVariation": null,
     "deckUrl": "https://moxfield.com/decks/d1000006",
-    "active": true
+    "active": true,
+    "createdAt": "2025-09-01"
   },
   {
     "id": "d1000006-0000-4000-8000-000000000004",
@@ -485,15 +520,7 @@
     "bracket": 4,
     "bracketVariation": "low",
     "deckUrl": "https://moxfield.com/decks/d1000006",
-    "active": true
-  },
-  {
-    "id": "89060f86-8d64-43cc-b730-5c36329454e1",
-    "userId": "7f841418-074f-42b6-9efe-4a000da56771",
-    "com": "Atreus, Impulsive Son",
-    "bracket": 2,
-    "bracketVariation": "high",
-    "deckUrl": "",
-    "active": true
+    "active": true,
+    "createdAt": "2025-09-01"
   }
 ]

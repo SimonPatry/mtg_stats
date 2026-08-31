@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { describeHistoryEntry, formatBracketLine, formatCommanders } from './playersMapping'
+import { formatBracketLine, formatCommanders, getDeckChainHistory } from './playersMapping'
 import Select from './Select'
 
 const BRACKET_OPTIONS = [1, 2, 3, 4].flatMap((b) => [
@@ -29,7 +29,7 @@ function packBracket(bracket, bracketVariation) {
 }
 
 
-export default function DeckEditModal({ deck, onSave, onClose, saving }) {
+export default function DeckEditModal({ deck, decks, onSave, onClose, saving }) {
   const [bracketKey, setBracketKey] = useState(() =>
     packBracket(deck.bracket, deck.bracketVariation),
   )
@@ -70,7 +70,7 @@ export default function DeckEditModal({ deck, onSave, onClose, saving }) {
   }
 
   const label = formatCommanders(deck.com)
-  const history = deck.history ?? []
+  const chainHistory = getDeckChainHistory(decks, deck.id)
 
   return (
     <div className="modal-backdrop deck-edit-backdrop" onClick={onClose}>
@@ -151,38 +151,39 @@ export default function DeckEditModal({ deck, onSave, onClose, saving }) {
           </div>
 
           <aside className="deck-edit-sidebar">
-            <h3 className="deck-edit-sidebar-title">Historique</h3>
+            <h3 className="deck-edit-sidebar-title">
+              Historique
+              {chainHistory.length > 0 ? ` (${chainHistory.length})` : ''}
+            </h3>
 
-            {history.length > 0 ? (
+            {chainHistory.length > 0 ? (
               <ul className="deck-edit-history-list">
-                {[...history].reverse().map((entry, i) => {
-                  const row = describeHistoryEntry(entry)
-                  return (
-                    <li key={`${entry.date}-${i}`} className="deck-edit-history-item">
+                {chainHistory.map((row, i) => (
+                  <li
+                    key={`${row.deckId}-${row.date}-${i}`}
+                    className="deck-edit-history-item"
+                  >
+                    <div className="deck-edit-history-head">
                       <time dateTime={row.date}>{row.date}</time>
-                      <dl className="deck-edit-history-details">
-                        <div>
-                          <dt>Niveau</dt>
-                          <dd>{row.levelTransition}</dd>
-                        </div>
-                        <div>
-                          <dt>Cause</dt>
-                          <dd>{row.cause}</dd>
-                        </div>
-                      </dl>
-                    </li>
-                  )
-                })}
+                      {row.versionLabel ? (
+                        <span className="deck-edit-history-version">{row.versionLabel}</span>
+                      ) : null}
+                    </div>
+                    <dl className="deck-edit-history-details">
+                      <div>
+                        <dt>Niveau</dt>
+                        <dd>{row.levelTransition}</dd>
+                      </div>
+                      <div>
+                        <dt>Cause</dt>
+                        <dd>{row.cause}</dd>
+                      </div>
+                    </dl>
+                  </li>
+                ))}
               </ul>
             ) : (
               <p className="deck-edit-history-empty">Aucun réajustement pour l&apos;instant.</p>
-            )}
-
-            {deck.previousDeckId && (
-              <div className="deck-edit-previous-block">
-                <span className="deck-edit-previous-label">Version </span>
-                <code className="deck-id-chip">{deck.previousDeckId}</code>
-              </div>
             )}
           </aside>
         </div>

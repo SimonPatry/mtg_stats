@@ -86,6 +86,38 @@ export function createGameId() {
   return uuidv4()
 }
 
+/** Dernier joueur à avoir joué un tour (chaîne vide si absent). */
+export function getLastPlayer(game) {
+  return typeof game?.lastPlayer === 'string' ? game.lastPlayer.trim() : ''
+}
+
+export function getLastSeatOrder(game) {
+  const seat = game?.lastSeatOrder
+  return typeof seat === 'number' && seat >= 1 && seat <= 4 ? seat : null
+}
+
+/** Un seul deck peut être « last » — par siège si dispo, sinon par nom unique. */
+export function isLastDeck(game, deck) {
+  const seat = getLastSeatOrder(game)
+  if (seat != null) return deck.seatOrder === seat
+  const name = getLastPlayer(game)
+  if (!name) return false
+  const player = (deck.player ?? '').trim()
+  if (player !== name) return false
+  const sameName = game.decks.filter(
+    (d) => (d.player ?? '').trim() === name,
+  ).length
+  return sameName === 1
+}
+
+export function getLastPlayerLabel(game) {
+  const seat = getLastSeatOrder(game)
+  const name = getLastPlayer(game)
+  if (!name) return '—'
+  if (seat != null) return `${name} (#${seat})`
+  return name
+}
+
 /** Nombre de board wipes (compat legacy `hadWipe` booléen). */
 export function getBoardWipes(game) {
   if (typeof game.boardWipes === 'number' && !Number.isNaN(game.boardWipes)) {

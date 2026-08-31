@@ -17,6 +17,8 @@ const uid = {
 }
 
 function deck(id, userId, com, bracket, variation, opts = {}) {
+  const createdAt =
+    opts.createdAt ?? opts.history?.[0]?.date ?? '2025-09-01'
   return {
     id,
     userId,
@@ -25,6 +27,7 @@ function deck(id, userId, com, bracket, variation, opts = {}) {
     bracketVariation: variation ?? null,
     deckUrl: opts.deckUrl ?? `https://moxfield.com/decks/${id.slice(0, 8)}`,
     active: opts.active !== false,
+    createdAt,
     ...(opts.previousDeckId ? { previousDeckId: opts.previousDeckId } : {}),
     ...(opts.history ? { history: opts.history } : {}),
     ...(opts.comPrint ? { comPrint: opts.comPrint } : {}),
@@ -92,6 +95,7 @@ const decks = [
   deck(IDS.atraxa_v1, uid.simon, "Atraxa, Praetors' Voice", 2, null, {
     active: false,
     deckUrl: 'https://moxfield.com/decks/atrx-v1',
+    createdAt: '2026-01-01',
   }),
   deck(IDS.atraxa_v2, uid.simon, "Atraxa, Praetors' Voice", 3, null, {
     active: false,
@@ -159,7 +163,10 @@ const decks = [
   }),
 
   // Alex — Krenko 4 versions
-  deck(IDS.krenko_v1, uid.alex, 'Krenko, Mob Boss', 3, null, { active: false }),
+  deck(IDS.krenko_v1, uid.alex, 'Krenko, Mob Boss', 3, null, {
+    active: false,
+    createdAt: '2025-12-01',
+  }),
   deck(IDS.krenko_v2, uid.alex, 'Krenko, Mob Boss', 3, 'high', {
     active: false,
     previousDeckId: IDS.krenko_v1,
@@ -184,6 +191,7 @@ const decks = [
   deck(IDS.mul_v1, uid.jordan, 'Muldrotha, the Gravetide', 2, 'low', {
     active: false,
     deckUrl: 'https://archidekt.com/decks/mul-v1',
+    createdAt: '2026-01-10',
   }),
   deck(IDS.mul_v2, uid.jordan, 'Muldrotha, the Gravetide', 3, 'low', {
     active: false,
@@ -210,7 +218,10 @@ const decks = [
   deck(IDS.teysa, uid.jordan, 'Teysa, Orzhov Scion', 4, null),
 
   // Sam — Korvold 4 versions
-  deck(IDS.kor_v1, uid.sam, 'Korvold, Fae-Cursed King', 2, null, { active: false }),
+  deck(IDS.kor_v1, uid.sam, 'Korvold, Fae-Cursed King', 2, null, {
+    active: false,
+    createdAt: '2025-10-15',
+  }),
   deck(IDS.kor_v2, uid.sam, 'Korvold, Fae-Cursed King', 3, 'low', {
     active: false,
     previousDeckId: IDS.kor_v1,
@@ -338,9 +349,13 @@ for (let i = 0; i < 40; i += 1) {
   }
 
   const winnerIdx = i % 4
+  const lastIdx = (winnerIdx + 1 + (i % 3)) % 4
   const bracket = 2 + (i % 3)
   const variations = [null, 'low', 'high', null]
   const bracketVariation = variations[i % variations.length]
+  const decks = slotDeckIds.map((deckId, seatIdx) =>
+    slotFromDeckId(deckId, seatIdx + 1, seatIdx === winnerIdx ? 'win' : 'loss'),
+  )
 
   games.push({
     id: `game-${String(i + 1).padStart(3, '0')}`,
@@ -350,10 +365,9 @@ for (let i = 0; i < 40; i += 1) {
     bracketVariation,
     boardWipes: i % 5 === 0 ? 2 : i % 3,
     winnerProtectedVictory: i % 4 === 0,
+    lastPlayer: decks[lastIdx].player,
     notes: notes[i % notes.length],
-    decks: slotDeckIds.map((deckId, seatIdx) =>
-      slotFromDeckId(deckId, seatIdx + 1, seatIdx === winnerIdx ? 'win' : 'loss'),
-    ),
+    decks,
   })
 }
 

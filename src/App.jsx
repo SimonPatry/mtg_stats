@@ -4,7 +4,7 @@ import initialGames from './data/games_test.json'
 import initialUsers from './data/users.json'
 import initialDecks from './data/decks.json'
 import { fetchCommanderImage } from './scryfall'
-import { BACKUP_REASON, getBoardWipes, loadGames, saveGames } from './gamesApi'
+import { BACKUP_REASON, getBoardWipes, getLastPlayer, getLastPlayerLabel, isLastDeck, loadGames, saveGames } from './gamesApi'
 import Select from './Select'
 import { loadUsers, saveUsers } from './usersApi'
 import { loadDecks, saveDecks } from './decksApi'
@@ -21,6 +21,15 @@ import AddGameForm from './AddGameForm'
 import JsonEditor from './JsonEditor'
 import PlayersManager from './PlayersManager'
 import DeckStatsModal from './DeckStatsModal'
+import GameDetailsModal from './GameDetailsModal'
+import TempGameView from './TempGameView'
+import TempGameStartModal from './TempGameStartModal'
+import {
+  clearTempGame,
+  loadTempGame,
+  saveTempGame,
+  tempGameToAddGameInitial,
+} from './tempGame'
 import { downloadGamesExcel, downloadGamesJson } from './exportGames'
 
 function resolveDeck(deck, users, decks) {
@@ -320,7 +329,7 @@ function DeckCard({ deck, onZoom, onDetail }) {
   )
 }
 
-function GameRow({ game, users, decks, onZoom }) {
+function GameRow({ game, users, decks, onZoom, onDetails }) {
   const resolvedDecks = [...game.decks]
     .sort((a, b) => a.seatOrder - b.seatOrder)
     .map((deck) => resolveDeck(deck, users, decks))
@@ -328,18 +337,30 @@ function GameRow({ game, users, decks, onZoom }) {
 
   return (
     <article className="game game-compact">
-      <div className="game-stats-row">
-        <span className="game-date">{game.date}</span>
-        <span className="bracket-chip">{formatBracket(game)}</span>
-        <span className="stat-pill">{game.turns} tours</span>
-        {boardWipes > 0 && (
-          <span className="stat-pill flag-on">
-            {boardWipes} wipe{boardWipes > 1 ? 's' : ''}
-          </span>
-        )}
-        {game.winnerProtectedVictory && (
-          <span className="stat-pill flag-on">protégée</span>
-        )}
+      <div className="game-row-top">
+        <div className="game-stats-row">
+          <span className="game-date">{game.date}</span>
+          <span className="bracket-chip">{formatBracket(game)}</span>
+          <span className="stat-pill">{game.turns} tours</span>
+          {boardWipes > 0 && (
+            <span className="stat-pill flag-on">
+              {boardWipes} wipe{boardWipes > 1 ? 's' : ''}
+            </span>
+          )}
+          {game.winnerProtectedVictory && (
+            <span className="stat-pill flag-on">protégée</span>
+          )}
+          {getLastPlayer(game) && (
+            <span className="stat-pill">last: {getLastPlayerLabel(game)}</span>
+          )}
+        </div>
+        <button
+          type="button"
+          className="btn btn-ghost btn-game-details"
+          onClick={() => onDetails?.(game)}
+        >
+          Détails
+        </button>
       </div>
 
       <div className="game-coms-row">
@@ -348,7 +369,7 @@ function GameRow({ game, users, decks, onZoom }) {
             type="button"
             key={`${game.id}-${deck.seatOrder}`}
             className={`game-com-thumb ${deck.result}`}
-            title={`${deckLabel(deck)} · ${deck.player} · ${deck.result}`}
+            title={`${deckLabel(deck)} · ${deck.player} · ${deck.result}${isLastDeck(game, deck) ? ' · last' : ''}`}
             onClick={(e) =>
               onZoom?.(deck.commanders, e.currentTarget.getBoundingClientRect())
             }
@@ -362,6 +383,9 @@ function GameRow({ game, users, decks, onZoom }) {
               <span className="game-com-player">{deck.player || '—'}</span>
             </div>
             {deck.result === 'win' && <span className="game-win-dot" />}
+            {isLastDeck(game, deck) && (
+              <span className="game-last-dot" />
+            )}
           </button>
         ))}
       </div>
@@ -369,28 +393,31 @@ function GameRow({ game, users, decks, onZoom }) {
   )
 }
 
-function deckMatchesFilters(rawDeck, winsByDeck, { nameQuery, minWinrate }, users, decks) {
+function playerMatchesStatsFilters(rawDeck, winsByPlayer, { nameQuery, minWinrate }, users, decks) {
   const deck = resolveDeck(rawDeck, users, decks)
-  const label = deckLabel(deck)
-  const data = winsByDeck[label]
+  const player = deck.player?.trim()
+  if (!player) return false
+
+  const data = winsByPlayer[player]
   if (!data) return false
 
   const winrate = Math.round((data.wins / data.games) * 100)
   const q = nameQuery.trim().toLowerCase()
-  const haystack = `${label} ${data.player ?? ''}`.toLowerCase()
 
-  if (q && !haystack.includes(q)) return false
+  if (q && !player.toLowerCase().includes(q)) return false
   if (winrate < minWinrate) return false
   return true
 }
 
-function filterGames(games, winsByDeck, filters, users, decks) {
+function filterGamesByPlayerStats(games, winsByPlayer, filters, users, decks) {
   const hasFilters =
     filters.nameQuery.trim() !== '' || filters.minWinrate > 0
   if (!hasFilters) return games
 
   return games.filter((game) =>
-    game.decks.some((raw) => deckMatchesFilters(raw, winsByDeck, filters, users, decks)),
+    game.decks.some((raw) =>
+      playerMatchesStatsFilters(raw, winsByPlayer, filters, users, decks),
+    ),
   )
 }
 
@@ -510,7 +537,7 @@ function formatWinrateValue(value) {
   return Number.isInteger(n) ? String(n) : n.toFixed(1)
 }
 
-function WinrateMinFilter({ value, onChange }) {
+function WinrateMinFilter({ value, onChange, label = 'Winrate min' }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
 
@@ -531,7 +558,7 @@ function WinrateMinFilter({ value, onChange }) {
 
   return (
     <label className="filter">
-      <span>Winrate min</span>
+      <span>{label}</span>
       <div className="filter-control range">
         <input
           type="range"
@@ -580,6 +607,8 @@ function FiltersBar({
   sortWinrate,
   onSortWinrate,
   showSort = false,
+  namePlaceholder = 'Commandant ou joueur…',
+  minWinrateLabel = 'Winrate min',
 }) {
   return (
     <div className={`filters ${showSort ? 'filters-3' : 'filters-2'}`}>
@@ -587,13 +616,13 @@ function FiltersBar({
         <span>Nom</span>
         <input
           type="search"
-          placeholder="Commandant ou joueur…"
+          placeholder={namePlaceholder}
           value={nameQuery}
           onChange={(e) => onNameQuery(e.target.value)}
         />
       </label>
 
-      <WinrateMinFilter value={minWinrate} onChange={onMinWinrate} />
+      <WinrateMinFilter value={minWinrate} onChange={onMinWinrate} label={minWinrateLabel} />
 
       {showSort && (
         <label className="filter">
@@ -966,8 +995,12 @@ function App() {
   const [users, setUsers] = useState(initialUsers)
   const [decks, setDecks] = useState(initialDecks)
   const [showAddForm, setShowAddForm] = useState(false)
+  const [addFormFromTemp, setAddFormFromTemp] = useState(null)
+  const [tempGame, setTempGame] = useState(() => loadTempGame())
+  const [showTempStart, setShowTempStart] = useState(false)
   const [cardFloat, setCardFloat] = useState(null)
   const [deckDetail, setDeckDetail] = useState(null)
+  const [gameDetail, setGameDetail] = useState(null)
   const [activeView, setActiveView] = useState('dashboard')
   const [sideNavOpen, setSideNavOpen] = useState(false)
 
@@ -976,6 +1009,40 @@ function App() {
     loadUsers(initialUsers).then(setUsers)
     loadDecks(initialDecks).then(setDecks)
   }, [])
+
+  useEffect(() => {
+    saveTempGame(tempGame)
+  }, [tempGame])
+
+  function openAddForm() {
+    setAddFormFromTemp(tempGame ? tempGameToAddGameInitial(tempGame) : null)
+    setShowAddForm(true)
+  }
+
+  function openLiveGame() {
+    if (tempGame) {
+      setActiveView('tempGame')
+      return
+    }
+    setShowTempStart(true)
+  }
+
+  function handleStartTempGame(game) {
+    setTempGame(game)
+    setShowTempStart(false)
+    setActiveView('tempGame')
+  }
+
+  function handleAbandonTempGame() {
+    if (!window.confirm('Abandonner la partie live en cours ?')) return
+    clearTempGame()
+    setTempGame(null)
+    setActiveView('dashboard')
+  }
+
+  function handleFinalizeTempGame() {
+    openAddForm()
+  }
 
   const allStats = computeStats(games, users, decks)
 
@@ -1002,7 +1069,13 @@ function App() {
   const isStatsFiltered =
     statsNameQuery.trim() !== '' || statsMinWinrate > 0
 
-  const statsFilteredGames = filterGames(games, allStats.winsByDeck, statsFilters, users, decks)
+  const statsFilteredGames = filterGamesByPlayerStats(
+    games,
+    allStats.winsByPlayer,
+    statsFilters,
+    users,
+    decks,
+  )
   const stats = computeStats(statsFilteredGames, users, decks)
 
   const filteredDecks = filterDecks(allStats.winsByDeck, {
@@ -1045,6 +1118,8 @@ function App() {
             onNameQuery={setStatsNameQuery}
             minWinrate={statsMinWinrate}
             onMinWinrate={setStatsMinWinrate}
+            namePlaceholder="Joueur…"
+            minWinrateLabel="Winrate joueur min"
           />
         ),
       },
@@ -1113,6 +1188,10 @@ function App() {
     setUsers(updatedUsers)
     setDecks(updatedDecks)
     setShowAddForm(false)
+    setAddFormFromTemp(null)
+    clearTempGame()
+    setTempGame(null)
+    setActiveView('dashboard')
   }
 
   function handleJsonSave(updatedGames) {
@@ -1144,8 +1223,19 @@ function App() {
         <AddGameForm
           users={users}
           decks={decks}
+          fromTempGame={addFormFromTemp}
           onSave={handleAddGame}
-          onClose={() => setShowAddForm(false)}
+          onClose={() => {
+            setShowAddForm(false)
+            setAddFormFromTemp(null)
+          }}
+        />
+      )}
+      {showTempStart && (
+        <TempGameStartModal
+          users={users}
+          onStart={handleStartTempGame}
+          onClose={() => setShowTempStart(false)}
         />
       )}
       {cardFloat && (
@@ -1165,12 +1255,20 @@ function App() {
           onClose={() => setDeckDetail(null)}
         />
       )}
+      {gameDetail && (
+        <GameDetailsModal
+          game={gameDetail}
+          users={users}
+          decks={decks}
+          onClose={() => setGameDetail(null)}
+        />
+      )}
       <SideNav
         open={sideNavOpen}
         onClose={() => setSideNavOpen(false)}
         activeView={activeView}
         onNavigate={setActiveView}
-        onExportJson={() => downloadGamesJson(games)}
+        onExportJson={() => downloadGamesJson(games, users, decks)}
         onExportExcel={() => downloadGamesExcel(games, users, decks)}
       />
       <header className="page-header top-bar">
@@ -1221,7 +1319,7 @@ function App() {
           <button
             type="button"
             className="btn btn-ghost top-bar-export-btn"
-            onClick={() => downloadGamesJson(games)}
+            onClick={() => downloadGamesJson(games, users, decks)}
           >
             ↓ JSON
           </button>
@@ -1233,13 +1331,22 @@ function App() {
             ↓ Excel
           </button>
           {activeView === 'dashboard' && (
-            <button
-              type="button"
-              className="btn btn-primary btn-add"
-              onClick={() => setShowAddForm(true)}
-            >
-              + Partie
-            </button>
+            <>
+              <button
+                type="button"
+                className={`btn btn-ghost btn-live${tempGame ? ' has-temp-game' : ''}`}
+                onClick={openLiveGame}
+              >
+                {tempGame ? '● Live' : 'Live'}
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary btn-add"
+                onClick={openAddForm}
+              >
+                + Partie
+              </button>
+            </>
           )}
         </div>
       </header>
@@ -1249,6 +1356,14 @@ function App() {
           games={games}
           onSave={handleJsonSave}
           onCancel={() => setActiveView('dashboard')}
+        />
+      ) : activeView === 'tempGame' && tempGame ? (
+        <TempGameView
+          tempGame={tempGame}
+          onChange={setTempGame}
+          onFinalize={handleFinalizeTempGame}
+          onAbandon={handleAbandonTempGame}
+          onBack={() => setActiveView('dashboard')}
         />
       ) : activeView === 'players' ? (
         <PlayersManager
@@ -1281,6 +1396,8 @@ function App() {
                 onNameQuery={setStatsNameQuery}
                 minWinrate={statsMinWinrate}
                 onMinWinrate={setStatsMinWinrate}
+                namePlaceholder="Joueur…"
+                minWinrateLabel="Winrate joueur min"
               />
             </div>
           </div>
@@ -1421,6 +1538,7 @@ function App() {
                   users={users}
                   decks={decks}
                   onZoom={handleZoom}
+                  onDetails={setGameDetail}
                 />
               ))
             )}

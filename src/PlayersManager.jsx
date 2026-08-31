@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import DeckEditModal from './DeckEditModal'
+import PlayersAddDesktopForms from './PlayersAddDesktopForms'
 import PlayersAddModal from './PlayersAddModal'
 import { saveDecks } from './decksApi'
 import { saveUsers } from './usersApi'
@@ -219,6 +220,23 @@ function RosterPlayer({ user, decks, onZoom, onEditDeck }) {
   )
 }
 
+function usePlayersMobile() {
+  const [mobile, setMobile] = useState(() =>
+    typeof window !== 'undefined'
+      ? window.matchMedia('(max-width: 768px)').matches
+      : false,
+  )
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    const sync = () => setMobile(mq.matches)
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+
+  return mobile
+}
+
 export default function PlayersManager({ users, decks, onSave, onZoom }) {
   const activeUsers = getActiveUsers(users)
   const userNames = [...activeUsers].sort((a, b) => a.name.localeCompare(b.name))
@@ -236,6 +254,7 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
   const [editingDeckId, setEditingDeckId] = useState(null)
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [addModalTab, setAddModalTab] = useState('deck')
+  const isMobile = usePlayersMobile()
 
   const editingDeck = editingDeckId
     ? getDeckById(decks, editingDeckId)
@@ -265,8 +284,10 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
       const created = updatedUsers.find((u) => u.name === trimmed)
       if (created) setSelectedUserId(created.id)
       setSuccess(`Joueur « ${trimmed} » ajouté.`)
-      setAddModalOpen(false)
-      setAddModalTab('deck')
+      if (isMobile) {
+        setAddModalOpen(false)
+        setAddModalTab('deck')
+      }
     } catch (err) {
       setError(err.message)
     }
@@ -303,7 +324,7 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
       setBracketKey('')
       setDeckUrl('')
       setSuccess(`Deck ajouté pour ${getUserName(users, selectedUserId)}.`)
-      setAddModalOpen(false)
+      if (isMobile) setAddModalOpen(false)
     } catch (err) {
       setError(err.message)
     }
@@ -328,12 +349,13 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
       {editingDeck && (
         <DeckEditModal
           deck={editingDeck}
+          decks={decks}
           saving={saving}
           onClose={() => setEditingDeckId(null)}
           onSave={handleEditDeckSave}
         />
       )}
-      {addModalOpen && (
+      {isMobile && addModalOpen && (
         <PlayersAddModal
           tab={addModalTab}
           onTab={setAddModalTab}
@@ -362,6 +384,28 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
       {success && <p className="json-editor-success">{success}</p>}
 
       <div className="players-manager-body">
+        {!isMobile && (
+          <PlayersAddDesktopForms
+            saving={saving}
+            userNames={userNames}
+            newPlayerName={newPlayerName}
+            onNewPlayerName={setNewPlayerName}
+            onAddPlayer={handleAddPlayer}
+            selectedUserId={selectedUserId}
+            onSelectedUserId={setSelectedUserId}
+            commanders={commanders}
+            onCommanders={setCommanders}
+            comPrint={comPrint}
+            onComPrint={setComPrint}
+            commanderPickerKey={commanderPickerKey}
+            bracketKey={bracketKey}
+            onBracketKey={setBracketKey}
+            deckUrl={deckUrl}
+            onDeckUrl={setDeckUrl}
+            onAddDeck={handleAddDeck}
+            onZoom={onZoom}
+          />
+        )}
         <aside className="players-roster panel">
           <h3>Roster ({userNames.length})</h3>
           {userNames.length === 0 ? (
@@ -382,29 +426,31 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
         </aside>
       </div>
 
-      <button
-        type="button"
-        className="players-add-fab"
-        aria-label="Ajouter un joueur ou un deck"
-        onClick={() => {
-          setError('')
-          setAddModalOpen(true)
-        }}
-      >
-        <svg
-          className="players-add-fab-icon"
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          aria-hidden
+      {isMobile && (
+        <button
+          type="button"
+          className="players-add-fab"
+          aria-label="Ajouter un joueur ou un deck"
+          onClick={() => {
+            setError('')
+            setAddModalOpen(true)
+          }}
         >
-          <path d="M12 5v14M5 12h14" />
-        </svg>
-      </button>
+          <svg
+            className="players-add-fab-icon"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            aria-hidden
+          >
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </button>
+      )}
     </div>
   )
 }
