@@ -2,24 +2,29 @@
   Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
 </IfModule>
 
+# Ne pas laisser Passenger (Node) intercepter tout le site :
+# on sert le front en statique + l'API en PHP.
+<IfModule mod_passenger.c>
+  PassengerEnabled off
+</IfModule>
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
 
-  # API PHP (Plesk / Apache) — Node Passenger n'intercepte pas /api
+  # API → PHP
   RewriteRule ^api(/.*)?$ api/router.php [QSA,L]
 
   RewriteRule ^backups/ - [L]
 
-  # Ne pas réécrire les fichiers/dossiers existants
+  # Fichiers / dossiers existants : ne pas réécrire
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
 
-  # SPA fallback : tout le reste → index.html
+  # SPA fallback
   RewriteRule ^ index.html [QSA,L]
 </IfModule>
 
-# MIME types pour modules JS
 <IfModule mod_mime.c>
   AddType application/javascript .js .mjs
 </IfModule>
