@@ -27,6 +27,13 @@ for (const [, filePath] of Object.entries(DATA_FILES)) {
 }
 
 const app = express()
+
+// Force HSTS
+app.use((req, res, next) => {
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+  next()
+})
+
 app.use(express.json({ limit: '10mb' }))
 
 // ─── API données ───────────────────────────────────
