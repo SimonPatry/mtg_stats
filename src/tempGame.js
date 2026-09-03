@@ -2,6 +2,114 @@ import { createGameId } from './gamesApi'
 import { buildGameEventNotes } from './gameDetails'
 
 export const TEMP_GAME_STORAGE_KEY = 'mtg_stats_temp_game'
+export const LIVE_GAMES_STORAGE_KEY = 'mtg_stats_live_games'
+
+const EMPTY_LIVE_STORE = { activeId: null, games: {} }
+
+export function normalizeTempGame(raw) {
+  if (!raw?.id || !Array.isArray(raw.players) || raw.players.length !== 4) {
+    return null
+  }
+  return {
+    ...raw,
+    wipeEvents: raw.wipeEvents ?? [],
+    manaEvents: raw.manaEvents ?? [],
+    deathEvents: raw.deathEvents ?? [],
+  }
+}
+
+function normalizeLiveStore(raw) {
+  if (!raw || typeof raw !== 'object') return { ...EMPTY_LIVE_STORE }
+  const games = {}
+  for (const [id, game] of Object.entries(raw.games ?? {})) {
+    const normalized = normalizeTempGame(game)
+    if (normalized) games[id] = normalized
+  }
+  const activeId = raw.activeId && games[raw.activeId] ? raw.activeId : null
+  return { activeId, games }
+}
+
+export function loadLiveGamesStore() {
+  try {
+    const raw = sessionStorage.getItem(LIVE_GAMES_STORAGE_KEY)
+    if (raw) return normalizeLiveStore(JSON.parse(raw))
+
+    const legacyRaw = sessionStorage.getItem(TEMP_GAME_STORAGE_KEY)
+    if (legacyRaw) {
+      const game = normalizeTempGame(JSON.parse(legacyRaw))
+      if (game) {
+        const store = { activeId: game.id, games: { [game.id]: game } }
+        saveLiveGamesStore(store)
+        sessionStorage.removeItem(TEMP_GAME_STORAGE_KEY)
+        return store
+      }
+    }
+    return { ...EMPTY_LIVE_STORE }
+  } catch {
+    return { ...EMPTY_LIVE_STORE }
+  }
+}
+
+export function saveLiveGamesStore(store) {
+  const normalized = normalizeLiveStore(store)
+  if (Object.keys(normalized.games).length === 0) {
+    sessionStorage.removeItem(LIVE_GAMES_STORAGE_KEY)
+    return
+  }
+  sessionStorage.setItem(LIVE_GAMES_STORAGE_KEY, JSON.stringify(normalized))
+}
+
+export function listTempGames(store) {
+  return Object.values(store.games).sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  )
+}
+
+export function tempGameSummary(game) {
+  return {
+    playerNames: game.players.map((p) => p.player),
+    turn: game.currentTurn || 1,
+    wipeCount: game.wipeEvents.length,
+    manaCount: game.manaEvents?.length ?? 0,
+    deathCount: game.deathEvents.length,
+    createdAt: game.createdAt,
+  }
+}
+
+export function removeTempGameFromStore(store, id) {
+  const games = { ...store.games }
+  delete games[id]
+  return {
+    activeId: store.activeId === id ? null : store.activeId,
+    games,
+  }
+}
+
+/** @deprecated Utiliser loadLiveGamesStore */
+export function loadTempGame() {
+  const store = loadLiveGamesStore()
+  return store.activeId ? store.games[store.activeId] ?? null : null
+}
+
+/** @deprecated Utiliser saveLiveGamesStore */
+export function saveTempGame(tempGame) {
+  if (!tempGame) {
+    sessionStorage.removeItem(LIVE_GAMES_STORAGE_KEY)
+    sessionStorage.removeItem(TEMP_GAME_STORAGE_KEY)
+    return
+  }
+  const store = loadLiveGamesStore()
+  saveLiveGamesStore({
+    activeId: tempGame.id,
+    games: { ...store.games, [tempGame.id]: tempGame },
+  })
+}
+
+/** @deprecated Utiliser removeTempGameFromStore */
+export function clearTempGame() {
+  sessionStorage.removeItem(LIVE_GAMES_STORAGE_KEY)
+  sessionStorage.removeItem(TEMP_GAME_STORAGE_KEY)
+}
 
 export const KILL_STYLES = [
   { id: 'combat', label: 'Dégâts de combat' },
@@ -23,33 +131,6 @@ export const WIN_STYLES = [
 
 export function styleLabel(id, styles = KILL_STYLES) {
   return styles.find((s) => s.id === id)?.label ?? id
-}
-
-export function loadTempGame() {
-  try {
-    const raw = sessionStorage.getItem(TEMP_GAME_STORAGE_KEY)
-    if (!raw) return null
-    const parsed = JSON.parse(raw)
-    if (!parsed?.id || !Array.isArray(parsed.players) || parsed.players.length !== 4) {
-      return null
-    }
-    if (!Array.isArray(parsed.manaEvents)) parsed.manaEvents = []
-    return parsed
-  } catch {
-    return null
-  }
-}
-
-export function saveTempGame(tempGame) {
-  if (!tempGame) {
-    sessionStorage.removeItem(TEMP_GAME_STORAGE_KEY)
-    return
-  }
-  sessionStorage.setItem(TEMP_GAME_STORAGE_KEY, JSON.stringify(tempGame))
-}
-
-export function clearTempGame() {
-  sessionStorage.removeItem(TEMP_GAME_STORAGE_KEY)
 }
 
 export function createTempGame(players) {

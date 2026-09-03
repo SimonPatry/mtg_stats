@@ -1,0 +1,27 @@
+[
+  {
+    "id": "3efb27ec-2d86-457f-8d9a-279d8c7505a5",
+    "name": "Simon",
+    "active": true
+  },
+  {
+    "id": "f4e68ba1-38c0-4334-8fa0-40eb9711ed84",
+    "name": "Alex",
+    "active": true
+  },
+  {
+    "id": "7f841418-074f-42b6-9efe-4a000da56771",
+    "name": "Jordan",
+    "active": true
+  },
+  {
+    "id": "0b4be267-7c20-46ae-9aed-28e594a61f38",
+    "name": "Sam",
+    "active": true
+  },
+  {
+    "id": "9ed93096-9525-4b5c-8ced-ab31d2d88b16",
+    "name": "Test",
+    "active": true
+  }
+]

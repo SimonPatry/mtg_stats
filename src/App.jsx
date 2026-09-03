@@ -1,13 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import initialGames from './data/games_test.json'
+import initialGames from './data/games.json'
 import initialUsers from './data/users.json'
 import initialDecks from './data/decks.json'
+import fakeGames from './data/games_test.json'
+import fakeUsers from './data/users_test.json'
+import fakeDecks from './data/decks_test.json'
 import { fetchCommanderImage } from './scryfall'
 import { BACKUP_REASON, getBoardWipes, getLastPlayer, getLastPlayerLabel, isLastDeck, loadGames, saveGames } from './gamesApi'
 import Select from './Select'
 import { loadUsers, saveUsers } from './usersApi'
 import { loadDecks, saveDecks } from './decksApi'
+import {
+  DATA_SOURCE,
+  loadDataSource,
+  saveDataSource,
+} from './dataSource'
 import {
   resolveDeckFromCatalog,
   getDeckById,
@@ -23,11 +31,12 @@ import PlayersManager from './PlayersManager'
 import DeckStatsModal from './DeckStatsModal'
 import GameDetailsModal from './GameDetailsModal'
 import TempGameView from './TempGameView'
+import TempGamePickerModal from './TempGamePickerModal'
 import TempGameStartModal from './TempGameStartModal'
 import {
-  clearTempGame,
-  loadTempGame,
-  saveTempGame,
+  loadLiveGamesStore,
+  removeTempGameFromStore,
+  saveLiveGamesStore,
   tempGameToAddGameInitial,
 } from './tempGame'
 import { downloadGamesExcel, downloadGamesJson } from './exportGames'
@@ -991,12 +1000,20 @@ function DashboardShell({ children, filterPanels }) {
 }
 
 function App() {
-  const [games, setGames] = useState(initialGames)
-  const [users, setUsers] = useState(initialUsers)
-  const [decks, setDecks] = useState(initialDecks)
+  const [dataSource, setDataSource] = useState(() => loadDataSource())
+  const [games, setGames] = useState(
+    () => (loadDataSource() === DATA_SOURCE.FAKE ? fakeGames : initialGames),
+  )
+  const [users, setUsers] = useState(
+    () => (loadDataSource() === DATA_SOURCE.FAKE ? fakeUsers : initialUsers),
+  )
+  const [decks, setDecks] = useState(
+    () => (loadDataSource() === DATA_SOURCE.FAKE ? fakeDecks : initialDecks),
+  )
   const [showAddForm, setShowAddForm] = useState(false)
   const [addFormFromTemp, setAddFormFromTemp] = useState(null)
-  const [tempGame, setTempGame] = useState(() => loadTempGame())
+  const [liveStore, setLiveStore] = useState(() => loadLiveGamesStore())
+  const [showLivePicker, setShowLivePicker] = useState(false)
   const [showTempStart, setShowTempStart] = useState(false)
   const [cardFloat, setCardFloat] = useState(null)
   const [deckDetail, setDeckDetail] = useState(null)
@@ -1004,44 +1021,106 @@ function App() {
   const [activeView, setActiveView] = useState('dashboard')
   const [sideNavOpen, setSideNavOpen] = useState(false)
 
-  useEffect(() => {
-    loadGames(initialGames).then(setGames)
-    loadUsers(initialUsers).then(setUsers)
-    loadDecks(initialDecks).then(setDecks)
-  }, [])
+  const isFakeData = dataSource === DATA_SOURCE.FAKE
 
   useEffect(() => {
-    saveTempGame(tempGame)
-  }, [tempGame])
+    let cancelled = false
+    const fallback =
+      dataSource === DATA_SOURCE.FAKE
+        ? { games: fakeGames, users: fakeUsers, decks: fakeDecks }
+        : { games: initialGames, users: initialUsers, decks: initialDecks }
+
+    Promise.all([
+      loadGames(fallback.games, dataSource),
+      loadUsers(fallback.users, dataSource),
+      loadDecks(fallback.decks, dataSource),
+    ]).then(([nextGames, nextUsers, nextDecks]) => {
+      if (cancelled) return
+      setGames(nextGames)
+      setUsers(nextUsers)
+      setDecks(nextDecks)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [dataSource])
+
+  async function handleToggleDataSource() {
+    const next =
+      dataSource === DATA_SOURCE.FAKE ? DATA_SOURCE.REAL : DATA_SOURCE.FAKE
+    saveDataSource(next)
+    setDataSource(next)
+    setShowAddForm(false)
+    setAddFormFromTemp(null)
+    setGameDetail(null)
+    setDeckDetail(null)
+    setActiveView('dashboard')
+  }
+
+  const tempGame = liveStore.activeId ? liveStore.games[liveStore.activeId] ?? null : null
+  const liveGameCount = Object.keys(liveStore.games).length
+
+  useEffect(() => {
+    saveLiveGamesStore(liveStore)
+  }, [liveStore])
+
+  useEffect(() => {
+    if (activeView === 'tempGame' && !tempGame) {
+      setActiveView('dashboard')
+    }
+  }, [activeView, tempGame])
 
   function openAddForm() {
-    setAddFormFromTemp(tempGame ? tempGameToAddGameInitial(tempGame) : null)
+    setAddFormFromTemp(null)
     setShowAddForm(true)
   }
 
   function openLiveGame() {
-    if (tempGame) {
-      setActiveView('tempGame')
-      return
-    }
+    setShowLivePicker(true)
+  }
+
+  function handleSelectLiveGame(id) {
+    setLiveStore((prev) => ({ ...prev, activeId: id }))
+    setShowLivePicker(false)
+    setActiveView('tempGame')
+  }
+
+  function handleNewLiveGame() {
+    setShowLivePicker(false)
     setShowTempStart(true)
   }
 
+  function handleAbandonLiveGame(id) {
+    if (!window.confirm('Abandonner cette partie live ?')) return
+    setLiveStore((prev) => removeTempGameFromStore(prev, id))
+  }
+
   function handleStartTempGame(game) {
-    setTempGame(game)
+    setLiveStore((prev) => ({
+      activeId: game.id,
+      games: { ...prev.games, [game.id]: game },
+    }))
     setShowTempStart(false)
     setActiveView('tempGame')
   }
 
+  function handleTempGameChange(game) {
+    setLiveStore((prev) => ({
+      ...prev,
+      games: { ...prev.games, [game.id]: game },
+    }))
+  }
+
   function handleAbandonTempGame() {
-    if (!window.confirm('Abandonner la partie live en cours ?')) return
-    clearTempGame()
-    setTempGame(null)
+    if (!tempGame) return
+    handleAbandonLiveGame(tempGame.id)
     setActiveView('dashboard')
   }
 
   function handleFinalizeTempGame() {
-    openAddForm()
+    if (!tempGame) return
+    setAddFormFromTemp(tempGameToAddGameInitial(tempGame))
+    setShowAddForm(true)
   }
 
   const allStats = computeStats(games, users, decks)
@@ -1188,9 +1267,11 @@ function App() {
     setUsers(updatedUsers)
     setDecks(updatedDecks)
     setShowAddForm(false)
+    const finalizedId = addFormFromTemp?.gameId
+    if (finalizedId) {
+      setLiveStore((prev) => removeTempGameFromStore(prev, finalizedId))
+    }
     setAddFormFromTemp(null)
-    clearTempGame()
-    setTempGame(null)
     setActiveView('dashboard')
   }
 
@@ -1229,6 +1310,15 @@ function App() {
             setShowAddForm(false)
             setAddFormFromTemp(null)
           }}
+        />
+      )}
+      {showLivePicker && (
+        <TempGamePickerModal
+          liveStore={liveStore}
+          onSelect={handleSelectLiveGame}
+          onNew={handleNewLiveGame}
+          onAbandon={handleAbandonLiveGame}
+          onClose={() => setShowLivePicker(false)}
         />
       )}
       {showTempStart && (
@@ -1318,6 +1408,13 @@ function App() {
         <div className="top-bar-actions">
           <button
             type="button"
+            className={`btn btn-ghost top-bar-export-btn${isFakeData ? ' is-fake-data' : ''}`}
+            onClick={handleToggleDataSource}
+          >
+            {isFakeData ? 'Clear' : 'Fake data'}
+          </button>
+          <button
+            type="button"
             className="btn btn-ghost top-bar-export-btn"
             onClick={() => downloadGamesJson(games, users, decks)}
           >
@@ -1334,10 +1431,10 @@ function App() {
             <>
               <button
                 type="button"
-                className={`btn btn-ghost btn-live${tempGame ? ' has-temp-game' : ''}`}
+                className={`btn btn-ghost btn-live${liveGameCount > 0 ? ' has-temp-game' : ''}`}
                 onClick={openLiveGame}
               >
-                {tempGame ? '● Live' : 'Live'}
+                {liveGameCount > 0 ? `● Live (${liveGameCount})` : 'Live'}
               </button>
               <button
                 type="button"
@@ -1360,7 +1457,7 @@ function App() {
       ) : activeView === 'tempGame' && tempGame ? (
         <TempGameView
           tempGame={tempGame}
-          onChange={setTempGame}
+          onChange={handleTempGameChange}
           onFinalize={handleFinalizeTempGame}
           onAbandon={handleAbandonTempGame}
           onBack={() => setActiveView('dashboard')}

@@ -3491,6 +3491,11 @@ body {
   font-weight: 700;
 }
 
+.top-bar-export-btn.is-fake-data {
+  color: #fbbf24;
+  border-color: color-mix(in srgb, #fbbf24 35%, var(--line));
+}
+
 .temp-game-shell {
   flex: 1;
   min-height: 0;
@@ -3655,6 +3660,120 @@ body {
   display: grid;
   gap: 0.55rem;
   margin-bottom: 0.75rem;
+}
+
+.temp-game-picker-modal {
+  width: min(520px, 100%);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.temp-game-picker-subtitle {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+.temp-game-picker-empty {
+  margin: 0 0 0.75rem;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+.temp-game-picker-list {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+  overflow-y: auto;
+  max-height: min(22rem, 50vh);
+}
+
+.temp-game-picker-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.temp-game-picker-card.is-active {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface));
+}
+
+.temp-game-picker-card-main {
+  min-width: 0;
+}
+
+.temp-game-picker-players {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.temp-game-picker-meta {
+  margin: 0.2rem 0 0;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+.temp-game-picker-date {
+  margin: 0.15rem 0 0;
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.temp-game-picker-active-tag {
+  padding: 0.05rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent);
+}
+
+.temp-game-picker-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.temp-game-picker-card-actions .btn {
+  white-space: nowrap;
+}
+
+.temp-game-picker-abandon {
+  color: var(--loss);
+}
+
+.temp-game-picker-actions {
+  margin-top: auto;
+}
+
+@media (max-width: 560px) {
+  .temp-game-picker-card {
+    grid-template-columns: 1fr;
+  }
+
+  .temp-game-picker-card-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
 }
 
 .temp-game-event-modal {

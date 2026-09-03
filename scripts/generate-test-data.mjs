@@ -415,7 +415,11 @@ console.log('Decks per player:', Object.fromEntries(
 ))
 
 writeFileSync(
-  new URL('../src/data/decks.json', import.meta.url),
+  new URL('../src/data/users_test.json', import.meta.url),
+  `${JSON.stringify(users, null, 2)}\n`,
+)
+writeFileSync(
+  new URL('../src/data/decks_test.json', import.meta.url),
   `${JSON.stringify(decks, null, 2)}\n`,
 )
 writeFileSync(
@@ -423,4 +427,4 @@ writeFileSync(
   `${JSON.stringify(games, null, 2)}\n`,
 )
 
-console.log(`Wrote ${decks.length} decks and ${games.length} games.`)
+console.log(`Wrote ${users.length} users, ${decks.length} decks and ${games.length} games (test).`)

@@ -11,10 +11,33 @@ import {
 } from './src/jsonGuard.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const gamesPath = path.resolve(__dirname, 'src/data/games_test.json')
-const usersPath = path.resolve(__dirname, 'src/data/users.json')
-const decksPath = path.resolve(__dirname, 'src/data/decks.json')
+const dataDir = path.resolve(__dirname, 'src/data')
 const backupsDir = path.resolve(__dirname, 'public/backups')
+
+const DATA_FILES = {
+  games: {
+    real: path.join(dataDir, 'games.json'),
+    fake: path.join(dataDir, 'games_test.json'),
+  },
+  users: {
+    real: path.join(dataDir, 'users.json'),
+    fake: path.join(dataDir, 'users_test.json'),
+  },
+  decks: {
+    real: path.join(dataDir, 'decks.json'),
+    fake: path.join(dataDir, 'decks_test.json'),
+  },
+}
+
+function resolveDataSource(req) {
+  const url = new URL(req.url || '/', 'http://localhost')
+  return url.searchParams.get('source') === 'fake' ? 'fake' : 'real'
+}
+
+function resolveDataPath(kind, req) {
+  const source = resolveDataSource(req)
+  return DATA_FILES[kind][source]
+}
 
 function backupFilename(reason = 'save') {
   const now = new Date()
@@ -26,9 +49,11 @@ function backupFilename(reason = 'save') {
   return `games_${safeReason}_${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}.json`
 }
 
-function gamesApiPlugin(filePath) {
+function gamesApiPlugin() {
   return (req, res, next) => {
-    const subpath = (req.url || '/').split('?')[0]
+    const url = new URL(req.url || '/', 'http://localhost')
+    const subpath = url.pathname
+    const filePath = resolveDataPath('games', req)
 
     if (subpath === '/backup') {
       if (req.method === 'GET') {
@@ -113,8 +138,10 @@ function gamesApiPlugin(filePath) {
   }
 }
 
-function jsonFileApiPlugin(filePath, validateEdit) {
+function jsonFileApiPlugin(kind, validateEdit) {
   return (req, res, next) => {
+    const filePath = resolveDataPath(kind, req)
+
     if (req.method === 'GET') {
       res.setHeader('Content-Type', 'application/json')
       res.end(fs.readFileSync(filePath, 'utf-8'))
@@ -150,9 +177,15 @@ function dataApiPlugin() {
   return {
     name: 'data-api',
     configureServer(server) {
-      server.middlewares.use('/api/games', gamesApiPlugin(gamesPath))
-      server.middlewares.use('/api/users', jsonFileApiPlugin(usersPath, validateUsersEdit))
-      server.middlewares.use('/api/decks', jsonFileApiPlugin(decksPath, validateDecksEdit))
+      server.middlewares.use('/api/games', gamesApiPlugin())
+      server.middlewares.use(
+        '/api/users',
+        jsonFileApiPlugin('users', validateUsersEdit),
+      )
+      server.middlewares.use(
+        '/api/decks',
+        jsonFileApiPlugin('decks', validateDecksEdit),
+      )
     },
   }
 }

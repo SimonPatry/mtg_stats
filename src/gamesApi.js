@@ -1,8 +1,13 @@
 import { v4 as uuidv4 } from 'uuid'
+import { loadDataSource, sourceQuery } from './dataSource'
 
-export async function loadGames(fallback) {
+function gamesUrl(path = '') {
+  return `/api/games${path}${sourceQuery(loadDataSource())}`
+}
+
+export async function loadGames(fallback, source = loadDataSource()) {
   try {
-    const res = await fetch('/api/games')
+    const res = await fetch(`/api/games${sourceQuery(source)}`)
     if (!res.ok) throw new Error('load failed')
     return await res.json()
   } catch {
@@ -17,7 +22,7 @@ export const BACKUP_REASON = {
 }
 
 export async function backupGames(games, reason = BACKUP_REASON.MANUAL_EDIT) {
-  const res = await fetch('/api/games/backup', {
+  const res = await fetch(gamesUrl('/backup'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ games, reason }),
@@ -31,7 +36,7 @@ export async function backupGames(games, reason = BACKUP_REASON.MANUAL_EDIT) {
 
 export async function listGameBackups() {
   try {
-    const res = await fetch('/api/games/backup')
+    const res = await fetch(gamesUrl('/backup'))
     if (!res.ok) throw new Error('list failed')
     return await res.json()
   } catch {
@@ -69,7 +74,7 @@ export async function saveGames(newGames, previousGames, { reason } = {}) {
     backupFile = backup.filename
   }
 
-  const res = await fetch('/api/games', {
+  const res = await fetch(gamesUrl(), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(newGames),

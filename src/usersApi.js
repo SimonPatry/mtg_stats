@@ -1,8 +1,13 @@
 import initialUsers from './data/users.json'
+import { loadDataSource, sourceQuery } from './dataSource'
 
-export async function loadUsers(fallback = initialUsers) {
+function usersUrl() {
+  return `/api/users${sourceQuery(loadDataSource())}`
+}
+
+export async function loadUsers(fallback = initialUsers, source = loadDataSource()) {
   try {
-    const res = await fetch('/api/users')
+    const res = await fetch(`/api/users${sourceQuery(source)}`)
     if (!res.ok) throw new Error('load failed')
     return await res.json()
   } catch {
@@ -11,7 +16,7 @@ export async function loadUsers(fallback = initialUsers) {
 }
 
 export async function saveUsers(users) {
-  const res = await fetch('/api/users', {
+  const res = await fetch(usersUrl(), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(users),
