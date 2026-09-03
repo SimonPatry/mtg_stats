@@ -1,0 +1,402 @@
+[
+  {
+    "id": "game-001",
+    "date": "2026-08-05",
+    "turns": 9,
+    "bracket": 3,
+    "bracketVariation": null,
+    "hadWipe": true,
+    "winnerProtectedVictory": true,
+    "notes": "Board wipe T5, Atraxa protège la win.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "seatOrder": 1,
+        "result": "win"
+      },
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "seatOrder": 2,
+        "result": "loss"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "seatOrder": 3,
+        "result": "loss"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "seatOrder": 4,
+        "result": "loss"
+      }
+    ]
+  },
+  {
+    "id": "game-002",
+    "date": "2026-07-12",
+    "turns": 11,
+    "bracket": 3,
+    "bracketVariation": "low",
+    "hadWipe": false,
+    "winnerProtectedVictory": false,
+    "notes": "Partie lente, peu d'interaction.",
+    "decks": [
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "seatOrder": 1,
+        "result": "loss"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "seatOrder": 2,
+        "result": "win"
+      },
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "seatOrder": 3,
+        "result": "loss"
+      },
+      {
+        "commanders": [
+          "Kinnan, Bonder Prodigy"
+        ],
+        "seatOrder": 4,
+        "result": "loss"
+      }
+    ]
+  },
+  {
+    "id": "game-003",
+    "date": "2026-07-18",
+    "turns": 7,
+    "bracket": 4,
+    "bracketVariation": null,
+    "hadWipe": true,
+    "winnerProtectedVictory": true,
+    "notes": "Kinnan explosif, counter la dernière interaction.",
+    "decks": [
+      {
+        "commanders": [
+          "Kinnan, Bonder Prodigy"
+        ],
+        "seatOrder": 1,
+        "result": "win"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "seatOrder": 2,
+        "result": "loss"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "seatOrder": 3,
+        "result": "loss"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "seatOrder": 4,
+        "result": "loss"
+      }
+    ]
+  },
+  {
+    "id": "game-004",
+    "date": "2026-07-25",
+    "turns": 10,
+    "bracket": 3,
+    "bracketVariation": null,
+    "hadWipe": true,
+    "winnerProtectedVictory": false,
+    "notes": "Muldrotha value engine, table outgrindée.",
+    "decks": [
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "seatOrder": 2,
+        "result": "win"
+      },
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "seatOrder": 1,
+        "result": "loss"
+      },
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "seatOrder": 3,
+        "result": "loss"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "seatOrder": 4,
+        "result": "loss"
+      }
+    ]
+  },
+  {
+    "id": "game-005",
+    "date": "2026-08-01",
+    "turns": 6,
+    "bracket": 3,
+    "bracketVariation": "high",
+    "hadWipe": false,
+    "winnerProtectedVictory": true,
+    "notes": "Krenko goes wide T5, protection via Sac outlet.",
+    "decks": [
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "seatOrder": 3,
+        "result": "win"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "seatOrder": 1,
+        "result": "loss"
+      },
+      {
+        "commanders": [
+          "Kinnan, Bonder Prodigy"
+        ],
+        "seatOrder": 2,
+        "result": "loss"
+      },
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "seatOrder": 4,
+        "result": "loss"
+      }
+    ]
+  },
+  {
+    "id": "game-006",
+    "date": "2026-08-08",
+    "turns": 8,
+    "bracket": 4,
+    "bracketVariation": "low",
+    "hadWipe": true,
+    "winnerProtectedVictory": true,
+    "notes": "Najeela combat step, table wipe beforehand.",
+    "decks": [
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "seatOrder": 4,
+        "result": "win"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "seatOrder": 1,
+        "result": "loss"
+      },
+      {
+        "commanders": [
+          "Kinnan, Bonder Prodigy"
+        ],
+        "seatOrder": 2,
+        "result": "loss"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "seatOrder": 3,
+        "result": "loss"
+      }
+    ]
+  },
+  {
+    "id": "game-007",
+    "date": "2026-08-14",
+    "turns": 12,
+    "bracket": 2,
+    "bracketVariation": "high",
+    "hadWipe": true,
+    "winnerProtectedVictory": false,
+    "notes": "Bracket plus bas, grind long.",
+    "decks": [
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "seatOrder": 1,
+        "result": "win"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "seatOrder": 2,
+        "result": "loss"
+      },
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "seatOrder": 3,
+        "result": "loss"
+      },
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "seatOrder": 4,
+        "result": "loss"
+      }
+    ]
+  },
+  {
+    "id": "game-008",
+    "date": "2026-08-20",
+    "turns": 5,
+    "bracket": 4,
+    "bracketVariation": "high",
+    "hadWipe": false,
+    "winnerProtectedVictory": false,
+    "notes": "Turbo Kinnan, game très courte.",
+    "decks": [
+      {
+        "commanders": [
+          "Kinnan, Bonder Prodigy"
+        ],
+        "seatOrder": 2,
+        "result": "win"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "seatOrder": 1,
+        "result": "loss"
+      },
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "seatOrder": 3,
+        "result": "loss"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "seatOrder": 4,
+        "result": "loss"
+      }
+    ]
+  },
+  {
+    "id": "game-009",
+    "date": "2026-08-24",
+    "turns": 9,
+    "bracket": 3,
+    "bracketVariation": null,
+    "hadWipe": true,
+    "winnerProtectedVictory": true,
+    "notes": "Atraxa proliferate + protection.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "seatOrder": 4,
+        "result": "win"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "seatOrder": 1,
+        "result": "loss"
+      },
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "seatOrder": 2,
+        "result": "loss"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "seatOrder": 3,
+        "result": "loss"
+      }
+    ]
+  },
+  {
+    "id": "game-010",
+    "date": "2026-08-28",
+    "turns": 8,
+    "bracket": 3,
+    "bracketVariation": "high",
+    "hadWipe": false,
+    "winnerProtectedVictory": true,
+    "notes": "Dernière partie du mois, Korvold food chain-ish.",
+    "decks": [
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "seatOrder": 3,
+        "result": "win"
+      },
+      {
+        "commanders": [
+          "Kinnan, Bonder Prodigy"
+        ],
+        "seatOrder": 1,
+        "result": "loss"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "seatOrder": 2,
+        "result": "loss"
+      },
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "seatOrder": 4,
+        "result": "loss"
+      }
+    ]
+  }
+]

@@ -1,0 +1,2359 @@
+[
+  {
+    "id": "game-001",
+    "date": "2026-01-08",
+    "turns": 6,
+    "bracket": 2,
+    "bracketVariation": null,
+    "boardWipes": 2,
+    "winnerProtectedVictory": true,
+    "lastPlayer": "Alex",
+    "notes": "Partie serrée, politique agressive au milieu de table.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 2,
+        "bracketVariation": null,
+        "seatOrder": 1,
+        "result": "win",
+        "deckId": "d1000001-0000-4000-8000-000000000001"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "player": "Alex",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "cb454f0a-4b75-45e9-a680-76977cfc8edd"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 2,
+        "bracketVariation": "low",
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "d1000004-0000-4000-8000-000000000001"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 2,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000005-0000-4000-8000-000000000001"
+      }
+    ]
+  },
+  {
+    "id": "game-002",
+    "date": "2026-01-15",
+    "turns": 7,
+    "bracket": 3,
+    "bracketVariation": "low",
+    "boardWipes": 1,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Sam",
+    "notes": "Combo line fermée T7, peu de wipes.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 2,
+        "bracketVariation": null,
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "d1000001-0000-4000-8000-000000000001"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "player": "Alex",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 2,
+        "result": "win",
+        "deckId": "cb454f0a-4b75-45e9-a680-76977cfc8edd"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 2,
+        "bracketVariation": "low",
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "d1000004-0000-4000-8000-000000000001"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 2,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000005-0000-4000-8000-000000000001"
+      }
+    ]
+  },
+  {
+    "id": "game-003",
+    "date": "2026-01-22",
+    "turns": 8,
+    "bracket": 4,
+    "bracketVariation": "high",
+    "boardWipes": 2,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Alex",
+    "notes": "Board wipe T5 qui change tout.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 2,
+        "bracketVariation": null,
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "d1000001-0000-4000-8000-000000000001"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "player": "Alex",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "cb454f0a-4b75-45e9-a680-76977cfc8edd"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 2,
+        "bracketVariation": "low",
+        "seatOrder": 3,
+        "result": "win",
+        "deckId": "d1000004-0000-4000-8000-000000000001"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 2,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000005-0000-4000-8000-000000000001"
+      }
+    ]
+  },
+  {
+    "id": "game-004",
+    "date": "2026-01-29",
+    "turns": 9,
+    "bracket": 2,
+    "bracketVariation": null,
+    "boardWipes": 0,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Simon",
+    "notes": "Victoire combat, pas de combo ce soir.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 2,
+        "bracketVariation": null,
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "d1000001-0000-4000-8000-000000000001"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "player": "Alex",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "cb454f0a-4b75-45e9-a680-76977cfc8edd"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 2,
+        "bracketVariation": "low",
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "d1000004-0000-4000-8000-000000000001"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 2,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "win",
+        "deckId": "d1000005-0000-4000-8000-000000000001"
+      }
+    ]
+  },
+  {
+    "id": "game-005",
+    "date": "2026-02-05",
+    "turns": 10,
+    "bracket": 3,
+    "bracketVariation": null,
+    "boardWipes": 1,
+    "winnerProtectedVictory": true,
+    "lastPlayer": "Jordan",
+    "notes": "Salt léger sur le stack T6.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 2,
+        "bracketVariation": null,
+        "seatOrder": 1,
+        "result": "win",
+        "deckId": "d1000001-0000-4000-8000-000000000001"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "player": "Alex",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "cb454f0a-4b75-45e9-a680-76977cfc8edd"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 2,
+        "bracketVariation": "low",
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "d1000004-0000-4000-8000-000000000001"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 2,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000005-0000-4000-8000-000000000001"
+      }
+    ]
+  },
+  {
+    "id": "game-006",
+    "date": "2026-02-12",
+    "turns": 11,
+    "bracket": 4,
+    "bracketVariation": "low",
+    "boardWipes": 2,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Simon",
+    "notes": "Partie rapide, aggro early.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "d1000001-0000-4000-8000-000000000002"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "player": "Alex",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 2,
+        "result": "win",
+        "deckId": "d1000002-0000-4000-8000-000000000002"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": "low",
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "d1000004-0000-4000-8000-000000000002"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": "low",
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000005-0000-4000-8000-000000000002"
+      }
+    ]
+  },
+  {
+    "id": "game-007",
+    "date": "2026-02-19",
+    "turns": 12,
+    "bracket": 2,
+    "bracketVariation": "high",
+    "boardWipes": 0,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Sam",
+    "notes": "Grind long, beaucoup de removal.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "d1000001-0000-4000-8000-000000000002"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "player": "Alex",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "d1000002-0000-4000-8000-000000000002"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": "low",
+        "seatOrder": 3,
+        "result": "win",
+        "deckId": "d1000004-0000-4000-8000-000000000002"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": "low",
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000005-0000-4000-8000-000000000002"
+      }
+    ]
+  },
+  {
+    "id": "game-008",
+    "date": "2026-02-26",
+    "turns": 13,
+    "bracket": 3,
+    "bracketVariation": null,
+    "boardWipes": 1,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Alex",
+    "notes": "Counter war sur la fin de partie.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "d1000001-0000-4000-8000-000000000002"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "player": "Alex",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "d1000002-0000-4000-8000-000000000002"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": "low",
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "d1000004-0000-4000-8000-000000000002"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": "low",
+        "seatOrder": 4,
+        "result": "win",
+        "deckId": "d1000005-0000-4000-8000-000000000002"
+      }
+    ]
+  },
+  {
+    "id": "game-009",
+    "date": "2026-03-05",
+    "turns": 6,
+    "bracket": 4,
+    "bracketVariation": null,
+    "boardWipes": 2,
+    "winnerProtectedVictory": true,
+    "lastPlayer": "Sam",
+    "notes": "Tutor chain impressionnante.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 1,
+        "result": "win",
+        "deckId": "d1000001-0000-4000-8000-000000000002"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "player": "Alex",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "d1000002-0000-4000-8000-000000000002"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": "low",
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "d1000004-0000-4000-8000-000000000002"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": "low",
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000005-0000-4000-8000-000000000002"
+      }
+    ]
+  },
+  {
+    "id": "game-010",
+    "date": "2026-03-12",
+    "turns": 7,
+    "bracket": 2,
+    "bracketVariation": "low",
+    "boardWipes": 0,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Jordan",
+    "notes": "Mana screw pour le seat 3.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "d1000001-0000-4000-8000-000000000002"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "player": "Alex",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 2,
+        "result": "win",
+        "deckId": "d1000002-0000-4000-8000-000000000002"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": "low",
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "d1000004-0000-4000-8000-000000000002"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": "low",
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000005-0000-4000-8000-000000000002"
+      }
+    ]
+  },
+  {
+    "id": "game-011",
+    "date": "2026-03-19",
+    "turns": 8,
+    "bracket": 3,
+    "bracketVariation": "high",
+    "boardWipes": 2,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Simon",
+    "notes": "Partie serrée, politique agressive au milieu de table.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 3,
+        "bracketVariation": "low",
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "d1000001-0000-4000-8000-000000000003"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "player": "Alex",
+        "bracket": 4,
+        "bracketVariation": null,
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "d1000002-0000-4000-8000-000000000003"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "win",
+        "deckId": "d1000004-0000-4000-8000-000000000003"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000005-0000-4000-8000-000000000003"
+      }
+    ]
+  },
+  {
+    "id": "game-012",
+    "date": "2026-03-26",
+    "turns": 9,
+    "bracket": 4,
+    "bracketVariation": null,
+    "boardWipes": 2,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Jordan",
+    "notes": "Combo line fermée T7, peu de wipes.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 3,
+        "bracketVariation": "low",
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "d1000001-0000-4000-8000-000000000003"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "player": "Alex",
+        "bracket": 4,
+        "bracketVariation": null,
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "d1000002-0000-4000-8000-000000000003"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "d1000004-0000-4000-8000-000000000003"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "win",
+        "deckId": "d1000005-0000-4000-8000-000000000003"
+      }
+    ]
+  },
+  {
+    "id": "game-013",
+    "date": "2026-04-02",
+    "turns": 10,
+    "bracket": 2,
+    "bracketVariation": null,
+    "boardWipes": 0,
+    "winnerProtectedVictory": true,
+    "lastPlayer": "Alex",
+    "notes": "Board wipe T5 qui change tout.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 3,
+        "bracketVariation": "low",
+        "seatOrder": 1,
+        "result": "win",
+        "deckId": "d1000001-0000-4000-8000-000000000003"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "player": "Alex",
+        "bracket": 4,
+        "bracketVariation": null,
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "d1000002-0000-4000-8000-000000000003"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "d1000004-0000-4000-8000-000000000003"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000005-0000-4000-8000-000000000003"
+      }
+    ]
+  },
+  {
+    "id": "game-014",
+    "date": "2026-04-09",
+    "turns": 11,
+    "bracket": 3,
+    "bracketVariation": "low",
+    "boardWipes": 1,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Sam",
+    "notes": "Victoire combat, pas de combo ce soir.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 3,
+        "bracketVariation": "low",
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "d1000001-0000-4000-8000-000000000003"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "player": "Alex",
+        "bracket": 4,
+        "bracketVariation": null,
+        "seatOrder": 2,
+        "result": "win",
+        "deckId": "d1000002-0000-4000-8000-000000000003"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "d1000004-0000-4000-8000-000000000003"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000005-0000-4000-8000-000000000003"
+      }
+    ]
+  },
+  {
+    "id": "game-015",
+    "date": "2026-04-16",
+    "turns": 12,
+    "bracket": 4,
+    "bracketVariation": "high",
+    "boardWipes": 2,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Alex",
+    "notes": "Salt léger sur le stack T6.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 3,
+        "bracketVariation": "low",
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "d1000001-0000-4000-8000-000000000003"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "player": "Alex",
+        "bracket": 4,
+        "bracketVariation": null,
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "d1000002-0000-4000-8000-000000000003"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "win",
+        "deckId": "d1000004-0000-4000-8000-000000000003"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000005-0000-4000-8000-000000000003"
+      }
+    ]
+  },
+  {
+    "id": "game-016",
+    "date": "2026-04-23",
+    "turns": 13,
+    "bracket": 2,
+    "bracketVariation": null,
+    "boardWipes": 2,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Simon",
+    "notes": "Partie rapide, aggro early.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "1713151f-ff98-4931-bd74-50f54d324378"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "player": "Alex",
+        "bracket": 4,
+        "bracketVariation": "high",
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "85856abe-fad1-4dbe-abc1-baa4e8df7f24"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "e141beb8-676d-4d75-90f2-dfcef6264512"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "win",
+        "deckId": "194fdee1-912b-418c-a9fb-6b0c13b645b2"
+      }
+    ]
+  },
+  {
+    "id": "game-017",
+    "date": "2026-04-30",
+    "turns": 6,
+    "bracket": 3,
+    "bracketVariation": null,
+    "boardWipes": 1,
+    "winnerProtectedVictory": true,
+    "lastPlayer": "Jordan",
+    "notes": "Grind long, beaucoup de removal.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 1,
+        "result": "win",
+        "deckId": "1713151f-ff98-4931-bd74-50f54d324378"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "player": "Alex",
+        "bracket": 4,
+        "bracketVariation": "high",
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "85856abe-fad1-4dbe-abc1-baa4e8df7f24"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "e141beb8-676d-4d75-90f2-dfcef6264512"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "194fdee1-912b-418c-a9fb-6b0c13b645b2"
+      }
+    ]
+  },
+  {
+    "id": "game-018",
+    "date": "2026-05-07",
+    "turns": 7,
+    "bracket": 4,
+    "bracketVariation": "low",
+    "boardWipes": 2,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Simon",
+    "notes": "Counter war sur la fin de partie.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "1713151f-ff98-4931-bd74-50f54d324378"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "player": "Alex",
+        "bracket": 4,
+        "bracketVariation": "high",
+        "seatOrder": 2,
+        "result": "win",
+        "deckId": "85856abe-fad1-4dbe-abc1-baa4e8df7f24"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "e141beb8-676d-4d75-90f2-dfcef6264512"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "194fdee1-912b-418c-a9fb-6b0c13b645b2"
+      }
+    ]
+  },
+  {
+    "id": "game-019",
+    "date": "2026-05-14",
+    "turns": 8,
+    "bracket": 2,
+    "bracketVariation": "high",
+    "boardWipes": 0,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Sam",
+    "notes": "Tutor chain impressionnante.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "1713151f-ff98-4931-bd74-50f54d324378"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "player": "Alex",
+        "bracket": 4,
+        "bracketVariation": "high",
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "85856abe-fad1-4dbe-abc1-baa4e8df7f24"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "win",
+        "deckId": "e141beb8-676d-4d75-90f2-dfcef6264512"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "194fdee1-912b-418c-a9fb-6b0c13b645b2"
+      }
+    ]
+  },
+  {
+    "id": "game-020",
+    "date": "2026-05-21",
+    "turns": 9,
+    "bracket": 3,
+    "bracketVariation": null,
+    "boardWipes": 1,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Alex",
+    "notes": "Mana screw pour le seat 3.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "1713151f-ff98-4931-bd74-50f54d324378"
+      },
+      {
+        "commanders": [
+          "Najeela, the Blade-Blossom"
+        ],
+        "player": "Alex",
+        "bracket": 4,
+        "bracketVariation": "high",
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "85856abe-fad1-4dbe-abc1-baa4e8df7f24"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "e141beb8-676d-4d75-90f2-dfcef6264512"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "win",
+        "deckId": "194fdee1-912b-418c-a9fb-6b0c13b645b2"
+      }
+    ]
+  },
+  {
+    "id": "game-021",
+    "date": "2026-05-28",
+    "turns": 10,
+    "bracket": 4,
+    "bracketVariation": null,
+    "boardWipes": 2,
+    "winnerProtectedVictory": true,
+    "lastPlayer": "Sam",
+    "notes": "Partie serrée, politique agressive au milieu de table.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 1,
+        "result": "win",
+        "deckId": "1713151f-ff98-4931-bd74-50f54d324378"
+      },
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "player": "Alex",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "a60497bf-9793-4627-a17f-411f8fe95125"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "e141beb8-676d-4d75-90f2-dfcef6264512"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "194fdee1-912b-418c-a9fb-6b0c13b645b2"
+      }
+    ]
+  },
+  {
+    "id": "game-022",
+    "date": "2026-06-04",
+    "turns": 11,
+    "bracket": 2,
+    "bracketVariation": "low",
+    "boardWipes": 0,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Jordan",
+    "notes": "Combo line fermée T7, peu de wipes.",
+    "decks": [
+      {
+        "commanders": [
+          "Kinnan, Bonder Prodigy"
+        ],
+        "player": "Simon",
+        "bracket": 4,
+        "bracketVariation": "high",
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "8f2e3f9c-9b06-4320-a774-20364c491391"
+      },
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "player": "Alex",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 2,
+        "result": "win",
+        "deckId": "a60497bf-9793-4627-a17f-411f8fe95125"
+      },
+      {
+        "commanders": [
+          "Aesi, Tyrant of Tyre's Strait"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "d1000004-0000-4000-8000-000000000010"
+      },
+      {
+        "commanders": [
+          "Edgar Markov"
+        ],
+        "player": "Sam",
+        "bracket": 4,
+        "bracketVariation": "high",
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000005-0000-4000-8000-000000000010"
+      }
+    ]
+  },
+  {
+    "id": "game-023",
+    "date": "2026-06-11",
+    "turns": 12,
+    "bracket": 3,
+    "bracketVariation": "high",
+    "boardWipes": 1,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Simon",
+    "notes": "Board wipe T5 qui change tout.",
+    "decks": [
+      {
+        "commanders": [
+          "Chulane, Teller of Tales"
+        ],
+        "player": "Simon",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "d1000001-0000-4000-8000-000000000010"
+      },
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "player": "Alex",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "a60497bf-9793-4627-a17f-411f8fe95125"
+      },
+      {
+        "commanders": [
+          "Wilhelt, the Rotcleaver"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "win",
+        "deckId": "d1000004-0000-4000-8000-000000000011"
+      },
+      {
+        "commanders": [
+          "The Gitrog Monster"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000005-0000-4000-8000-000000000011"
+      }
+    ]
+  },
+  {
+    "id": "game-024",
+    "date": "2026-06-18",
+    "turns": 13,
+    "bracket": 4,
+    "bracketVariation": null,
+    "boardWipes": 2,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Jordan",
+    "notes": "Victoire combat, pas de combo ce soir.",
+    "decks": [
+      {
+        "commanders": [
+          "Tatyova, Benthic Druid"
+        ],
+        "player": "Simon",
+        "bracket": 2,
+        "bracketVariation": "high",
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "d1000001-0000-4000-8000-000000000011"
+      },
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "player": "Alex",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "a60497bf-9793-4627-a17f-411f8fe95125"
+      },
+      {
+        "commanders": [
+          "Teysa, Orzhov Scion"
+        ],
+        "player": "Jordan",
+        "bracket": 4,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "d1000004-0000-4000-8000-000000000012"
+      },
+      {
+        "commanders": [
+          "Prosper, Tome-Bound"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "win",
+        "deckId": "d1000005-0000-4000-8000-000000000012"
+      }
+    ]
+  },
+  {
+    "id": "game-025",
+    "date": "2026-06-25",
+    "turns": 6,
+    "bracket": 2,
+    "bracketVariation": null,
+    "boardWipes": 0,
+    "winnerProtectedVictory": true,
+    "lastPlayer": "Alex",
+    "notes": "Salt léger sur le stack T6.",
+    "decks": [
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "player": "Simon",
+        "bracket": 2,
+        "bracketVariation": "low",
+        "seatOrder": 1,
+        "result": "win",
+        "deckId": "5db15ea8-c9fb-453a-ba8e-2a8a20802430"
+      },
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "player": "Alex",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "d1000003-0000-4000-8000-000000000002"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "e141beb8-676d-4d75-90f2-dfcef6264512"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "194fdee1-912b-418c-a9fb-6b0c13b645b2"
+      }
+    ]
+  },
+  {
+    "id": "game-026",
+    "date": "2026-07-02",
+    "turns": 7,
+    "bracket": 3,
+    "bracketVariation": "low",
+    "boardWipes": 2,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Sam",
+    "notes": "Partie rapide, aggro early.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "1713151f-ff98-4931-bd74-50f54d324378"
+      },
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "player": "Alex",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 2,
+        "result": "win",
+        "deckId": "d1000003-0000-4000-8000-000000000002"
+      },
+      {
+        "commanders": [
+          "Aesi, Tyrant of Tyre's Strait"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "d1000004-0000-4000-8000-000000000010"
+      },
+      {
+        "commanders": [
+          "Edgar Markov"
+        ],
+        "player": "Sam",
+        "bracket": 4,
+        "bracketVariation": "high",
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000005-0000-4000-8000-000000000010"
+      }
+    ]
+  },
+  {
+    "id": "game-027",
+    "date": "2026-07-09",
+    "turns": 8,
+    "bracket": 4,
+    "bracketVariation": "high",
+    "boardWipes": 2,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Alex",
+    "notes": "Grind long, beaucoup de removal.",
+    "decks": [
+      {
+        "commanders": [
+          "Kinnan, Bonder Prodigy"
+        ],
+        "player": "Simon",
+        "bracket": 4,
+        "bracketVariation": "high",
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "8f2e3f9c-9b06-4320-a774-20364c491391"
+      },
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "player": "Alex",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "d1000003-0000-4000-8000-000000000002"
+      },
+      {
+        "commanders": [
+          "Wilhelt, the Rotcleaver"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "win",
+        "deckId": "d1000004-0000-4000-8000-000000000011"
+      },
+      {
+        "commanders": [
+          "The Gitrog Monster"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000005-0000-4000-8000-000000000011"
+      }
+    ]
+  },
+  {
+    "id": "game-028",
+    "date": "2026-07-16",
+    "turns": 9,
+    "bracket": 2,
+    "bracketVariation": null,
+    "boardWipes": 0,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Simon",
+    "notes": "Counter war sur la fin de partie.",
+    "decks": [
+      {
+        "commanders": [
+          "Chulane, Teller of Tales"
+        ],
+        "player": "Simon",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "d1000001-0000-4000-8000-000000000010"
+      },
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "player": "Alex",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "d1000003-0000-4000-8000-000000000002"
+      },
+      {
+        "commanders": [
+          "Teysa, Orzhov Scion"
+        ],
+        "player": "Jordan",
+        "bracket": 4,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "d1000004-0000-4000-8000-000000000012"
+      },
+      {
+        "commanders": [
+          "Prosper, Tome-Bound"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "win",
+        "deckId": "d1000005-0000-4000-8000-000000000012"
+      }
+    ]
+  },
+  {
+    "id": "game-029",
+    "date": "2026-07-23",
+    "turns": 10,
+    "bracket": 3,
+    "bracketVariation": null,
+    "boardWipes": 1,
+    "winnerProtectedVictory": true,
+    "lastPlayer": "Jordan",
+    "notes": "Tutor chain impressionnante.",
+    "decks": [
+      {
+        "commanders": [
+          "Tatyova, Benthic Druid"
+        ],
+        "player": "Simon",
+        "bracket": 2,
+        "bracketVariation": "high",
+        "seatOrder": 1,
+        "result": "win",
+        "deckId": "d1000001-0000-4000-8000-000000000011"
+      },
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "player": "Alex",
+        "bracket": 4,
+        "bracketVariation": null,
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "d1000003-0000-4000-8000-000000000003"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "e141beb8-676d-4d75-90f2-dfcef6264512"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "194fdee1-912b-418c-a9fb-6b0c13b645b2"
+      }
+    ]
+  },
+  {
+    "id": "game-030",
+    "date": "2026-07-30",
+    "turns": 11,
+    "bracket": 4,
+    "bracketVariation": "low",
+    "boardWipes": 2,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Simon",
+    "notes": "Mana screw pour le seat 3.",
+    "decks": [
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "player": "Simon",
+        "bracket": 2,
+        "bracketVariation": "low",
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "5db15ea8-c9fb-453a-ba8e-2a8a20802430"
+      },
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "player": "Alex",
+        "bracket": 4,
+        "bracketVariation": null,
+        "seatOrder": 2,
+        "result": "win",
+        "deckId": "d1000003-0000-4000-8000-000000000003"
+      },
+      {
+        "commanders": [
+          "Aesi, Tyrant of Tyre's Strait"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "d1000004-0000-4000-8000-000000000010"
+      },
+      {
+        "commanders": [
+          "Edgar Markov"
+        ],
+        "player": "Sam",
+        "bracket": 4,
+        "bracketVariation": "high",
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000005-0000-4000-8000-000000000010"
+      }
+    ]
+  },
+  {
+    "id": "game-031",
+    "date": "2026-08-06",
+    "turns": 12,
+    "bracket": 2,
+    "bracketVariation": "high",
+    "boardWipes": 2,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Sam",
+    "notes": "Partie serrée, politique agressive au milieu de table.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "1713151f-ff98-4931-bd74-50f54d324378"
+      },
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "player": "Alex",
+        "bracket": 4,
+        "bracketVariation": null,
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "d1000003-0000-4000-8000-000000000003"
+      },
+      {
+        "commanders": [
+          "Wilhelt, the Rotcleaver"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "win",
+        "deckId": "d1000004-0000-4000-8000-000000000011"
+      },
+      {
+        "commanders": [
+          "The Gitrog Monster"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000005-0000-4000-8000-000000000011"
+      }
+    ]
+  },
+  {
+    "id": "game-032",
+    "date": "2026-08-13",
+    "turns": 13,
+    "bracket": 3,
+    "bracketVariation": null,
+    "boardWipes": 1,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Alex",
+    "notes": "Combo line fermée T7, peu de wipes.",
+    "decks": [
+      {
+        "commanders": [
+          "Kinnan, Bonder Prodigy"
+        ],
+        "player": "Simon",
+        "bracket": 4,
+        "bracketVariation": "high",
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "8f2e3f9c-9b06-4320-a774-20364c491391"
+      },
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "player": "Alex",
+        "bracket": 4,
+        "bracketVariation": null,
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "d1000003-0000-4000-8000-000000000003"
+      },
+      {
+        "commanders": [
+          "Teysa, Orzhov Scion"
+        ],
+        "player": "Jordan",
+        "bracket": 4,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "d1000004-0000-4000-8000-000000000012"
+      },
+      {
+        "commanders": [
+          "Prosper, Tome-Bound"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "win",
+        "deckId": "d1000005-0000-4000-8000-000000000012"
+      }
+    ]
+  },
+  {
+    "id": "game-033",
+    "date": "2026-08-20",
+    "turns": 6,
+    "bracket": 4,
+    "bracketVariation": null,
+    "boardWipes": 2,
+    "winnerProtectedVictory": true,
+    "lastPlayer": "Sam",
+    "notes": "Board wipe T5 qui change tout.",
+    "decks": [
+      {
+        "commanders": [
+          "Chulane, Teller of Tales"
+        ],
+        "player": "Simon",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 1,
+        "result": "win",
+        "deckId": "d1000001-0000-4000-8000-000000000010"
+      },
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "player": "Alex",
+        "bracket": 4,
+        "bracketVariation": "high",
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "877c74bb-96a4-444d-a09a-9f8ed5bf2dc4"
+      },
+      {
+        "commanders": [
+          "Muldrotha, the Gravetide"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "e141beb8-676d-4d75-90f2-dfcef6264512"
+      },
+      {
+        "commanders": [
+          "Korvold, Fae-Cursed King"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "194fdee1-912b-418c-a9fb-6b0c13b645b2"
+      }
+    ]
+  },
+  {
+    "id": "game-034",
+    "date": "2026-08-27",
+    "turns": 7,
+    "bracket": 2,
+    "bracketVariation": "low",
+    "boardWipes": 0,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Jordan",
+    "notes": "Victoire combat, pas de combo ce soir.",
+    "decks": [
+      {
+        "commanders": [
+          "Tatyova, Benthic Druid"
+        ],
+        "player": "Simon",
+        "bracket": 2,
+        "bracketVariation": "high",
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "d1000001-0000-4000-8000-000000000011"
+      },
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "player": "Alex",
+        "bracket": 4,
+        "bracketVariation": "high",
+        "seatOrder": 2,
+        "result": "win",
+        "deckId": "877c74bb-96a4-444d-a09a-9f8ed5bf2dc4"
+      },
+      {
+        "commanders": [
+          "Aesi, Tyrant of Tyre's Strait"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "d1000004-0000-4000-8000-000000000010"
+      },
+      {
+        "commanders": [
+          "Edgar Markov"
+        ],
+        "player": "Sam",
+        "bracket": 4,
+        "bracketVariation": "high",
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000005-0000-4000-8000-000000000010"
+      }
+    ]
+  },
+  {
+    "id": "game-035",
+    "date": "2026-08-30",
+    "turns": 8,
+    "bracket": 3,
+    "bracketVariation": "high",
+    "boardWipes": 1,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Simon",
+    "notes": "Salt léger sur le stack T6.",
+    "decks": [
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "player": "Simon",
+        "bracket": 2,
+        "bracketVariation": "low",
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "5db15ea8-c9fb-453a-ba8e-2a8a20802430"
+      },
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "player": "Alex",
+        "bracket": 4,
+        "bracketVariation": "high",
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "877c74bb-96a4-444d-a09a-9f8ed5bf2dc4"
+      },
+      {
+        "commanders": [
+          "Wilhelt, the Rotcleaver"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "win",
+        "deckId": "d1000004-0000-4000-8000-000000000011"
+      },
+      {
+        "commanders": [
+          "The Gitrog Monster"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000005-0000-4000-8000-000000000011"
+      }
+    ]
+  },
+  {
+    "id": "game-036",
+    "date": "2026-08-31",
+    "turns": 9,
+    "bracket": 4,
+    "bracketVariation": null,
+    "boardWipes": 2,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Jordan",
+    "notes": "Partie rapide, aggro early.",
+    "decks": [
+      {
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "player": "Simon",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "1713151f-ff98-4931-bd74-50f54d324378"
+      },
+      {
+        "commanders": [
+          "Krenko, Mob Boss"
+        ],
+        "player": "Alex",
+        "bracket": 4,
+        "bracketVariation": "high",
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "877c74bb-96a4-444d-a09a-9f8ed5bf2dc4"
+      },
+      {
+        "commanders": [
+          "Teysa, Orzhov Scion"
+        ],
+        "player": "Jordan",
+        "bracket": 4,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "d1000004-0000-4000-8000-000000000012"
+      },
+      {
+        "commanders": [
+          "Prosper, Tome-Bound"
+        ],
+        "player": "Sam",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "win",
+        "deckId": "d1000005-0000-4000-8000-000000000012"
+      }
+    ]
+  },
+  {
+    "id": "game-037",
+    "date": "2026-08-31",
+    "turns": 10,
+    "bracket": 2,
+    "bracketVariation": null,
+    "boardWipes": 0,
+    "winnerProtectedVictory": true,
+    "lastPlayer": "Test",
+    "notes": "Grind long, beaucoup de removal.",
+    "decks": [
+      {
+        "commanders": [
+          "Jodah, the Unifier"
+        ],
+        "player": "Test",
+        "bracket": 4,
+        "bracketVariation": null,
+        "seatOrder": 1,
+        "result": "win",
+        "deckId": "d1000006-0000-4000-8000-000000000001"
+      },
+      {
+        "commanders": [
+          "Esika, God of the Tree"
+        ],
+        "player": "Test",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "d1000006-0000-4000-8000-000000000002"
+      },
+      {
+        "commanders": [
+          "Sythis, Harvest's Hand"
+        ],
+        "player": "Test",
+        "bracket": 2,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "d1000006-0000-4000-8000-000000000003"
+      },
+      {
+        "commanders": [
+          "Tivit, Seller of Secrets"
+        ],
+        "player": "Test",
+        "bracket": 4,
+        "bracketVariation": "low",
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000006-0000-4000-8000-000000000004"
+      }
+    ]
+  },
+  {
+    "id": "game-038",
+    "date": "2026-08-31",
+    "turns": 11,
+    "bracket": 3,
+    "bracketVariation": "low",
+    "boardWipes": 1,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Test",
+    "notes": "Counter war sur la fin de partie.",
+    "decks": [
+      {
+        "commanders": [
+          "Jodah, the Unifier"
+        ],
+        "player": "Test",
+        "bracket": 4,
+        "bracketVariation": null,
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "d1000006-0000-4000-8000-000000000001"
+      },
+      {
+        "commanders": [
+          "Esika, God of the Tree"
+        ],
+        "player": "Test",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 2,
+        "result": "win",
+        "deckId": "d1000006-0000-4000-8000-000000000002"
+      },
+      {
+        "commanders": [
+          "Sythis, Harvest's Hand"
+        ],
+        "player": "Test",
+        "bracket": 2,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "d1000006-0000-4000-8000-000000000003"
+      },
+      {
+        "commanders": [
+          "Tivit, Seller of Secrets"
+        ],
+        "player": "Test",
+        "bracket": 4,
+        "bracketVariation": "low",
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000006-0000-4000-8000-000000000004"
+      }
+    ]
+  },
+  {
+    "id": "game-039",
+    "date": "2026-08-31",
+    "turns": 12,
+    "bracket": 4,
+    "bracketVariation": "high",
+    "boardWipes": 2,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Test",
+    "notes": "Tutor chain impressionnante.",
+    "decks": [
+      {
+        "commanders": [
+          "Jodah, the Unifier"
+        ],
+        "player": "Test",
+        "bracket": 4,
+        "bracketVariation": null,
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "d1000006-0000-4000-8000-000000000001"
+      },
+      {
+        "commanders": [
+          "Esika, God of the Tree"
+        ],
+        "player": "Test",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "d1000006-0000-4000-8000-000000000002"
+      },
+      {
+        "commanders": [
+          "Sythis, Harvest's Hand"
+        ],
+        "player": "Test",
+        "bracket": 2,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "win",
+        "deckId": "d1000006-0000-4000-8000-000000000003"
+      },
+      {
+        "commanders": [
+          "Tivit, Seller of Secrets"
+        ],
+        "player": "Test",
+        "bracket": 4,
+        "bracketVariation": "low",
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000006-0000-4000-8000-000000000004"
+      }
+    ]
+  },
+  {
+    "id": "game-040",
+    "date": "2026-08-31",
+    "turns": 13,
+    "bracket": 2,
+    "bracketVariation": null,
+    "boardWipes": 0,
+    "winnerProtectedVictory": false,
+    "lastPlayer": "Test",
+    "notes": "Mana screw pour le seat 3.",
+    "decks": [
+      {
+        "commanders": [
+          "Jodah, the Unifier"
+        ],
+        "player": "Test",
+        "bracket": 4,
+        "bracketVariation": null,
+        "seatOrder": 1,
+        "result": "loss",
+        "deckId": "d1000006-0000-4000-8000-000000000001"
+      },
+      {
+        "commanders": [
+          "Esika, God of the Tree"
+        ],
+        "player": "Test",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "d1000006-0000-4000-8000-000000000002"
+      },
+      {
+        "commanders": [
+          "Sythis, Harvest's Hand"
+        ],
+        "player": "Test",
+        "bracket": 2,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "d1000006-0000-4000-8000-000000000003"
+      },
+      {
+        "commanders": [
+          "Tivit, Seller of Secrets"
+        ],
+        "player": "Test",
+        "bracket": 4,
+        "bracketVariation": "low",
+        "seatOrder": 4,
+        "result": "win",
+        "deckId": "d1000006-0000-4000-8000-000000000004"
+      }
+    ]
+  },
+  {
+    "id": "d1b7b3de-cd8e-4c18-8018-e59e29e3989f",
+    "date": "2026-08-31",
+    "turns": 8,
+    "bracket": 3,
+    "bracketVariation": "low",
+    "boardWipes": 1,
+    "winnerProtectedVictory": true,
+    "lastPlayer": "Simon",
+    "winStyle": "combat",
+    "wipeEvents": [
+      {
+        "id": "e961d2a1-dbd9-4fdb-bc10-93fe6144ee3b",
+        "player": "Jordan",
+        "turn": 5
+      }
+    ],
+    "deathEvents": [
+      {
+        "id": "5ec2750a-3254-464f-ae33-2312e43561ed",
+        "turn": 6,
+        "victims": [
+          "Alex",
+          "Jordan"
+        ],
+        "killer": "Sam",
+        "killStyle": "combat"
+      }
+    ],
+    "notes": "Wipe tour 5 — Jordan\nMort tour 6: Alex, Jordan — tueur: Sam — Dégâts de combat",
+    "decks": [
+      {
+        "commanders": [
+          "Edgar Markov"
+        ],
+        "player": "Sam",
+        "bracket": 4,
+        "bracketVariation": "high",
+        "seatOrder": 1,
+        "result": "win",
+        "deckId": "d1000005-0000-4000-8000-000000000010"
+      },
+      {
+        "commanders": [
+          "Aesi, Tyrant of Tyre's Strait"
+        ],
+        "player": "Jordan",
+        "bracket": 3,
+        "bracketVariation": "high",
+        "seatOrder": 2,
+        "result": "loss",
+        "deckId": "d1000004-0000-4000-8000-000000000010"
+      },
+      {
+        "commanders": [
+          "Kenrith, the Returned King"
+        ],
+        "player": "Alex",
+        "bracket": 2,
+        "bracketVariation": null,
+        "seatOrder": 3,
+        "result": "loss",
+        "deckId": "d1000002-0000-4000-8000-000000000011"
+      },
+      {
+        "commanders": [
+          "Chulane, Teller of Tales"
+        ],
+        "player": "Simon",
+        "bracket": 3,
+        "bracketVariation": null,
+        "seatOrder": 4,
+        "result": "loss",
+        "deckId": "d1000001-0000-4000-8000-000000000010"
+      }
+    ]
+  }
+]
