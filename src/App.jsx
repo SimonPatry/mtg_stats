@@ -1427,24 +1427,20 @@ function App() {
           >
             ↓ Excel
           </button>
-          {activeView === 'dashboard' && (
-            <>
-              <button
-                type="button"
-                className={`btn btn-ghost btn-live${liveGameCount > 0 ? ' has-temp-game' : ''}`}
-                onClick={openLiveGame}
-              >
-                {liveGameCount > 0 ? `● Live (${liveGameCount})` : 'Live'}
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary btn-add"
-                onClick={openAddForm}
-              >
-                + Partie
-              </button>
-            </>
-          )}
+          <button
+            type="button"
+            className={`btn btn-ghost btn-live${liveGameCount > 0 ? ' has-temp-game' : ''}`}
+            onClick={openLiveGame}
+          >
+            {liveGameCount > 0 ? `● Live (${liveGameCount})` : 'Live'}
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary btn-add"
+            onClick={openAddForm}
+          >
+            + Partie
+          </button>
         </div>
       </header>
 

@@ -6,6 +6,10 @@
   RewriteEngine On
   RewriteBase /
 
+  # Laisser passer les requêtes API vers Node.js (ne pas réécrire)
+  RewriteRule ^api/ - [L]
+  RewriteRule ^backups/ - [L]
+
   # Ne pas réécrire les fichiers/dossiers existants
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
