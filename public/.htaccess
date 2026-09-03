@@ -1,0 +1,16 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Ne pas réécrire les fichiers/dossiers existants
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+
+  # SPA fallback : tout le reste → index.html
+  RewriteRule ^ index.html [QSA,L]
+</IfModule>
+
+# MIME types pour modules JS
+<IfModule mod_mime.c>
+  AddType application/javascript .js .mjs
+</IfModule>
