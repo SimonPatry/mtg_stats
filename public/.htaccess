@@ -6,8 +6,9 @@
   RewriteEngine On
   RewriteBase /
 
-  # Laisser passer les requêtes API vers Node.js (ne pas réécrire)
-  RewriteRule ^api/ - [L]
+  # API PHP (Plesk / Apache) — Node Passenger n'intercepte pas /api
+  RewriteRule ^api(/.*)?$ api/router.php [QSA,L]
+
   RewriteRule ^backups/ - [L]
 
   # Ne pas réécrire les fichiers/dossiers existants
