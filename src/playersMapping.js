@@ -269,11 +269,13 @@ export function alterDeck(decks, deckId, updates) {
 export function editDeckPowerLevel(
   decks,
   deckId,
-  { bracket, bracketVariation, reason },
+  { bracket, bracketVariation, reason, deckUrl },
 ) {
   const deck = getDeckById(decks, deckId)
   if (!deck || deck.active === false) throw new Error('Deck introuvable.')
 
+  const nextUrl =
+    deckUrl !== undefined ? String(deckUrl).trim() : (deck.deckUrl ?? '')
   const newBracket = Number(bracket)
   if (Number.isNaN(newBracket) || newBracket < 1 || newBracket > 4) {
     throw new Error('Bracket invalide.')
@@ -282,9 +284,17 @@ export function editDeckPowerLevel(
   const newVariation = bracketVariation ?? null
   const oldBracket = deck.bracket
   const oldVariation = deck.bracketVariation ?? null
+  const bracketChanged =
+    newBracket !== oldBracket || newVariation !== oldVariation
+  const urlChanged = nextUrl !== (deck.deckUrl ?? '')
 
-  if (newBracket === oldBracket && newVariation === oldVariation) {
-    throw new Error('Le bracket n\'a pas changé.')
+  if (!bracketChanged) {
+    if (!urlChanged) {
+      throw new Error('Aucune modification à enregistrer.')
+    }
+    return decks.map((d) =>
+      d.id === deckId ? { ...d, deckUrl: nextUrl } : d,
+    )
   }
 
   if (reason === 'newVersion') {
@@ -293,7 +303,7 @@ export function editDeckPowerLevel(
       commanders: asCommanderList(deck.com),
       bracket: newBracket,
       bracketVariation: newVariation,
-      deckUrl: deck.deckUrl,
+      deckUrl: nextUrl || deck.deckUrl,
       comPrint: deck.comPrint,
     })
     newDeck.previousDeckId = deck.id
@@ -320,6 +330,7 @@ export function editDeckPowerLevel(
         ...d,
         bracket: newBracket,
         bracketVariation: newVariation,
+        deckUrl: nextUrl,
         history: [...(d.history || []), historyEntry],
         id: d.id,
         userId: d.userId,
@@ -327,7 +338,7 @@ export function editDeckPowerLevel(
     })
   }
 
-  throw new Error('Choisis le type de modification.')
+  throw new Error('Choisis le type de modification (nouvelle version ou réajustement).')
 }
 
 export function deactivateDeck(decks, deckId) {

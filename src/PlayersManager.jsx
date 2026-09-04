@@ -338,9 +338,11 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
     setEditingDeckId(null)
     setError('')
     setSuccess(
-      payload.reason === 'newVersion'
-        ? 'Nouvelle version du deck créée.'
-        : 'Niveau du deck mis à jour (historique enregistré).',
+      !payload.reason
+        ? 'URL du deck mise à jour.'
+        : payload.reason === 'newVersion'
+          ? 'Nouvelle version du deck créée.'
+          : 'Niveau du deck mis à jour (historique enregistré).',
     )
   }
 

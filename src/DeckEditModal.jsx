@@ -33,6 +33,7 @@ export default function DeckEditModal({ deck, decks, onSave, onClose, saving }) 
   const [bracketKey, setBracketKey] = useState(() =>
     packBracket(deck.bracket, deck.bracketVariation),
   )
+  const [deckUrl, setDeckUrl] = useState(() => deck.deckUrl ?? '')
   const [reason, setReason] = useState('')
   const [error, setError] = useState('')
 
@@ -44,6 +45,9 @@ export default function DeckEditModal({ deck, decks, onSave, onClose, saving }) 
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
+  const initialBracketKey = packBracket(deck.bracket, deck.bracketVariation)
+  const bracketChanged = bracketKey !== initialBracketKey
+
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
@@ -53,7 +57,7 @@ export default function DeckEditModal({ deck, decks, onSave, onClose, saving }) 
       setError('Choisis un bracket.')
       return
     }
-    if (!reason) {
+    if (bracketChanged && !reason) {
       setError('Indique pourquoi le niveau change.')
       return
     }
@@ -62,7 +66,8 @@ export default function DeckEditModal({ deck, decks, onSave, onClose, saving }) 
       await onSave({
         bracket,
         bracketVariation,
-        reason,
+        reason: bracketChanged ? reason : '',
+        deckUrl: deckUrl.trim(),
       })
     } catch (err) {
       setError(err.message)
@@ -95,6 +100,16 @@ export default function DeckEditModal({ deck, decks, onSave, onClose, saving }) 
             </p>
 
             <label className="form-field">
+              <span>URL du deck</span>
+              <input
+                type="url"
+                value={deckUrl}
+                onChange={(e) => setDeckUrl(e.target.value)}
+                placeholder="https://moxfield.com/decks/…"
+              />
+            </label>
+
+            <label className="form-field">
               <span>Nouveau bracket</span>
               <Select
                 value={bracketKey}
@@ -110,42 +125,44 @@ export default function DeckEditModal({ deck, decks, onSave, onClose, saving }) 
               </Select>
             </label>
 
-            <fieldset className="deck-edit-reason">
-              <legend>Pourquoi ce changement ?</legend>
-              <label className="form-check deck-edit-reason-option">
-                <input
-                  type="radio"
-                  name="edit-reason"
-                  value="newVersion"
-                  checked={reason === 'newVersion'}
-                  onChange={() => setReason('newVersion')}
-                />
-                <span>
-                  <strong>Nouvelle version du deck</strong>
-                  <small>
-                    Le deck a été modifié (cartes, stratégie…). Crée un nouveau deck
-                    lié à l&apos;ancien — les parties passées restent sur
-                    l&apos;ancienne version.
-                  </small>
-                </span>
-              </label>
-              <label className="form-check deck-edit-reason-option">
-                <input
-                  type="radio"
-                  name="edit-reason"
-                  value="levelAdjustment"
-                  checked={reason === 'levelAdjustment'}
-                  onChange={() => setReason('levelAdjustment')}
-                />
-                <span>
-                  <strong>Réajustement du niveau</strong>
-                  <small>
-                    Même deck, nouvelle estimation humaine du power level.
-                    L&apos;ancien niveau apparaît dans l&apos;historique à droite.
-                  </small>
-                </span>
-              </label>
-            </fieldset>
+            {bracketChanged && (
+              <fieldset className="deck-edit-reason">
+                <legend>Pourquoi ce changement ?</legend>
+                <label className="form-check deck-edit-reason-option">
+                  <input
+                    type="radio"
+                    name="edit-reason"
+                    value="newVersion"
+                    checked={reason === 'newVersion'}
+                    onChange={() => setReason('newVersion')}
+                  />
+                  <span>
+                    <strong>Nouvelle version du deck</strong>
+                    <small>
+                      Le deck a été modifié (cartes, stratégie…). Crée un nouveau deck
+                      lié à l&apos;ancien — les parties passées restent sur
+                      l&apos;ancienne version.
+                    </small>
+                  </span>
+                </label>
+                <label className="form-check deck-edit-reason-option">
+                  <input
+                    type="radio"
+                    name="edit-reason"
+                    value="levelAdjustment"
+                    checked={reason === 'levelAdjustment'}
+                    onChange={() => setReason('levelAdjustment')}
+                  />
+                  <span>
+                    <strong>Réajustement du niveau</strong>
+                    <small>
+                      Même deck, nouvelle estimation humaine du power level.
+                      L&apos;ancien niveau apparaît dans l&apos;historique à droite.
+                    </small>
+                  </span>
+                </label>
+              </fieldset>
+            )}
 
             {error && <p className="json-editor-error">{error}</p>}
           </div>
