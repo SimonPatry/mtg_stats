@@ -2,12 +2,6 @@
   Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
 </IfModule>
 
-# Ne pas laisser Passenger (Node) intercepter tout le site :
-# on sert le front en statique + l'API en PHP.
-<IfModule mod_passenger.c>
-  PassengerEnabled off
-</IfModule>
-
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
@@ -17,11 +11,8 @@
 
   RewriteRule ^backups/ - [L]
 
-  # Fichiers / dossiers existants : ne pas réécrire
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
-
-  # SPA fallback
   RewriteRule ^ index.html [QSA,L]
 </IfModule>
 
