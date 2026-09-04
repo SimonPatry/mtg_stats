@@ -1492,7 +1492,9 @@ function App() {
       {activeView === 'json' ? (
         <JsonEditor
           games={games}
-          onSave={handleJsonSave}
+          users={users}
+          onSaveGames={handleJsonSave}
+          onSaveUsers={setUsers}
           onCancel={() => setActiveView('dashboard')}
         />
       ) : activeView === 'tempGame' && tempGame ? (

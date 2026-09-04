@@ -2368,6 +2368,17 @@ body {
   font-size: 1.1rem;
 }
 
+.json-editor-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0 0 0.65rem;
+}
+
+.json-editor-tabs .btn-tab.is-dirty:not(.is-active) {
+  color: #fbbf24;
+}
+
 .json-editor-hint {
   margin: 0;
   color: var(--ink-soft);
