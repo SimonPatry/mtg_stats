@@ -24,6 +24,8 @@ import {
   commandersKey,
   getCurrentDeckForCommanders,
   computeStatsByDeckId,
+  getActiveDecks,
+  asCommanderList,
 } from './playersMapping'
 import AddGameForm from './AddGameForm'
 import JsonEditor from './JsonEditor'
@@ -74,17 +76,50 @@ function computeStats(games, users, decks) {
   const winsByDeck = {}
   const winsByPlayer = {}
 
+  // Liste commandants = catalogue (decks actifs, version courante), stats ensuite
+  for (const record of getActiveDecks(decks)) {
+    const superseded = getActiveDecks(decks).some(
+      (other) => other.previousDeckId === record.id,
+    )
+    if (superseded) continue
+    winsByDeck[record.id] = {
+      wins: 0,
+      games: 0,
+      deckId: record.id,
+      deckUrl: record.deckUrl,
+      commanders: asCommanderList(record.com),
+      player: getUserName(users, record.userId),
+      bracket: record.bracket,
+      bracketVariation: record.bracketVariation ?? null,
+    }
+  }
+
+  function findDeckStatsKey(deck) {
+    if (deck.deckId && winsByDeck[deck.deckId]) return deck.deckId
+    const current = getCurrentDeckForCommanders(decks, deck.commanders)
+    if (current && winsByDeck[current.id]) return current.id
+    const comKey = commandersKey(deck.commanders)
+    const byPlayer = Object.keys(winsByDeck).find((id) => {
+      const entry = winsByDeck[id]
+      return (
+        entry.player === deck.player &&
+        commandersKey(entry.commanders) === comKey
+      )
+    })
+    if (byPlayer) return byPlayer
+    return null
+  }
+
   for (const game of games) {
     for (const raw of game.decks) {
       const deck = resolveDeck(raw, users, decks)
-      const key = deckLabel(deck)
-
-      if (!winsByDeck[key]) {
-        const current = getCurrentDeckForCommanders(decks, deck.commanders)
+      let key = findDeckStatsKey(deck)
+      if (!key) {
+        key = `orphan:${deck.deckId ?? deckLabel(deck)}:${deck.player}`
         winsByDeck[key] = {
           wins: 0,
           games: 0,
-          deckId: current?.id ?? deck.deckId,
+          deckId: deck.deckId,
           deckUrl: deck.deckUrl,
           commanders: deck.commanders,
           player: deck.player,
@@ -280,7 +315,8 @@ function CommanderImage({ name, size = 'normal', className = '', onZoom }) {
 }
 
 function DeckCard({ deck, onZoom, onDetail }) {
-  const winrate = Math.round((deck.wins / deck.games) * 100)
+  const winrate =
+    deck.games === 0 ? 0 : Math.round((deck.wins / deck.games) * 100)
   const isPartner = deck.commanders.length > 1
 
   return (
@@ -434,8 +470,16 @@ function winnerWinrate(game, winsByDeck) {
   const winner = game.decks.find((d) => d.result === 'win')
   if (!winner) return 0
   const label = deckLabel(winner)
-  const data = winsByDeck[label]
-  if (!data) return 0
+  const data =
+    (winner.deckId && winsByDeck[winner.deckId]) ||
+    winsByDeck[label] ||
+    Object.values(winsByDeck).find(
+      (entry) =>
+        entry.player === winner.player &&
+        commandersKey(entry.commanders) ===
+          commandersKey(winner.commanders ?? []),
+    )
+  if (!data?.games) return 0
   return Math.round((data.wins / data.games) * 100)
 }
 
@@ -525,7 +569,8 @@ function filterDecks(winsByDeck, { nameQuery, minWinrate, sortWinrate }) {
     .map(([label, data]) => ({
       label,
       data,
-      winrate: Math.round((data.wins / data.games) * 100),
+      winrate:
+        data.games === 0 ? 0 : Math.round((data.wins / data.games) * 100),
     }))
     .filter(({ label, data, winrate }) => {
       const haystack = `${label} ${data.player ?? ''}`.toLowerCase()
