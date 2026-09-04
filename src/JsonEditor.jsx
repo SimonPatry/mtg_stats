@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { BACKUP_REASON, listGameBackups, rollbackToBackup, saveGames } from './gamesApi'
-import { saveUsers } from './usersApi'
+import { listUserBackups, rollbackUsersBackup, saveUsers } from './usersApi'
+import { listDeckBackups, rollbackDecksBackup, saveDecks } from './decksApi'
 import {
   parseJsonText,
   tryParseJsonText,
   validateGamesEdit,
   validateUsersEdit,
+  validateDecksEdit,
 } from './jsonGuard'
 
 function formatJson(data) {
@@ -26,34 +28,65 @@ function formatBackupDate(mtime) {
 const TABS = [
   { id: 'games', label: 'Parties' },
   { id: 'users', label: 'Joueurs' },
+  { id: 'decks', label: 'Decks' },
 ]
 
-export default function JsonEditor({ games, users, onSaveGames, onSaveUsers, onCancel }) {
+function tabLabel(id) {
+  return TABS.find((t) => t.id === id)?.label ?? id
+}
+
+function backupLink(name) {
+  return `/api/backup-file?name=${encodeURIComponent(name)}`
+}
+
+export default function JsonEditor({
+  games,
+  users,
+  decks,
+  onSaveGames,
+  onSaveUsers,
+  onSaveDecks,
+  onCancel,
+}) {
   const [tab, setTab] = useState('games')
   const [gamesText, setGamesText] = useState(() => formatJson(games))
   const [usersText, setUsersText] = useState(() => formatJson(users))
+  const [decksText, setDecksText] = useState(() => formatJson(decks))
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const [rollingBack, setRollingBack] = useState(null)
   const [backupInfo, setBackupInfo] = useState('')
   const [backups, setBackups] = useState([])
 
-  const text = tab === 'games' ? gamesText : usersText
-  const setText = tab === 'games' ? setGamesText : setUsersText
+  const texts = { games: gamesText, users: usersText, decks: decksText }
+  const setTexts = {
+    games: setGamesText,
+    users: setUsersText,
+    decks: setDecksText,
+  }
+  const sources = { games, users, decks }
 
-  const gamesDirty = gamesText !== formatJson(games)
-  const usersDirty = usersText !== formatJson(users)
-  const currentDirty = tab === 'games' ? gamesDirty : usersDirty
+  const text = texts[tab]
+  const setText = setTexts[tab]
+
+  const dirty = {
+    games: gamesText !== formatJson(games),
+    users: usersText !== formatJson(users),
+    decks: decksText !== formatJson(decks),
+  }
+  const anyDirty = dirty.games || dirty.users || dirty.decks
 
   const syntaxStatus = useMemo(() => tryParseJsonText(text), [text])
 
-  async function refreshBackups() {
-    setBackups(await listGameBackups())
+  async function refreshBackups(kind = tab) {
+    if (kind === 'games') setBackups(await listGameBackups())
+    else if (kind === 'users') setBackups(await listUserBackups())
+    else setBackups(await listDeckBackups())
   }
 
   useEffect(() => {
-    refreshBackups()
-  }, [])
+    refreshBackups(tab)
+  }, [tab])
 
   useEffect(() => {
     setGamesText(formatJson(games))
@@ -65,12 +98,16 @@ export default function JsonEditor({ games, users, onSaveGames, onSaveUsers, onC
     setError('')
   }, [users])
 
+  useEffect(() => {
+    setDecksText(formatJson(decks))
+    setError('')
+  }, [decks])
+
   function confirmLeaveDirty(nextTab) {
     if (nextTab === tab) return true
-    const leavingDirty = tab === 'games' ? gamesDirty : usersDirty
-    if (!leavingDirty) return true
+    if (!dirty[tab]) return true
     return window.confirm(
-      `Le JSON « ${tab === 'games' ? 'Parties' : 'Joueurs'} » a été modifié et n’est pas sauvegardé.\n\nQuitter cet onglet quand même ? Les changements non sauvegardés resteront en mémoire tant que tu ne réinitialises pas, mais tu risques de les oublier.`,
+      `Le JSON « ${tabLabel(tab)} » a été modifié et n’est pas sauvegardé.\n\nQuitter cet onglet quand même ? Les changements non sauvegardés resteront en mémoire tant que tu ne réinitialises pas, mais tu risques de les oublier.`,
     )
   }
 
@@ -82,11 +119,7 @@ export default function JsonEditor({ games, users, onSaveGames, onSaveUsers, onC
   }
 
   function handleReset() {
-    if (tab === 'games') {
-      setGamesText(formatJson(games))
-    } else {
-      setUsersText(formatJson(users))
-    }
+    setText(formatJson(sources[tab]))
     setError('')
     setBackupInfo('')
   }
@@ -113,7 +146,7 @@ export default function JsonEditor({ games, users, onSaveGames, onSaveUsers, onC
         onSaveGames(parsed)
         if (result?.backupFile) {
           setBackupInfo(result.backupFile)
-          await refreshBackups()
+          await refreshBackups('games')
         }
       } catch (err) {
         setError(err.message || 'Impossible de sauvegarder')
@@ -123,10 +156,38 @@ export default function JsonEditor({ games, users, onSaveGames, onSaveUsers, onC
       return
     }
 
+    if (tab === 'users') {
+      let parsed
+      try {
+        parsed = parseJsonText(usersText, 'Joueurs')
+        validateUsersEdit(users, parsed)
+      } catch (err) {
+        setError(err.message)
+        return
+      }
+
+      setSaving(true)
+      try {
+        const result = await saveUsers(parsed, users, {
+          reason: BACKUP_REASON.MANUAL_EDIT,
+        })
+        onSaveUsers(parsed)
+        if (result?.backupFile) {
+          setBackupInfo(result.backupFile)
+          await refreshBackups('users')
+        }
+      } catch (err) {
+        setError(err.message || 'Impossible de sauvegarder les joueurs')
+      } finally {
+        setSaving(false)
+      }
+      return
+    }
+
     let parsed
     try {
-      parsed = parseJsonText(usersText, 'Joueurs')
-      validateUsersEdit(users, parsed)
+      parsed = parseJsonText(decksText, 'Decks')
+      validateDecksEdit(decks, parsed)
     } catch (err) {
       setError(err.message)
       return
@@ -134,10 +195,16 @@ export default function JsonEditor({ games, users, onSaveGames, onSaveUsers, onC
 
     setSaving(true)
     try {
-      await saveUsers(parsed)
-      onSaveUsers(parsed)
+      const result = await saveDecks(parsed, decks, {
+        reason: BACKUP_REASON.MANUAL_EDIT,
+      })
+      onSaveDecks(parsed)
+      if (result?.backupFile) {
+        setBackupInfo(result.backupFile)
+        await refreshBackups('decks')
+      }
     } catch (err) {
-      setError(err.message || 'Impossible de sauvegarder les joueurs')
+      setError(err.message || 'Impossible de sauvegarder les decks')
     } finally {
       setSaving(false)
     }
@@ -154,12 +221,20 @@ export default function JsonEditor({ games, users, onSaveGames, onSaveUsers, onC
     setRollingBack(name)
 
     try {
-      const { restored, backupFile } = await rollbackToBackup(name, games)
-      onSaveGames(restored)
-      if (backupFile) {
-        setBackupInfo(backupFile)
+      if (tab === 'games') {
+        const { restored, backupFile } = await rollbackToBackup(name, games)
+        onSaveGames(restored)
+        if (backupFile) setBackupInfo(backupFile)
+      } else if (tab === 'users') {
+        const { restored, backupFile } = await rollbackUsersBackup(name, users)
+        onSaveUsers(restored)
+        if (backupFile) setBackupInfo(backupFile)
+      } else {
+        const { restored, backupFile } = await rollbackDecksBackup(name, decks)
+        onSaveDecks(restored)
+        if (backupFile) setBackupInfo(backupFile)
       }
-      await refreshBackups()
+      await refreshBackups(tab)
     } catch (err) {
       setError(err.message || 'Impossible de restaurer')
     } finally {
@@ -168,6 +243,35 @@ export default function JsonEditor({ games, users, onSaveGames, onSaveUsers, onC
   }
 
   const busy = saving || rollingBack !== null
+
+  const hints = {
+    games: (
+      <>
+        À chaque sauvegarde, l&apos;état <strong>avant</strong> modification est
+        copié dans <code>backups/</code> (
+        <code>games_*.json</code>). Les <strong>id</strong> de parties et les{' '}
+        <strong>deckId</strong> déjà présents ne peuvent ni être supprimés ni
+        modifiés ; de nouvelles parties peuvent être ajoutées.
+      </>
+    ),
+    users: (
+      <>
+        À chaque sauvegarde, backup auto dans <code>backups/</code> (
+        <code>users_*.json</code>). Les <strong>id</strong> de joueurs déjà
+        présents ne peuvent ni être supprimés ni modifiés ; de nouveaux joueurs
+        peuvent être ajoutés.
+      </>
+    ),
+    decks: (
+      <>
+        À chaque sauvegarde, backup auto dans <code>backups/</code> (
+        <code>decks_*.json</code>). Les <strong>id</strong>,{' '}
+        <strong>userId</strong> et <strong>previousDeckId</strong> déjà présents
+        ne peuvent ni être supprimés ni modifiés ; de nouveaux decks peuvent être
+        ajoutés.
+      </>
+    ),
+  }
 
   return (
     <div className="json-editor">
@@ -182,32 +286,16 @@ export default function JsonEditor({ games, users, onSaveGames, onSaveUsers, onC
                 role="tab"
                 aria-selected={tab === id}
                 className={`btn btn-tab${tab === id ? ' is-active' : ''}${
-                  (id === 'games' ? gamesDirty : usersDirty) ? ' is-dirty' : ''
+                  dirty[id] ? ' is-dirty' : ''
                 }`}
                 onClick={() => handleTab(id)}
               >
                 {label}
-                {(id === 'games' ? gamesDirty : usersDirty) ? ' •' : ''}
+                {dirty[id] ? ' •' : ''}
               </button>
             ))}
           </div>
-          <p className="json-editor-hint">
-            {tab === 'games' ? (
-              <>
-                À chaque sauvegarde, l&apos;état <strong>avant</strong> modification
-                est copié dans <code>public/backups/</code>. Les{' '}
-                <strong>id</strong> de parties et les <strong>deckId</strong> déjà
-                présents ne peuvent ni être supprimés ni modifiés ; de nouvelles
-                parties peuvent être ajoutées.
-              </>
-            ) : (
-              <>
-                Édition de <code>users.json</code>. Les <strong>id</strong> de
-                joueurs déjà présents ne peuvent ni être supprimés ni modifiés ;
-                de nouveaux joueurs peuvent être ajoutés.
-              </>
-            )}
-          </p>
+          <p className="json-editor-hint">{hints[tab]}</p>
         </div>
         <div className="json-editor-actions">
           <button type="button" className="btn btn-ghost" onClick={handleReset}>
@@ -218,7 +306,7 @@ export default function JsonEditor({ games, users, onSaveGames, onSaveUsers, onC
               type="button"
               className="btn btn-ghost"
               onClick={() => {
-                if (currentDirty || (tab === 'games' ? usersDirty : gamesDirty)) {
+                if (anyDirty) {
                   const ok = window.confirm(
                     'Des modifications JSON non sauvegardées existent. Quitter quand même ?',
                   )
@@ -249,10 +337,10 @@ export default function JsonEditor({ games, users, onSaveGames, onSaveUsers, onC
       >
         {syntaxStatus.ok ? 'Syntaxe JSON valide.' : syntaxStatus.error}
       </p>
-      {backupInfo && tab === 'games' && (
+      {backupInfo && (
         <p className="json-editor-success">
           Backup pré-modification créé :{' '}
-          <a href={`/backups/${backupInfo}`} target="_blank" rel="noreferrer">
+          <a href={backupLink(backupInfo)} target="_blank" rel="noreferrer">
             {backupInfo}
           </a>
         </p>
@@ -266,46 +354,36 @@ export default function JsonEditor({ games, users, onSaveGames, onSaveUsers, onC
           spellCheck={false}
         />
 
-        {tab === 'games' ? (
-          <aside className="json-editor-backups">
-            <h3>Sauvegardes</h3>
-            {backups.length === 0 ? (
-              <p className="json-editor-backups-empty">
-                Aucune sauvegarde pour l&apos;instant.
-              </p>
-            ) : (
-              <ul className="json-editor-backups-list">
-                {backups.map(({ name, mtime }) => (
-                  <li key={name}>
-                    <div className="json-editor-backup-row">
-                      <a href={`/backups/${name}`} target="_blank" rel="noreferrer">
-                        {name}
-                      </a>
-                      <button
-                        type="button"
-                        className="btn btn-ghost btn-backup-restore"
-                        onClick={() => handleRollback(name)}
-                        disabled={busy}
-                        title="Restaurer cette sauvegarde"
-                      >
-                        {rollingBack === name ? '…' : '↩'}
-                      </button>
-                    </div>
-                    <span>{formatBackupDate(mtime)}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </aside>
-        ) : (
-          <aside className="json-editor-backups">
-            <h3>Joueurs</h3>
+        <aside className="json-editor-backups">
+          <h3>Sauvegardes</h3>
+          {backups.length === 0 ? (
             <p className="json-editor-backups-empty">
-              Pas de backups automatiques pour les joueurs. Vérifie bien avant
-              de sauvegarder.
+              Aucune sauvegarde pour l&apos;instant.
             </p>
-          </aside>
-        )}
+          ) : (
+            <ul className="json-editor-backups-list">
+              {backups.map(({ name, mtime }) => (
+                <li key={name}>
+                  <div className="json-editor-backup-row">
+                    <a href={backupLink(name)} target="_blank" rel="noreferrer">
+                      {name}
+                    </a>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-backup-restore"
+                      onClick={() => handleRollback(name)}
+                      disabled={busy}
+                      title="Restaurer cette sauvegarde"
+                    >
+                      {rollingBack === name ? '…' : '↩'}
+                    </button>
+                  </div>
+                  <span>{formatBackupDate(mtime)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </aside>
       </div>
     </div>
   )

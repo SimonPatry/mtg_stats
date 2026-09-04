@@ -29,6 +29,12 @@ const DATA_FILES = {
   },
 }
 
+const LABELS = {
+  games: 'Parties',
+  users: 'Joueurs',
+  decks: 'Decks',
+}
+
 function resolveDataSource(req) {
   const url = new URL(req.url || '/', 'http://localhost')
   return url.searchParams.get('source') === 'fake' ? 'fake' : 'real'
@@ -39,107 +45,95 @@ function resolveDataPath(kind, req) {
   return DATA_FILES[kind][source]
 }
 
-function backupFilename(reason = 'save') {
+function backupFilename(kind, reason = 'save') {
   const now = new Date()
   const pad = (n) => String(n).padStart(2, '0')
-  const safeReason = String(reason)
-    .toLowerCase()
-    .replace(/[^a-z0-9-]+/g, '-')
-    .replace(/^-|-$/g, '') || 'save'
-  return `games_${safeReason}_${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}.json`
+  const safeReason =
+    String(reason)
+      .toLowerCase()
+      .replace(/[^a-z0-9-]+/g, '-')
+      .replace(/^-|-$/g, '') || 'save'
+  return `${kind}_${safeReason}_${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}.json`
 }
 
-function gamesApiPlugin() {
-  return (req, res, next) => {
-    const url = new URL(req.url || '/', 'http://localhost')
-    const subpath = url.pathname
-    const filePath = resolveDataPath('games', req)
+function listBackups(kind) {
+  fs.mkdirSync(backupsDir, { recursive: true })
+  return fs
+    .readdirSync(backupsDir)
+    .filter((name) => name.startsWith(`${kind}_`) && name.endsWith('.json'))
+    .map((name) => {
+      const stat = fs.statSync(path.join(backupsDir, name))
+      return { name, mtime: stat.mtimeMs }
+    })
+    .sort((a, b) => b.mtime - a.mtime)
+}
 
-    if (subpath === '/backup') {
-      if (req.method === 'GET') {
-        try {
-          fs.mkdirSync(backupsDir, { recursive: true })
-          const files = fs
-            .readdirSync(backupsDir)
-            .filter((name) => name.endsWith('.json'))
-            .map((name) => {
-              const stat = fs.statSync(path.join(backupsDir, name))
-              return { name, mtime: stat.mtimeMs }
-            })
-            .sort((a, b) => b.mtime - a.mtime)
-          res.setHeader('Content-Type', 'application/json')
-          res.end(JSON.stringify(files))
-        } catch (err) {
-          res.statusCode = 500
-          res.end(JSON.stringify({ error: err.message }))
-        }
-        return
-      }
-
-      if (req.method === 'POST') {
-        let body = ''
-        req.on('data', (chunk) => {
-          body += chunk
-        })
-        req.on('end', () => {
-          try {
-            const parsed = JSON.parse(body)
-            const games = Array.isArray(parsed) ? parsed : parsed.games
-            const reason = Array.isArray(parsed) ? 'legacy' : (parsed.reason || 'save')
-            if (!Array.isArray(games)) {
-              throw new Error('Backup invalide : games doit être un tableau')
-            }
-            fs.mkdirSync(backupsDir, { recursive: true })
-            const filename = backupFilename(reason)
-            const backupPath = path.join(backupsDir, filename)
-            fs.writeFileSync(backupPath, `${JSON.stringify(games, null, 2)}\n`)
-            res.setHeader('Content-Type', 'application/json')
-            res.end(JSON.stringify({ ok: true, filename, reason }))
-          } catch (err) {
-            res.statusCode = 500
-            res.end(JSON.stringify({ error: err.message }))
-          }
-        })
-        return
-      }
-
-      next()
-      return
-    }
-
-    if (req.method === 'GET') {
-      res.setHeader('Content-Type', 'application/json')
-      res.end(fs.readFileSync(filePath, 'utf-8'))
-      return
-    }
-
-    if (req.method === 'POST') {
-      let body = ''
-      req.on('data', (chunk) => {
-        body += chunk
-      })
-      req.on('end', () => {
-        try {
-          const data = parseJsonText(body, 'Parties')
-          const before = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
-          validateGamesEdit(before, data)
-          fs.writeFileSync(filePath, `${JSON.stringify(data, null, 2)}\n`)
-          res.setHeader('Content-Type', 'application/json')
-          res.end(JSON.stringify({ ok: true }))
-        } catch (err) {
-          res.statusCode = 400
-          res.end(JSON.stringify({ error: err.message }))
-        }
-      })
-      return
-    }
-
-    next()
+function extractBackupPayload(parsed, kind) {
+  if (Array.isArray(parsed)) {
+    return { data: parsed, reason: 'legacy' }
   }
+  const data = parsed.data ?? parsed[kind]
+  const reason = parsed.reason || 'save'
+  return { data, reason }
+}
+
+function handleBackupRoutes(kind, req, res, next) {
+  const url = new URL(req.url || '/', 'http://localhost')
+  if (url.pathname !== '/backup') {
+    next()
+    return
+  }
+
+  if (req.method === 'GET') {
+    try {
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify(listBackups(kind)))
+    } catch (err) {
+      res.statusCode = 500
+      res.end(JSON.stringify({ error: err.message }))
+    }
+    return
+  }
+
+  if (req.method === 'POST') {
+    let body = ''
+    req.on('data', (chunk) => {
+      body += chunk
+    })
+    req.on('end', () => {
+      try {
+        const parsed = JSON.parse(body)
+        const { data, reason } = extractBackupPayload(parsed, kind)
+        if (!Array.isArray(data)) {
+          throw new Error(`Backup invalide : ${kind} doit être un tableau`)
+        }
+        fs.mkdirSync(backupsDir, { recursive: true })
+        const filename = backupFilename(kind, reason)
+        fs.writeFileSync(
+          path.join(backupsDir, filename),
+          `${JSON.stringify(data, null, 2)}\n`,
+        )
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify({ ok: true, filename, reason }))
+      } catch (err) {
+        res.statusCode = 500
+        res.end(JSON.stringify({ error: err.message }))
+      }
+    })
+    return
+  }
+
+  next()
 }
 
 function jsonFileApiPlugin(kind, validateEdit) {
   return (req, res, next) => {
+    const url = new URL(req.url || '/', 'http://localhost')
+    if (url.pathname === '/backup') {
+      handleBackupRoutes(kind, req, res, next)
+      return
+    }
+
     const filePath = resolveDataPath(kind, req)
 
     if (req.method === 'GET') {
@@ -155,7 +149,7 @@ function jsonFileApiPlugin(kind, validateEdit) {
       })
       req.on('end', () => {
         try {
-          const data = parseJsonText(body, 'JSON')
+          const data = parseJsonText(body, LABELS[kind] || 'JSON')
           const before = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
           validateEdit(before, data)
           fs.writeFileSync(filePath, `${JSON.stringify(data, null, 2)}\n`)
@@ -173,11 +167,44 @@ function jsonFileApiPlugin(kind, validateEdit) {
   }
 }
 
+function backupFilePlugin() {
+  return (req, res, next) => {
+    if (req.method !== 'GET') {
+      next()
+      return
+    }
+    try {
+      const url = new URL(req.url || '/', 'http://localhost')
+      const name = url.searchParams.get('name') || ''
+      if (!/^(games|users|decks)_[a-z0-9_-]+\.json$/i.test(name)) {
+        res.statusCode = 400
+        res.end(JSON.stringify({ error: 'Nom de backup invalide' }))
+        return
+      }
+      const filePath = path.join(backupsDir, name)
+      if (!fs.existsSync(filePath)) {
+        res.statusCode = 404
+        res.end(JSON.stringify({ error: 'Sauvegarde introuvable' }))
+        return
+      }
+      res.setHeader('Content-Type', 'application/json')
+      res.end(fs.readFileSync(filePath, 'utf-8'))
+    } catch (err) {
+      res.statusCode = 500
+      res.end(JSON.stringify({ error: err.message }))
+    }
+  }
+}
+
 function dataApiPlugin() {
   return {
     name: 'data-api',
     configureServer(server) {
-      server.middlewares.use('/api/games', gamesApiPlugin())
+      server.middlewares.use('/api/backup-file', backupFilePlugin())
+      server.middlewares.use(
+        '/api/games',
+        jsonFileApiPlugin('games', validateGamesEdit),
+      )
       server.middlewares.use(
         '/api/users',
         jsonFileApiPlugin('users', validateUsersEdit),

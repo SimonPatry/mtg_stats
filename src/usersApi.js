@@ -1,5 +1,11 @@
 import initialUsers from './data/users.json'
 import { loadDataSource, sourceQuery } from './dataSource'
+import {
+  BACKUP_REASON,
+  createBackup,
+  listBackups,
+  loadBackupFile,
+} from './backupApi'
 
 function usersUrl() {
   return `/api/users${sourceQuery(loadDataSource())}`
@@ -17,7 +23,29 @@ export async function loadUsers(fallback = initialUsers, source = loadDataSource
   }
 }
 
-export async function saveUsers(users) {
+export async function listUserBackups() {
+  return listBackups('users')
+}
+
+export async function rollbackUsersBackup(name, currentUsers) {
+  const restored = await loadBackupFile(name)
+  const result = await saveUsers(restored, currentUsers, {
+    reason: BACKUP_REASON.ROLLBACK,
+  })
+  return { restored, backupFile: result.backupFile }
+}
+
+export async function saveUsers(users, previousUsers, { reason } = {}) {
+  let backupFile
+  if (previousUsers !== undefined) {
+    const backup = await createBackup(
+      'users',
+      previousUsers,
+      reason ?? BACKUP_REASON.MANUAL_EDIT,
+    )
+    backupFile = backup.filename
+  }
+
   const res = await fetch(usersUrl(), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -31,4 +59,5 @@ export async function saveUsers(users) {
   if (!contentType.includes('application/json')) {
     throw new Error('L’API joueurs ne répond pas (le serveur a renvoyé une page HTML).')
   }
+  return { backupFile }
 }

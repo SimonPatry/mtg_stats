@@ -72,8 +72,59 @@ try {
     return $data;
   }
 
+  function backup_filename($kind, $reason) {
+    $safe = preg_replace('/[^a-z0-9-]+/', '-', strtolower((string) $reason));
+    $safe = trim($safe, '-');
+    if ($safe === '') $safe = 'save';
+    return $kind . '_' . $safe . '_' . date('Y-m-d_H-i-s') . '.json';
+  }
+
+  function list_backups($backupsDir, $kind) {
+    $list = array();
+    foreach (glob($backupsDir . '/' . $kind . '_*.json') ?: array() as $file) {
+      $list[] = array('name' => basename($file), 'mtime' => filemtime($file) * 1000);
+    }
+    usort($list, function ($a, $b) {
+      return $b['mtime'] <=> $a['mtime'];
+    });
+    return $list;
+  }
+
+  function extract_backup_payload($parsed, $kind) {
+    if (array_keys($parsed) === range(0, count($parsed) - 1)) {
+      return array($parsed, 'legacy');
+    }
+    $data = isset($parsed['data']) ? $parsed['data'] : (isset($parsed[$kind]) ? $parsed[$kind] : null);
+    $reason = isset($parsed['reason']) ? $parsed['reason'] : 'save';
+    return array($data, $reason);
+  }
+
+  function handle_backup($backupsDir, $kind, $method) {
+    if ($method === 'GET') {
+      out(list_backups($backupsDir, $kind));
+    }
+    if ($method === 'POST') {
+      $parsed = body();
+      list($data, $reason) = extract_backup_payload($parsed, $kind);
+      if (!is_array($data)) out(array('error' => $kind . ' must be array'), 400);
+      $filename = backup_filename($kind, $reason);
+      write_file($backupsDir . '/' . $filename, $data);
+      out(array('ok' => true, 'filename' => $filename, 'reason' => $reason));
+    }
+  }
+
   if ($path === '/api' || $path === '/api/health') {
     out(array('ok' => true, 'engine' => 'php', 'dataDir' => $dataDir));
+  }
+
+  if ($path === '/api/backup-file' && $method === 'GET') {
+    $name = isset($_GET['name']) ? (string) $_GET['name'] : '';
+    if (!preg_match('/^(games|users|decks)_[a-z0-9_-]+\.json$/i', $name)) {
+      out(array('error' => 'invalid backup name'), 400);
+    }
+    $file = $backupsDir . '/' . $name;
+    if (!is_file($file)) out(array('error' => 'not found'), 404);
+    out(read_file($file));
   }
 
   if ($path === '/api/users' && $method === 'GET') out(read_file($files['users']));
@@ -81,44 +132,21 @@ try {
     write_file($files['users'], body());
     out(array('ok' => true));
   }
+  if ($path === '/api/users/backup') handle_backup($backupsDir, 'users', $method);
 
   if ($path === '/api/decks' && $method === 'GET') out(read_file($files['decks']));
   if ($path === '/api/decks' && $method === 'POST') {
     write_file($files['decks'], body());
     out(array('ok' => true));
   }
+  if ($path === '/api/decks/backup') handle_backup($backupsDir, 'decks', $method);
 
   if ($path === '/api/games' && $method === 'GET') out(read_file($files['games']));
   if ($path === '/api/games' && $method === 'POST') {
     write_file($files['games'], body());
     out(array('ok' => true));
   }
-
-  if ($path === '/api/games/backup' && $method === 'GET') {
-    $list = array();
-    foreach (glob($backupsDir . '/*.json') ?: array() as $file) {
-      $list[] = array('name' => basename($file), 'mtime' => filemtime($file) * 1000);
-    }
-    out($list);
-  }
-
-  if ($path === '/api/games/backup' && $method === 'POST') {
-    $parsed = body();
-    if (isset($parsed['games'])) {
-      $games = $parsed['games'];
-      $reason = isset($parsed['reason']) ? $parsed['reason'] : 'save';
-    } else {
-      $games = $parsed;
-      $reason = 'legacy';
-    }
-    if (!is_array($games)) out(array('error' => 'games must be array'), 400);
-    $safe = preg_replace('/[^a-z0-9-]+/', '-', strtolower((string) $reason));
-    $safe = trim($safe, '-');
-    if ($safe === '') $safe = 'save';
-    $filename = 'games_' . $safe . '_' . date('Y-m-d_H-i-s') . '.json';
-    write_file($backupsDir . '/' . $filename, $games);
-    out(array('ok' => true, 'filename' => $filename, 'reason' => $reason));
-  }
+  if ($path === '/api/games/backup') handle_backup($backupsDir, 'games', $method);
 
   out(array('error' => 'not found', 'path' => $path), 404);
 } catch (Exception $e) {

@@ -38,97 +38,96 @@ app.use(express.json({ limit: '10mb' }))
 
 // ─── API données ───────────────────────────────────
 
-function backupFilename(reason = 'save') {
+function backupFilename(kind, reason = 'save') {
   const now = new Date()
   const pad = (n) => String(n).padStart(2, '0')
-  const safeReason = String(reason)
-    .toLowerCase()
-    .replace(/[^a-z0-9-]+/g, '-')
-    .replace(/^-|-$/g, '') || 'save'
-  return `games_${safeReason}_${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}.json`
+  const safeReason =
+    String(reason)
+      .toLowerCase()
+      .replace(/[^a-z0-9-]+/g, '-')
+      .replace(/^-|-$/g, '') || 'save'
+  return `${kind}_${safeReason}_${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}.json`
 }
 
-// GET /api/games
-app.get('/api/games', (req, res) => {
-  res.json(JSON.parse(fs.readFileSync(DATA_FILES.games, 'utf-8')))
-})
-
-// POST /api/games
-app.post('/api/games', (req, res) => {
-  const data = req.body
-  if (!Array.isArray(data)) {
-    return res.status(400).json({ error: 'games doit être un tableau' })
-  }
-  fs.writeFileSync(DATA_FILES.games, JSON.stringify(data, null, 2) + '\n')
-  res.json({ ok: true })
-})
-
-// GET /api/games/backup
-app.get('/api/games/backup', (req, res) => {
+function listBackups(kind) {
   try {
-    const files = fs
+    return fs
       .readdirSync(backupsDir)
-      .filter((name) => name.endsWith('.json'))
+      .filter((name) => name.startsWith(`${kind}_`) && name.endsWith('.json'))
       .map((name) => {
         const stat = fs.statSync(path.join(backupsDir, name))
         return { name, mtime: stat.mtimeMs }
       })
       .sort((a, b) => b.mtime - a.mtime)
-    res.json(files)
   } catch {
-    res.json([])
+    return []
   }
-})
+}
 
-// POST /api/games/backup
-app.post('/api/games/backup', (req, res) => {
-  try {
-    const parsed = req.body
-    const games = Array.isArray(parsed) ? parsed : parsed.games
-    const reason = Array.isArray(parsed) ? 'legacy' : (parsed.reason || 'save')
-    if (!Array.isArray(games)) {
-      return res.status(400).json({ error: 'games doit être un tableau' })
-    }
-    const filename = backupFilename(reason)
-    fs.writeFileSync(path.join(backupsDir, filename), JSON.stringify(games, null, 2) + '\n')
-    res.json({ ok: true, filename, reason })
-  } catch (err) {
-    res.status(500).json({ error: err.message })
+function extractBackupPayload(parsed, kind) {
+  if (Array.isArray(parsed)) {
+    return { data: parsed, reason: 'legacy' }
   }
+  return {
+    data: parsed.data ?? parsed[kind],
+    reason: parsed.reason || 'save',
+  }
+}
+
+function mountKindRoutes(kind) {
+  app.get(`/api/${kind}`, (req, res) => {
+    res.json(JSON.parse(fs.readFileSync(DATA_FILES[kind], 'utf-8')))
+  })
+
+  app.post(`/api/${kind}`, (req, res) => {
+    const data = req.body
+    if (!Array.isArray(data)) {
+      return res.status(400).json({ error: `${kind} doit être un tableau` })
+    }
+    fs.writeFileSync(DATA_FILES[kind], JSON.stringify(data, null, 2) + '\n')
+    res.json({ ok: true })
+  })
+
+  app.get(`/api/${kind}/backup`, (req, res) => {
+    res.json(listBackups(kind))
+  })
+
+  app.post(`/api/${kind}/backup`, (req, res) => {
+    try {
+      const { data, reason } = extractBackupPayload(req.body, kind)
+      if (!Array.isArray(data)) {
+        return res.status(400).json({ error: `${kind} doit être un tableau` })
+      }
+      const filename = backupFilename(kind, reason)
+      fs.writeFileSync(
+        path.join(backupsDir, filename),
+        JSON.stringify(data, null, 2) + '\n',
+      )
+      res.json({ ok: true, filename, reason })
+    } catch (err) {
+      res.status(500).json({ error: err.message })
+    }
+  })
+}
+
+mountKindRoutes('games')
+mountKindRoutes('users')
+mountKindRoutes('decks')
+
+app.get('/api/backup-file', (req, res) => {
+  const name = String(req.query.name || '')
+  if (!/^(games|users|decks)_[a-z0-9_-]+\.json$/i.test(name)) {
+    return res.status(400).json({ error: 'Nom de backup invalide' })
+  }
+  const filePath = path.join(backupsDir, name)
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: 'Sauvegarde introuvable' })
+  }
+  res.json(JSON.parse(fs.readFileSync(filePath, 'utf-8')))
 })
 
 // Servir les backups en statique
 app.use('/backups', express.static(backupsDir))
-
-// GET /api/users
-app.get('/api/users', (req, res) => {
-  res.json(JSON.parse(fs.readFileSync(DATA_FILES.users, 'utf-8')))
-})
-
-// POST /api/users
-app.post('/api/users', (req, res) => {
-  const data = req.body
-  if (!Array.isArray(data)) {
-    return res.status(400).json({ error: 'users doit être un tableau' })
-  }
-  fs.writeFileSync(DATA_FILES.users, JSON.stringify(data, null, 2) + '\n')
-  res.json({ ok: true })
-})
-
-// GET /api/decks
-app.get('/api/decks', (req, res) => {
-  res.json(JSON.parse(fs.readFileSync(DATA_FILES.decks, 'utf-8')))
-})
-
-// POST /api/decks
-app.post('/api/decks', (req, res) => {
-  const data = req.body
-  if (!Array.isArray(data)) {
-    return res.status(400).json({ error: 'decks doit être un tableau' })
-  }
-  fs.writeFileSync(DATA_FILES.decks, JSON.stringify(data, null, 2) + '\n')
-  res.json({ ok: true })
-})
 
 // ─── Fichiers statiques (dist/) ────────────────────
 

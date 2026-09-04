@@ -1306,8 +1306,8 @@ function App() {
   async function handleAddGame({ game, users: updatedUsers, decks: updatedDecks }) {
     const updatedGames = [...games, game]
     await saveGames(updatedGames, games, { reason: BACKUP_REASON.ADD_GAME })
-    await saveUsers(updatedUsers)
-    await saveDecks(updatedDecks)
+    await saveUsers(updatedUsers, users, { reason: BACKUP_REASON.ADD_GAME })
+    await saveDecks(updatedDecks, decks, { reason: BACKUP_REASON.ADD_GAME })
     setGames(updatedGames)
     setUsers(updatedUsers)
     setDecks(updatedDecks)
@@ -1324,9 +1324,8 @@ function App() {
     setGames(updatedGames)
   }
 
-  async function handleCatalogSave({ users: updatedUsers, decks: updatedDecks }) {
-    await saveUsers(updatedUsers)
-    await saveDecks(updatedDecks)
+  function handleCatalogSave({ users: updatedUsers, decks: updatedDecks }) {
+    // PlayersManager a déjà persisté avec backup ; on met juste l’état à jour.
     setUsers(updatedUsers)
     setDecks(updatedDecks)
   }
@@ -1493,8 +1492,10 @@ function App() {
         <JsonEditor
           games={games}
           users={users}
+          decks={decks}
           onSaveGames={handleJsonSave}
           onSaveUsers={setUsers}
+          onSaveDecks={setDecks}
           onCancel={() => setActiveView('dashboard')}
         />
       ) : activeView === 'tempGame' && tempGame ? (

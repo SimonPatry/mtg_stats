@@ -1,5 +1,11 @@
 import initialDecks from './data/decks.json'
 import { loadDataSource, sourceQuery } from './dataSource'
+import {
+  BACKUP_REASON,
+  createBackup,
+  listBackups,
+  loadBackupFile,
+} from './backupApi'
 
 function decksUrl() {
   return `/api/decks${sourceQuery(loadDataSource())}`
@@ -15,7 +21,29 @@ export async function loadDecks(fallback = initialDecks, source = loadDataSource
   }
 }
 
-export async function saveDecks(decks) {
+export async function listDeckBackups() {
+  return listBackups('decks')
+}
+
+export async function rollbackDecksBackup(name, currentDecks) {
+  const restored = await loadBackupFile(name)
+  const result = await saveDecks(restored, currentDecks, {
+    reason: BACKUP_REASON.ROLLBACK,
+  })
+  return { restored, backupFile: result.backupFile }
+}
+
+export async function saveDecks(decks, previousDecks, { reason } = {}) {
+  let backupFile
+  if (previousDecks !== undefined) {
+    const backup = await createBackup(
+      'decks',
+      previousDecks,
+      reason ?? BACKUP_REASON.MANUAL_EDIT,
+    )
+    backupFile = backup.filename
+  }
+
   const res = await fetch(decksUrl(), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -25,4 +53,5 @@ export async function saveDecks(decks) {
     const err = await res.json().catch(() => ({}))
     throw new Error(err.error || 'Impossible de sauvegarder les decks')
   }
+  return { backupFile }
 }

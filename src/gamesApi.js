@@ -1,5 +1,13 @@
 import { v4 as uuidv4 } from 'uuid'
 import { loadDataSource, sourceQuery } from './dataSource'
+import {
+  BACKUP_REASON,
+  createBackup,
+  listBackups,
+  loadBackupFile,
+} from './backupApi'
+
+export { BACKUP_REASON }
 
 function gamesUrl(path = '') {
   return `/api/games${path}${sourceQuery(loadDataSource())}`
@@ -15,49 +23,20 @@ export async function loadGames(fallback, source = loadDataSource()) {
   }
 }
 
-export const BACKUP_REASON = {
-  MANUAL_EDIT: 'manual-edit',
-  ROLLBACK: 'rollback',
-  ADD_GAME: 'add-game',
-}
-
 export async function backupGames(games, reason = BACKUP_REASON.MANUAL_EDIT) {
-  const res = await fetch(gamesUrl('/backup'), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ games, reason }),
-  })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err.error || 'Impossible de créer la sauvegarde')
-  }
-  return res.json()
+  return createBackup('games', games, reason)
 }
 
 export async function listGameBackups() {
-  try {
-    const res = await fetch(gamesUrl('/backup'))
-    if (!res.ok) throw new Error('list failed')
-    return await res.json()
-  } catch {
-    return []
-  }
+  return listBackups('games')
 }
 
 export async function loadBackup(name) {
-  const res = await fetch(`/backups/${encodeURIComponent(name)}`)
-  if (!res.ok) {
-    throw new Error('Sauvegarde introuvable')
-  }
-  const data = await res.json()
-  if (!Array.isArray(data)) {
-    throw new Error('La sauvegarde doit être un tableau de parties')
-  }
-  return data
+  return loadBackupFile(name)
 }
 
 export async function rollbackToBackup(name, currentGames) {
-  const restored = await loadBackup(name)
+  const restored = await loadBackupFile(name)
   const result = await saveGames(restored, currentGames, {
     reason: BACKUP_REASON.ROLLBACK,
   })
@@ -67,7 +46,8 @@ export async function rollbackToBackup(name, currentGames) {
 export async function saveGames(newGames, previousGames, { reason } = {}) {
   let backupFile
   if (previousGames !== undefined) {
-    const backup = await backupGames(
+    const backup = await createBackup(
+      'games',
       previousGames,
       reason ?? BACKUP_REASON.MANUAL_EDIT,
     )

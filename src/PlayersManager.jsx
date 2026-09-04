@@ -263,8 +263,8 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
   async function persist(updatedUsers, updatedDecks) {
     setSaving(true)
     try {
-      await saveUsers(updatedUsers)
-      await saveDecks(updatedDecks)
+      await saveUsers(updatedUsers, users)
+      await saveDecks(updatedDecks, decks)
       onSave({ users: updatedUsers, decks: updatedDecks })
     } finally {
       setSaving(false)
