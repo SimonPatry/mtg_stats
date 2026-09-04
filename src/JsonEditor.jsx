@@ -57,6 +57,7 @@ export default function JsonEditor({
   const [rollingBack, setRollingBack] = useState(null)
   const [backupInfo, setBackupInfo] = useState('')
   const [backups, setBackups] = useState([])
+  const [backupsError, setBackupsError] = useState('')
 
   const texts = { games: gamesText, users: usersText, decks: decksText }
   const setTexts = {
@@ -79,9 +80,19 @@ export default function JsonEditor({
   const syntaxStatus = useMemo(() => tryParseJsonText(text), [text])
 
   async function refreshBackups(kind = tab) {
-    if (kind === 'games') setBackups(await listGameBackups())
-    else if (kind === 'users') setBackups(await listUserBackups())
-    else setBackups(await listDeckBackups())
+    setBackupsError('')
+    try {
+      const list =
+        kind === 'games'
+          ? await listGameBackups()
+          : kind === 'users'
+            ? await listUserBackups()
+            : await listDeckBackups()
+      setBackups(list)
+    } catch (err) {
+      setBackups([])
+      setBackupsError(err.message || 'Impossible de charger l’historique')
+    }
   }
 
   useEffect(() => {
@@ -356,7 +367,9 @@ export default function JsonEditor({
 
         <aside className="json-editor-backups">
           <h3>Sauvegardes</h3>
-          {backups.length === 0 ? (
+          {backupsError ? (
+            <p className="json-editor-error">{backupsError}</p>
+          ) : backups.length === 0 ? (
             <p className="json-editor-backups-empty">
               Aucune sauvegarde pour l&apos;instant.
             </p>

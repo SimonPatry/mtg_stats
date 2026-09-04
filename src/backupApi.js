@@ -31,20 +31,26 @@ export async function createBackup(kind, data, reason = BACKUP_REASON.MANUAL_EDI
   })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
-    throw new Error(err.error || `Impossible de créer la sauvegarde ${kind}`)
+    const detail = err.error || err.message || `HTTP ${res.status}`
+    throw new Error(`Impossible de créer la sauvegarde ${kind} : ${detail}`)
   }
   return res.json()
 }
 
 /** Liste les backups d’un kind (games | users | decks). */
 export async function listBackups(kind) {
-  try {
-    const res = await fetch(apiUrl(kind, '/backup'))
-    if (!res.ok) throw new Error('list failed')
-    return await res.json()
-  } catch {
-    return []
+  const res = await fetch(apiUrl(kind, '/backup'))
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(
+      err.error || `Impossible de charger l’historique (${kind}, HTTP ${res.status})`,
+    )
   }
+  const data = await res.json()
+  if (!Array.isArray(data)) {
+    throw new Error('Réponse historique invalide')
+  }
+  return data
 }
 
 /** Charge le contenu d’un fichier de backup. */
