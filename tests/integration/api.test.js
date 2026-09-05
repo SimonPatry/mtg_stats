@@ -186,9 +186,14 @@ describe('joueurs', () => {
 })
 
 describe('tags', () => {
+  // Libellés uniques à chaque exécution : les tags survivent au réimport du
+  // jeu de test, et un tag laissé par une session d'essai faisait échouer la
+  // création sur un 409 sans que le code y soit pour rien.
+  const label = (nom) => `${nom} ${Date.now().toString().slice(-6)}`
+
   test('création puis suppression protégée par confirmation', async () => {
     const { status, body: tag } = await call('/api/tags', {
-      method: 'POST', body: { label: 'Combo' },
+      method: 'POST', body: { label: label('Combo') },
     })
     assert.equal(status, 201)
 
@@ -198,8 +203,9 @@ describe('tags', () => {
   })
 
   test('un libellé en double est refusé', async () => {
-    const { body: first } = await call('/api/tags', { method: 'POST', body: { label: 'Aggro' } })
-    const { status } = await call('/api/tags', { method: 'POST', body: { label: 'Aggro' } })
+    const nom = label('Aggro')
+    const { body: first } = await call('/api/tags', { method: 'POST', body: { label: nom } })
+    const { status } = await call('/api/tags', { method: 'POST', body: { label: nom } })
     assert.equal(status, 409)
     await call(`/api/tags/${first.id}`, { method: 'DELETE' })
   })

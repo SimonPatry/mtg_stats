@@ -94,23 +94,68 @@ await cleanup()
 await page.reload({ waitUntil: 'networkidle' })
 await page.waitForTimeout(800)
 
-await step('l’onglet Tags existe et l’écran s’ouvre', async () => {
-  await page.locator('.top-bar-nav button', { hasText: 'Tags' }).click()
-  await page.locator('.tag-admin').waitFor()
-  await page.locator('.tag-admin-add input').fill('Test Combo')
-  await page.locator('.tag-admin-add button').click()
-  await page.locator('.tag-admin-row', { hasText: 'Test Combo' }).waitFor()
-})
-
 await step('le bouton de déconnexion est présent', async () => {
   if (await page.locator('.top-bar-logout').count() === 0) {
     throw new Error('aucun bouton de déconnexion dans la barre du haut')
   }
 })
 
-await step('le formulaire d’ajout de deck cache la vitrine par défaut', async () => {
+await step('le panneau de tags est sous le formulaire de deck', async () => {
   await page.locator('.top-bar-nav button', { hasText: 'Joueurs & decks' }).click()
   await page.locator('.players-manager').waitFor()
+  await page.locator('.tag-admin').waitFor()
+
+  // Il doit venir APRÈS le formulaire de deck dans la colonne, pas ailleurs.
+  const ordre = await page.locator('.players-manager-forms').evaluate((col) =>
+    [...col.children].map((el) => String(el.className).split(' ')[0]))
+  const iDeck = ordre.findIndex((c) => c.includes('players-form'))
+  const iTags = ordre.findIndex((c) => c.includes('tag-admin'))
+  if (iTags < 0 || iTags < iDeck) {
+    throw new Error(`ordre de la colonne : ${ordre.join(', ')}`)
+  }
+
+  await page.locator('.tag-admin-add input').fill('Test Combo')
+  await page.locator('.tag-admin-add button').click()
+  await page.locator('.tag-admin-row', { hasText: 'Test Combo' }).waitFor()
+})
+
+await step('renommer un tag met à jour le sélecteur voisin', async () => {
+  // Les deux vivent maintenant sur le même écran : un vocabulaire modifié d'un
+  // côté doit se voir de l'autre sans rechargement.
+  const box = page.locator('.players-form-deck .showcase-fields input[type="checkbox"]')
+  if (!(await box.isChecked())) await box.check()
+  await page.locator('.players-form-deck .tag-picker').waitFor()
+
+  // On repère la ligne par son rang : en édition elle n'affiche plus son
+  // libellé, donc un filtre sur le texte cesserait de la retrouver.
+  const libelles = await page.locator('.tag-admin-label').allInnerTexts()
+  const rang = libelles.findIndex((t) => t.trim() === 'Test Combo')
+  if (rang < 0) throw new Error(`« Test Combo » absent : ${libelles.join(', ')}`)
+
+  const ligne = page.locator('.tag-admin-row').nth(rang)
+  await ligne.locator('button', { hasText: 'Renommer' }).click()
+  await ligne.locator('input').fill('Test Combo Renommé')
+  await ligne.locator('button', { hasText: 'Enregistrer' }).click()
+  await page.waitForTimeout(1200)
+
+  const options = await page.locator('.players-form-deck .tag-picker select')
+    .evaluate((el) => [...el.options].map((o) => o.textContent))
+  if (!options.some((o) => o.includes('Test Combo Renommé'))) {
+    throw new Error(`sélecteur pas à jour : ${options.join(', ')}`)
+  }
+
+  // On remet le libellé attendu par les étapes suivantes.
+  const apres = await page.locator('.tag-admin-label').allInnerTexts()
+  const rang2 = apres.findIndex((t) => t.trim() === 'Test Combo Renommé')
+  const renommee = page.locator('.tag-admin-row').nth(rang2)
+  await renommee.locator('button', { hasText: 'Renommer' }).click()
+  await renommee.locator('input').fill('Test Combo')
+  await renommee.locator('button', { hasText: 'Enregistrer' }).click()
+  await page.waitForTimeout(1000)
+  await box.uncheck()
+})
+
+await step('le formulaire d’ajout de deck cache la vitrine par défaut', async () => {
   await page.locator('.showcase-fields').first().waitFor()
   if (await page.locator('.showcase-fields-body').count() > 0) {
     throw new Error('les champs vitrine sont dépliés alors que la case est décochée')

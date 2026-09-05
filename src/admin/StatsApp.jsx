@@ -22,7 +22,6 @@ import PlayersManager from '../PlayersManager'
 import DeckStatsModal from '../DeckStatsModal'
 import GameDetailsModal from '../GameDetailsModal'
 import DeleteGameModal from '../DeleteGameModal'
-import TagAdmin from './TagAdmin.jsx'
 import { signOut } from '../hooks/useAuth.js'
 import TempGameView from '../TempGameView'
 import TempGamePickerModal from '../TempGamePickerModal'
@@ -823,13 +822,6 @@ function SideNav({ open, onClose, activeView, onNavigate, onExportJson, onExport
           >
             Joueurs & decks
           </button>
-          <button
-            type="button"
-            className={`side-nav-link${activeView === 'tags' ? ' is-active' : ''}`}
-            onClick={() => go('tags')}
-          >
-            Tags
-          </button>
         </nav>
 
         <div className="side-nav-section">
@@ -1321,27 +1313,9 @@ function StatsApp() {
           </svg>
         </button>
 
-        {/* Groupe de gauche : l'identité, puis les deux gestes de saisie —
-            ce qu'on vient faire ici la plupart du temps. */}
-        <div className="top-bar-start">
-          <div className="top-bar-brand">
-            <h1>MagicAddicts Stats</h1>
-            <p className="eyebrow">Commander</p>
-          </div>
-          <button
-            type="button"
-            className="btn btn-primary btn-add"
-            onClick={openAddForm}
-          >
-            + Partie
-          </button>
-          <button
-            type="button"
-            className={`btn btn-ghost btn-live${liveGameCount > 0 ? ' has-temp-game' : ''}`}
-            onClick={openLiveGame}
-          >
-            {liveGameCount > 0 ? `● Live (${liveGameCount})` : 'Live'}
-          </button>
+        <div className="top-bar-brand">
+          <h1>MagicAddicts Stats</h1>
+          <p className="eyebrow">Commander</p>
         </div>
 
         <nav className="top-bar-nav top-bar-nav-desktop" aria-label="Navigation">
@@ -1359,18 +1333,28 @@ function StatsApp() {
           >
             Joueurs & decks
           </button>
-          <button
-            type="button"
-            className={`btn btn-tab${activeView === 'tags' ? ' is-active' : ''}`}
-            onClick={() => setActiveView('tags')}
-          >
-            Tags
-          </button>
         </nav>
 
-        {/* Groupe de droite : les exports, un filet, puis la déconnexion —
-            isolée pour qu'on ne la clique pas en visant « Excel ». */}
+        {/* Trois groupes séparés par des filets, du plus courant au plus
+            définitif : saisir une partie, exporter, quitter. Les boutons se
+            ressemblent à l'intérieur d'un groupe ; ce sont les filets qui
+            disent où l'on change de nature de geste. */}
         <div className="top-bar-actions">
+          <button
+            type="button"
+            className="btn btn-ghost top-bar-add-btn"
+            onClick={openAddForm}
+          >
+            + Partie
+          </button>
+          <button
+            type="button"
+            className={`btn btn-ghost top-bar-live-btn${liveGameCount > 0 ? ' has-temp-game' : ''}`}
+            onClick={openLiveGame}
+          >
+            {liveGameCount > 0 ? `● Live (${liveGameCount})` : 'Live'}
+          </button>
+          <span className="top-bar-divider" aria-hidden="true" />
           <button
             type="button"
             className="btn btn-ghost top-bar-export-btn"
@@ -1405,10 +1389,6 @@ function StatsApp() {
           onAbandon={handleAbandonTempGame}
           onBack={() => setActiveView('dashboard')}
         />
-      ) : activeView === 'tags' ? (
-        <div className="page-body">
-          <TagAdmin />
-        </div>
       ) : activeView === 'players' ? (
         <PlayersManager
           users={users}

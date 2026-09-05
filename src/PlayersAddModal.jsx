@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import CommanderPicker from './CommanderPicker'
 import Select from './Select'
 import ShowcaseFields from './admin/fields/ShowcaseFields.jsx'
+import TagAdmin from './admin/TagAdmin.jsx'
 
 const BRACKET_OPTIONS = [1, 2, 3, 4].flatMap((b) => [
   { value: String(b), label: `B${b}` },
@@ -89,9 +90,24 @@ export default function PlayersAddModal({
           >
             Deck
           </button>
+          {/* Sur mobile la colonne de gauche n'existe pas : sans cet onglet, le
+              ménage des tags serait inatteignable depuis un téléphone. */}
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'tags'}
+            className={`players-add-tab${tab === 'tags' ? ' is-active' : ''}`}
+            onClick={() => onTab('tags')}
+          >
+            Tags
+          </button>
         </div>
 
-        {tab === 'player' ? (
+        {tab === 'tags' ? (
+          <div className="players-add-modal-body">
+            <TagAdmin tags={tags} onTagsChange={onTagsChange} />
+          </div>
+        ) : tab === 'player' ? (
           <form className="players-add-form" onSubmit={onAddPlayer}>
             <div className="players-add-modal-body">
               <label className="form-field">

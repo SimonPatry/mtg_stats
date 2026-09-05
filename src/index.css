@@ -185,13 +185,19 @@ body.admin-theme #root {
   flex-shrink: 0;
 }
 
-/* Identité et gestes de saisie, groupés à gauche. */
-.top-bar-start {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  min-width: 0;
-  flex-shrink: 0;
+/* Les deux gestes de saisie, dans le premier groupe de la barre d'actions.
+   Même apparence que leurs voisins — c'est le filet qui marque la frontière,
+   pas une forme différente. « + Partie » garde l'accent, en texte seulement :
+   assez pour se distinguer, pas assez pour peser comme un aplat plein. */
+/* Sélecteur descendant : `.btn-ghost` est déclaré plus bas dans la feuille et
+   l'emporterait à spécificité égale. */
+.top-bar-actions .top-bar-add-btn {
+  color: var(--accent);
+}
+
+.top-bar-actions .top-bar-live-btn.has-temp-game {
+  color: var(--win);
+  font-weight: 700;
 }
 
 /* Filet vertical : sépare les exports de la déconnexion, dont la conséquence
@@ -335,11 +341,6 @@ body.admin-theme #root {
   flex-direction: column;
   justify-content: center;
   gap: 0.15rem;
-}
-
-.btn-add {
-  flex-shrink: 0;
-  padding: 0.65rem 1.1rem;
 }
 
 .dashboard {
@@ -585,21 +586,6 @@ body.admin-theme #root {
 
 .btn-danger:hover:not(:disabled) {
   filter: brightness(1.05);
-}
-
-/* Variante pour les suppressions posées DANS une liste — une section de
-   carrousel, un tag. Le rouge plein est réservé aux gestes qui méritent qu'on
-   s'arrête, comme supprimer une partie depuis son modal. */
-.btn-danger-ghost {
-  background: transparent;
-  color: #f08a80;
-  border: 1px solid color-mix(in srgb, #b42318 55%, transparent);
-  transition: background var(--t, 0.2s ease), border-color var(--t, 0.2s ease);
-}
-
-.btn-danger-ghost:hover:not(:disabled) {
-  background: color-mix(in srgb, #b42318 18%, transparent);
-  border-color: #b42318;
 }
 
 .delete-game-hint {
@@ -865,14 +851,6 @@ body.admin-theme #root {
     display: none !important;
   }
 
-  /* Le groupe de gauche prend la place restante ; c'est le titre qui se
-     tronque, pas les boutons. */
-  .top-bar-start {
-    flex: 1;
-    min-width: 0;
-    gap: 0.4rem;
-  }
-
   .top-bar-brand {
     flex: 1;
     min-width: 0;
@@ -894,8 +872,6 @@ body.admin-theme #root {
     flex-shrink: 0;
   }
 
-  .top-bar-start .btn-add,
-  .top-bar-start .btn-live,
   .top-bar-actions .btn {
     padding: 0.38rem 0.7rem;
     font-size: 0.78rem;
@@ -1733,6 +1709,25 @@ body.admin-theme #root {
 }
 
 .btn-ghost:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* Déclarée APRÈS `.btn`, qui pose `border: none` : à spécificité égale la
+   dernière règle l'emporte, et le contour ne s'affichait pas.
+   Variante pour les suppressions posées DANS une liste — une section de
+   carrousel, un tag. Le rouge plein est réservé aux gestes qui méritent qu'on
+   s'arrête, comme supprimer une partie depuis son modal. */
+.btn-danger-ghost {
+  background: transparent;
+  color: #f08a80;
+  /* Assez visible pour se lire comme un bouton à côté de « Renommer », et non
+     comme un lien texte : à 55 % le contour disparaissait sur ce fond. */
+  border: 1px solid color-mix(in srgb, #b42318 80%, transparent);
+  transition: background var(--t, 0.2s ease), border-color var(--t, 0.2s ease);
+}
+
+.btn-danger-ghost:hover:not(:disabled) {
+  background: color-mix(in srgb, #b42318 18%, transparent);
+  border-color: #b42318;
+}
 
 .modal-backdrop {
   position: fixed;
@@ -2845,7 +2840,11 @@ body.admin-theme #root {
   gap: 1rem;
   min-height: 0;
   min-width: 0;
-  overflow: hidden;
+  /* La colonne défile d'un bloc. Avant l'arrivée du panneau de tags, c'était
+     le formulaire de deck qui défilait pour son compte ; à deux panneaux
+     l'un sous l'autre, il se retrouvait comprimé et tronqué. */
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .players-form {
@@ -2861,9 +2860,7 @@ body.admin-theme #root {
 }
 
 .players-form-deck {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
+  flex: 0 0 auto;
 }
 
 .players-form-submit {
@@ -3715,11 +3712,6 @@ body.admin-theme #root {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-}
-
-.btn-live.has-temp-game {
-  color: var(--accent);
-  font-weight: 700;
 }
 
 .top-bar-export-btn.is-fake-data {
@@ -4774,12 +4766,39 @@ body.admin-theme #root {
 }
 
 /* ─── Écran Tags ────────────────────────────────────────────────────────── */
-.tag-admin { max-width: 46rem; margin: 0 auto; }
+/* Le panneau vit dans la colonne de gauche de « Joueurs & decks », sous le
+   formulaire de deck. Même mise en page que ses voisins « Nouveau joueur » et
+   « Nouveau deck » : c'est la colonne qui défile, pas chacun des panneaux. */
+.tag-admin {
+  flex: 0 0 auto;
+  padding: 1rem;
+  gap: 0.75rem;
+}
+
+.tag-admin > h3 { margin: 0; }
+
+/* Dans le modal mobile, le panneau est déjà dans un cadre : le sien ferait
+   double. */
+.players-add-modal-body .tag-admin {
+  padding: 0;
+  border: 0;
+  background: none;
+  backdrop-filter: none;
+}
+
+.players-add-modal-body .tag-admin > h3 { display: none; }
+
+/* Le panneau ne porte de rembourrage que sur son en-tête ; le corps doit
+   apporter le sien, sans quoi tout vient buter contre la bordure. */
+.tag-admin-body {
+  padding: 0;
+}
 
 .tag-admin-add {
   display: flex;
-  gap: 8px;
-  margin: 18px 0;
+  align-items: stretch;
+  gap: 0.5rem;
+  margin: 1rem 0 0.5rem;
 }
 .tag-admin-add input { flex: 1 1 auto; min-width: 0; }
 
@@ -4787,11 +4806,16 @@ body.admin-theme #root {
 
 .tag-admin-row {
   display: flex;
-  gap: 12px;
+  gap: 0.75rem;
   align-items: center;
-  padding: 10px 0;
+  padding: 0.65rem 0;
   border-bottom: 1px solid var(--line);
 }
+
+/* La dernière ligne n'a rien à séparer d'elle : un filet y flotterait juste
+   au-dessus du bord du panneau. */
+.tag-admin-row:last-child { border-bottom: 0; }
+
 .tag-admin-row input { flex: 1 1 auto; min-width: 0; }
 
 .tag-admin-identity { flex: 1 1 auto; min-width: 0; }
@@ -4802,7 +4826,40 @@ body.admin-theme #root {
 .tag-admin-warn {
   border: 1px solid var(--danger, #ff6b6b);
   border-radius: var(--radius);
-  padding: 14px;
-  margin-top: 18px;
+  padding: 0.9rem;
+  margin-top: 1.25rem;
   background: rgba(255, 107, 107, 0.08);
+}
+
+.tag-admin-warn .modal-actions { margin-top: 0.9rem; }
+
+/* ─── Champs de saisie des écrans repris d'edh-forge ──────────────────────
+   Le projet ne stylait les champs que sous `.form-field` ; ceux-ci, écrits
+   sans cette enveloppe, tombaient sur l'apparence par défaut du navigateur —
+   un rectangle clair au milieu d'une interface sombre.
+------------------------------------------------------------------------- */
+.tag-admin-add input,
+.tag-admin-row > input,
+.tag-picker-controls input,
+.tag-picker-controls select,
+.slider-section-head input,
+.card-picker input {
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.45rem 0.55rem;
+  background: var(--surface);
+}
+
+.tag-admin-add input:focus,
+.tag-admin-row > input:focus,
+.tag-picker-controls input:focus,
+.tag-picker-controls select:focus,
+.slider-section-head input:focus,
+.card-picker input:focus {
+  outline: none;
+  border-color: var(--accent);
 }
