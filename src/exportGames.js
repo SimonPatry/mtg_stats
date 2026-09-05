@@ -139,7 +139,7 @@ function gameToExcelRow(game, users, decks, statsByDeckId, playerCommanderStats)
     winner_commanders: winner?.commanders ?? '',
   }
 
-  for (let i = 0; i < 4; i += 1) {
+  for (let i = 0; i < 5; i += 1) {
     const d = decksInGame[i] || {}
     const n = i + 1
     row[`seat_${n}`] = d.seat ?? ''

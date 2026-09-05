@@ -1,3 +1,5 @@
+import { isValidSeatCount, MIN_SEATS, MAX_SEATS } from './seats.js'
+
 export function parseJsonText(text, label = 'JSON') {
   if (typeof text !== 'string' || !text.trim()) {
     throw new Error(`${label} : contenu vide.`)
@@ -95,6 +97,11 @@ export function validateGamesEdit(before, after) {
     if (!Array.isArray(game.decks)) {
       throw new Error(`Partie « ${game.id} » : « decks » doit être un tableau.`)
     }
+    if (!isValidSeatCount(game.decks.length)) {
+      throw new Error(
+        `Partie « ${game.id} » : il faut entre ${MIN_SEATS} et ${MAX_SEATS} decks (reçu ${game.decks.length}).`,
+      )
+    }
   }
 
   return after
@@ -152,8 +159,10 @@ export function validateNewGameDraft(expectedGameId, game) {
       `JSON partie : l'id ne peut pas être modifié (attendu « ${expectedGameId} »).`,
     )
   }
-  if (!game.date || !Array.isArray(game.decks) || game.decks.length !== 4) {
-    throw new Error('JSON partie : structure invalide.')
+  if (!game.date || !Array.isArray(game.decks) || !isValidSeatCount(game.decks.length)) {
+    throw new Error(
+      `JSON partie : structure invalide (${MIN_SEATS} à ${MAX_SEATS} decks requis).`,
+    )
   }
   if (!game.decks.some((d) => d.result === 'win')) {
     throw new Error('JSON partie : un gagnant est requis.')

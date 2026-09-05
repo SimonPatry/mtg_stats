@@ -78,7 +78,7 @@ export function getLastPlayer(game) {
 
 export function getLastSeatOrder(game) {
   const seat = game?.lastSeatOrder
-  return typeof seat === 'number' && seat >= 1 && seat <= 4 ? seat : null
+  return typeof seat === 'number' && seat >= 1 && seat <= 5 ? seat : null
 }
 
 /** Un seul deck peut être « last » — par siège si dispo, sinon par nom unique. */

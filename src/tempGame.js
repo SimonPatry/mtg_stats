@@ -1,5 +1,6 @@
 import { createGameId } from './gamesApi'
 import { buildGameEventNotes } from './gameDetails'
+import { isValidSeatCount } from './seats'
 
 export const TEMP_GAME_STORAGE_KEY = 'mtg_stats_temp_game'
 export const LIVE_GAMES_STORAGE_KEY = 'mtg_stats_live_games'
@@ -7,7 +8,7 @@ export const LIVE_GAMES_STORAGE_KEY = 'mtg_stats_live_games'
 const EMPTY_LIVE_STORE = { activeId: null, games: {} }
 
 export function normalizeTempGame(raw) {
-  if (!raw?.id || !Array.isArray(raw.players) || raw.players.length !== 4) {
+  if (!raw?.id || !Array.isArray(raw.players) || !isValidSeatCount(raw.players.length)) {
     return null
   }
   return {

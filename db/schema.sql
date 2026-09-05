@@ -55,18 +55,18 @@ CREATE TABLE IF NOT EXISTS games (
   board_wipes              SMALLINT DEFAULT 0,
   winner_protected_victory BOOLEAN DEFAULT FALSE,
   last_player              VARCHAR(100),
-  last_seat_order          TINYINT,                   -- 1-4
+  last_seat_order          TINYINT,                   -- 1-5
   win_style                VARCHAR(30),               -- 'combat' | 'combo' | 'mill' | etc.
   notes                    TEXT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Joueurs/decks dans une partie (4 par partie)
+-- Joueurs/decks dans une partie (2 à 5 par partie)
 CREATE TABLE IF NOT EXISTS game_decks (
   id                INT AUTO_INCREMENT PRIMARY KEY,
   game_id           VARCHAR(36) NOT NULL,
   deck_id           VARCHAR(36),
   player            VARCHAR(100) NOT NULL,
-  seat_order        TINYINT NOT NULL,                 -- 1-4
+  seat_order        TINYINT NOT NULL,                 -- 1-5
   result            VARCHAR(10),                      -- 'win' | 'loss'
   bracket           TINYINT,
   bracket_variation VARCHAR(10),

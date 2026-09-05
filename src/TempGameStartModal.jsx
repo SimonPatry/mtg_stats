@@ -2,20 +2,26 @@ import { useEffect, useMemo, useState } from 'react'
 import { getActiveUsers } from './playersMapping'
 import Select from './Select'
 import { createTempGame } from './tempGame'
+import {
+  DEFAULT_SEATS,
+  MAX_SEATS,
+  MIN_SEATS,
+  makeSeatRange,
+  renumberSeats,
+} from './seats'
 
 const emptySeat = (seatOrder) => ({ seatOrder, userId: '', player: '' })
+
+function defaultSeats(count = DEFAULT_SEATS) {
+  return makeSeatRange(count).map((n) => emptySeat(n))
+}
 
 export default function TempGameStartModal({ users, onStart, onClose }) {
   const activeUsers = useMemo(
     () => getActiveUsers(users).sort((a, b) => a.name.localeCompare(b.name)),
     [users],
   )
-  const [seats, setSeats] = useState([
-    emptySeat(1),
-    emptySeat(2),
-    emptySeat(3),
-    emptySeat(4),
-  ])
+  const [seats, setSeats] = useState(() => defaultSeats())
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -35,15 +41,29 @@ export default function TempGameStartModal({ users, onStart, onClose }) {
     )
   }
 
+  function addSeat() {
+    setSeats((prev) => {
+      if (prev.length >= MAX_SEATS) return prev
+      return [...prev, emptySeat(prev.length + 1)]
+    })
+  }
+
+  function removeSeat() {
+    setSeats((prev) => {
+      if (prev.length <= MIN_SEATS) return prev
+      return renumberSeats(prev.slice(0, -1))
+    })
+  }
+
   function handleSubmit(e) {
     e.preventDefault()
     setError('')
     const ids = seats.map((s) => s.userId)
     if (ids.some((id) => !id)) {
-      setError('Choisis les 4 joueurs.')
+      setError(`Choisis les ${seats.length} joueurs.`)
       return
     }
-    if (new Set(ids).size !== 4) {
+    if (new Set(ids).size !== seats.length) {
       setError('Chaque joueur ne peut apparaître qu\'une fois.')
       return
     }
@@ -65,8 +85,28 @@ export default function TempGameStartModal({ users, onStart, onClose }) {
         </div>
 
         <p className="temp-game-start-hint">
-          Choisis les 4 joueurs. Les decks seront renseignés à la fin de la partie.
+          Choisis {MIN_SEATS} à {MAX_SEATS} joueurs ({seats.length} sélectionnés).
+          Les decks seront renseignés à la fin de la partie.
         </p>
+
+        <div className="form-seats-toolbar">
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={removeSeat}
+            disabled={seats.length <= MIN_SEATS}
+          >
+            − Joueur
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={addSeat}
+            disabled={seats.length >= MAX_SEATS}
+          >
+            + Joueur
+          </button>
+        </div>
 
         <div className="temp-game-start-seats">
           {seats.map((seat, i) => {

@@ -12,6 +12,14 @@ import Select from './Select'
 import NumberStepper from './NumberStepper'
 import { composeGameNotes } from './gameDetails'
 import { WIN_STYLES } from './tempGame'
+import {
+  DEFAULT_SEATS,
+  MAX_SEATS,
+  MIN_SEATS,
+  isValidSeatCount,
+  makeSeatRange,
+  renumberSeats,
+} from './seats'
 
 const emptyDeck = (seatOrder) => ({
   userId: '',
@@ -20,6 +28,10 @@ const emptyDeck = (seatOrder) => ({
   seatOrder,
   result: null,
 })
+
+function defaultFormDecks(count = DEFAULT_SEATS) {
+  return makeSeatRange(count).map((n) => emptyDeck(n))
+}
 
 function buildGameDraft({
   gameId,
@@ -62,7 +74,7 @@ function buildGameDraft({
     })
   }
 
-  if (resolvedDecks.length !== 4) return null
+  if (!isValidSeatCount(resolvedDecks.length)) return null
   if (!lastPlayer?.trim()) return null
 
   return {
@@ -102,7 +114,7 @@ function AddGameForm({ users, decks, onSave, onClose, fromTempGame = null }) {
   const [lastPlayerIndex, setLastPlayerIndex] = useState(null)
   const [notes, setNotes] = useState(() => initial?.notes ?? '')
   const [formDecks, setFormDecks] = useState(() =>
-    initial?.formDecks ?? [emptyDeck(1), emptyDeck(2), emptyDeck(3), emptyDeck(4)],
+    initial?.formDecks ?? defaultFormDecks(),
   )
   const [liveWipeEvents] = useState(() => initial?.wipeEvents ?? [])
   const [liveManaEvents] = useState(() => initial?.manaEvents ?? [])
@@ -245,6 +257,23 @@ function AddGameForm({ users, decks, onSave, onClose, fromTempGame = null }) {
     setLastPlayerIndex(index)
   }
 
+  function addSeat() {
+    setFormDecks((prev) => {
+      if (prev.length >= MAX_SEATS) return prev
+      return [...prev, emptyDeck(prev.length + 1)]
+    })
+  }
+
+  function removeSeat(index) {
+    if (formDecks.length <= MIN_SEATS) return
+    setFormDecks((prev) => renumberSeats(prev.filter((_, i) => i !== index)))
+    setLastPlayerIndex((cur) => {
+      if (cur == null) return null
+      if (cur === index) return null
+      return cur > index ? cur - 1 : cur
+    })
+  }
+
   function validateForm() {
     if (!date) return 'Choisis une date.'
     const turnsNum = Number(turns)
@@ -255,15 +284,18 @@ function AddGameForm({ users, decks, onSave, onClose, fromTempGame = null }) {
     if (!bracket || Number.isNaN(bracketNum) || bracketNum < 1 || bracketNum > 4) {
       return 'Choisis un bracket de table (B1–B4).'
     }
-    const deckIds = formDecks.map((d) => d.deckId)
-    if (deckIds.some((id) => !id) || deckIds.length !== 4) {
-      return 'Choisis les 4 decks.'
+    if (!isValidSeatCount(formDecks.length)) {
+      return `Il faut entre ${MIN_SEATS} et ${MAX_SEATS} joueurs.`
     }
-    if (new Set(deckIds).size !== 4) {
+    const deckIds = formDecks.map((d) => d.deckId)
+    if (deckIds.some((id) => !id)) {
+      return `Choisis les ${formDecks.length} decks.`
+    }
+    if (new Set(deckIds).size !== formDecks.length) {
       return 'Chaque deck doit être différent.'
     }
     const playerIds = formDecks.map((d) => d.userId)
-    if (playerIds.some((id) => !id) || new Set(playerIds).size !== 4) {
+    if (playerIds.some((id) => !id) || new Set(playerIds).size !== formDecks.length) {
       return 'Chaque joueur ne peut apparaître qu\'une fois.'
     }
     if (!formDecks.some((d) => d.result === 'win')) {
@@ -413,7 +445,27 @@ function AddGameForm({ users, decks, onSave, onClose, fromTempGame = null }) {
         )}
 
         <fieldset className="form-decks">
-          <legend>Decks (joueur + commandant + win + last)</legend>
+          <legend>
+            Decks ({formDecks.length} joueurs — {MIN_SEATS} à {MAX_SEATS})
+          </legend>
+          <div className="form-seats-toolbar">
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => removeSeat(formDecks.length - 1)}
+              disabled={formDecks.length <= MIN_SEATS}
+            >
+              − Joueur
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={addSeat}
+              disabled={formDecks.length >= MAX_SEATS}
+            >
+              + Joueur
+            </button>
+          </div>
           <div className="form-deck-head">
             <span>#</span>
             <span>Joueur</span>
