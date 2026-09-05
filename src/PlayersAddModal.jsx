@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import CommanderPicker from './CommanderPicker'
 import Select from './Select'
+import ShowcaseFields from './admin/fields/ShowcaseFields.jsx'
 
 const BRACKET_OPTIONS = [1, 2, 3, 4].flatMap((b) => [
   { value: String(b), label: `B${b}` },
@@ -28,6 +29,11 @@ export default function PlayersAddModal({
   bracketKey,
   onBracketKey,
   deckUrl,
+  showcase,
+  onShowcase,
+  tags,
+  onTagsChange,
+  colorRef,
   onDeckUrl,
   onAddDeck,
   onZoom,
@@ -162,6 +168,13 @@ export default function PlayersAddModal({
                   placeholder="https://moxfield.com/decks/…"
                 />
               </label>
+              <ShowcaseFields
+                value={showcase}
+                onChange={onShowcase}
+                tags={tags}
+                onTagsChange={onTagsChange}
+                colors={colorRef}
+              />
             </div>
             <div className="modal-actions">
               <button type="button" className="btn btn-ghost" onClick={onClose}>

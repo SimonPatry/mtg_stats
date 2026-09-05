@@ -1,5 +1,6 @@
 import CommanderPicker from './CommanderPicker'
 import Select from './Select'
+import ShowcaseFields from './admin/fields/ShowcaseFields.jsx'
 
 const BRACKET_OPTIONS = [1, 2, 3, 4].flatMap((b) => [
   { value: String(b), label: `B${b}` },
@@ -24,6 +25,11 @@ export default function PlayersAddDesktopForms({
   onBracketKey,
   deckUrl,
   onDeckUrl,
+  showcase,
+  onShowcase,
+  tags,
+  onTagsChange,
+  colorRef,
   onAddDeck,
   onZoom,
 }) {
@@ -97,6 +103,13 @@ export default function PlayersAddDesktopForms({
             placeholder="https://moxfield.com/decks/…"
           />
         </label>
+        <ShowcaseFields
+          value={showcase}
+          onChange={onShowcase}
+          tags={tags}
+          onTagsChange={onTagsChange}
+          colors={colorRef}
+        />
         <div className="players-form-actions">
           <button
             type="submit"

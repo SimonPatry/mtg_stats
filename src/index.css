@@ -1,4 +1,13 @@
-:root {
+/* ---------------------------------------------------------------------------
+   Feuille de l'administration.
+
+   Tout ce qui suit est porté par `body.admin-theme`, classe posée par AdminApp
+   à son montage et retirée quand on le quitte. Sans cette portée, la feuille
+   partait avec le paquet chargé à la demande et ne repartait jamais : revenir
+   sur la vitrine gardait la palette bleue, la police, les rayons d'angle — et
+   surtout `overflow: hidden`, qui empêchait la page publique de défiler.
+--------------------------------------------------------------------------- */
+body.admin-theme {
   --bg-0: #070b14;
   --bg-1: #0d1424;
   --ink: #e8eef8;
@@ -15,20 +24,12 @@
   --font-display: 'Cinzel', 'Times New Roman', serif;
   --font-body: 'Manrope', sans-serif;
   --topbar-h: 4.5rem;
-}
 
-* {
-  box-sizing: border-box;
-}
-
-html,
-body {
   margin: 0;
-  height: 100%;
+  /* 100dvh et non 100% : la hauteur ne dépend plus de celle de <html>, qu'on
+     ne touche plus du tout. */
+  height: 100dvh;
   overflow: hidden;
-}
-
-body {
   font-family: var(--font-body);
   color: var(--ink);
   color-scheme: dark;
@@ -38,7 +39,10 @@ body {
     linear-gradient(180deg, var(--bg-0), var(--bg-1));
 }
 
-#root {
+/* `* { box-sizing: border-box }` vivait ici aussi ; styles/base.css le pose
+   déjà pour tout le projet. */
+
+body.admin-theme #root {
   max-width: 100%;
   height: 100%;
   margin: 0 auto;
@@ -47,6 +51,95 @@ body {
   flex-direction: column;
   overflow: hidden;
 }
+
+.admin-login {
+  max-width: 340px;
+  margin: 18vh auto;
+  padding: 0 20px;
+  text-align: center;
+  font-family: var(--font-body);
+}
+
+.admin-login h1 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  letter-spacing: 0.04em;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+
+.admin-login > p {
+  color: var(--ink-soft);
+  margin: 0 0 26px;
+}
+
+.admin-login label {
+  display: block;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.admin-login .field-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: var(--ink-soft);
+}
+
+.admin-login input[type='password'] {
+  width: 100%;
+  padding: 9px 11px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--line);
+  /* 10px, pas var(--radius) : cette feuille porte un rayon de 18px pour les
+     grandes cartes du tableau de bord, qui transforme un champ en gélule. */
+  border-radius: 10px;
+  color: var(--ink);
+  font: inherit;
+}
+
+.admin-login input[type='password']:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.admin-login .error {
+  color: var(--danger, #ff6b6b);
+  font-size: 13px;
+  margin: 0 0 12px;
+  text-align: left;
+}
+
+.admin-login button {
+  width: 100%;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 9px 14px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  transition: filter var(--t, 0.2s ease);
+}
+
+/* Éclaircissement plutôt qu'une seconde couleur : le survol suit l'accent
+   quel que soit le thème, sans jeton supplémentaire à tenir à jour. */
+.admin-login button:hover:not(:disabled) { filter: brightness(1.15); }
+
+/* Retour à la vitrine : discret, sous le bouton, pour qui a suivi le lien
+   « Admin » du site et voulait juste regarder. */
+.admin-login__back {
+  display: inline-block;
+  margin-top: 18px;
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+
+.admin-login__back:hover { color: var(--ink); text-decoration: underline; }
+.admin-login button:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .page {
   display: flex;
@@ -89,6 +182,25 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* Identité et gestes de saisie, groupés à gauche. */
+.top-bar-start {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+/* Filet vertical : sépare les exports de la déconnexion, dont la conséquence
+   n'a rien à voir avec celle des boutons voisins. */
+.top-bar-divider {
+  width: 1px;
+  height: 1.6rem;
+  margin: 0 0.15rem;
+  background: var(--line);
   flex-shrink: 0;
 }
 
@@ -475,6 +587,21 @@ body {
   filter: brightness(1.05);
 }
 
+/* Variante pour les suppressions posées DANS une liste — une section de
+   carrousel, un tag. Le rouge plein est réservé aux gestes qui méritent qu'on
+   s'arrête, comme supprimer une partie depuis son modal. */
+.btn-danger-ghost {
+  background: transparent;
+  color: #f08a80;
+  border: 1px solid color-mix(in srgb, #b42318 55%, transparent);
+  transition: background var(--t, 0.2s ease), border-color var(--t, 0.2s ease);
+}
+
+.btn-danger-ghost:hover:not(:disabled) {
+  background: color-mix(in srgb, #b42318 18%, transparent);
+  border-color: #b42318;
+}
+
 .delete-game-hint {
   margin: 0 0 1rem;
   font-size: 0.9rem;
@@ -533,6 +660,9 @@ body {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  /* Deux lignes réservées même pour un nom court : c'est ce qui rend toutes
+     les cartes de la grille rigoureusement identiques. */
+  min-height: calc(2em * 1.25);
 }
 
 .game-coms-row {
@@ -727,8 +857,20 @@ body {
   }
 
   .top-bar-nav-desktop,
-  .top-bar-export-btn {
+  .top-bar-export-btn,
+  /* Exports et déconnexion passent dans le tiroir : la barre du haut n'a la
+     place que du titre et des deux gestes de saisie. */
+  .top-bar-logout,
+  .top-bar-divider {
     display: none !important;
+  }
+
+  /* Le groupe de gauche prend la place restante ; c'est le titre qui se
+     tronque, pas les boutons. */
+  .top-bar-start {
+    flex: 1;
+    min-width: 0;
+    gap: 0.4rem;
   }
 
   .top-bar-brand {
@@ -752,7 +894,9 @@ body {
     flex-shrink: 0;
   }
 
-  .top-bar-actions .btn-add {
+  .top-bar-start .btn-add,
+  .top-bar-start .btn-live,
+  .top-bar-actions .btn {
     padding: 0.38rem 0.7rem;
     font-size: 0.78rem;
     white-space: nowrap;
@@ -1576,7 +1720,19 @@ body {
   background: transparent;
   color: var(--ink-soft);
   border: 1px solid var(--line);
+  transition: color var(--t, 0.2s ease), border-color var(--t, 0.2s ease),
+    background var(--t, 0.2s ease);
 }
+
+/* Aucun retour au survol n'existait sur ces boutons : « Créer » un tag,
+   « Annuler », les flèches d'un carrousel semblaient tous inertes. */
+.btn-ghost:hover:not(:disabled) {
+  color: var(--ink);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.btn-ghost:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .modal-backdrop {
   position: fixed;
@@ -2807,6 +2963,9 @@ body {
 
 .roster-deck-tile {
   display: block;
+  /* La tuile occupe toute la hauteur de sa cellule de grille, et la carte
+     toute la hauteur de la tuile : les cartes d'une même ligne s'alignent. */
+  height: 100%;
   min-width: 0;
   text-decoration: none;
   color: inherit;
@@ -2824,6 +2983,11 @@ body {
   flex-direction: row;
   align-items: stretch;
   overflow: hidden;
+  /* Hauteur constante, et non minimale : le corps réserve toujours deux lignes
+     de titre et une ligne de méta, si bien que la carte mesure la même chose
+     qu'un commandant s'appelle « Krenko » ou « Korvold, Fae-Cursed King ».
+     Sans cela l'illustration s'étirait avec la boîte et la grille ondulait. */
+  height: 100%;
   min-height: 5.25rem;
   border-radius: calc(var(--radius) - 2px);
   border: 1px solid var(--line);
@@ -2883,6 +3047,9 @@ body {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  /* Deux lignes réservées même pour un nom court : c'est ce qui rend toutes
+     les cartes de la grille rigoureusement identiques. */
+  min-height: calc(2em * 1.25);
 }
 
 .roster-deck-link {
@@ -2923,10 +3090,19 @@ body {
 }
 
 .roster-deck-version {
-  margin: 0;
+  /* Posée à la suite du bracket, séparée par un point médian. */
+  margin-left: 0.35rem;
   font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0;
   color: var(--ink-soft);
   opacity: 0.85;
+}
+
+.roster-deck-version::before {
+  content: '·';
+  margin-right: 0.35rem;
+  opacity: 0.6;
 }
 
 .roster-deck-edit {
@@ -4380,4 +4556,253 @@ body {
   margin-top: 0.25rem;
   padding-top: 0.5rem;
   border-top: 1px solid var(--line);
+}
+
+/* ─── Écrans repris d'edh-forge : vitrine et tags ─────────────────────────
+   Le bloc « afficher sur le site » du formulaire de deck, les sélecteurs de
+   couleurs et de tags, l'éditeur de carrousels et l'écran de ménage des tags.
+   Charte du tableau de bord — le vert et les serifs restent à la vitrine.
+------------------------------------------------------------------------- */
+
+.btn-tiny {
+  padding: 4px 9px;
+  font-size: 0.8125rem;
+  border-radius: 8px;
+}
+
+.form-field-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  color: var(--ink-soft);
+}
+
+/* Pastilles cliquables : couleurs, et tags déjà posés. */
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-soft);
+  transition: border-color var(--t, 0.2s ease), color var(--t, 0.2s ease);
+}
+
+.chip:hover { border-color: var(--accent); color: var(--ink); }
+
+.chip.is-on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.chip-remove {
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+  border: 0;
+  background: none;
+  color: inherit;
+  padding: 0 0 0 2px;
+  opacity: 0.7;
+}
+.chip-remove:hover { opacity: 1; }
+
+/* ─── Bloc vitrine, replié derrière sa case ─────────────────────────────── */
+.showcase-fields,
+.deck-edit-showcase {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin: 16px 0 0;
+  background: var(--surface-2, rgba(255, 255, 255, 0.02));
+}
+
+.showcase-fields > .form-check,
+.deck-edit-showcase > .form-check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.showcase-fields > .form-check input[type='checkbox'],
+.deck-edit-showcase > .form-check input[type='checkbox'] {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+.showcase-fields > .form-check small,
+.deck-edit-showcase > .form-check small {
+  display: block;
+  margin-top: 3px;
+  color: var(--ink-soft);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.showcase-fields-body,
+.deck-edit-showcase-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+/* ─── Sélecteur de tags ─────────────────────────────────────────────────── */
+.tag-picker-pending {
+  margin: 0.4rem 0 0;
+  color: #e0b341;
+}
+
+.tag-picker-empty {
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+  /* Une règle du formulaire met les <span> en petites capitales italiques,
+     ce qui convient à un intitulé de champ, pas à une phrase. */
+  text-transform: none;
+  font-style: normal;
+  letter-spacing: 0;
+}
+
+.tag-picker-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.tag-picker-controls select { flex: 1 1 12rem; min-width: 0; }
+.tag-picker-controls input { flex: 1 1 10rem; min-width: 0; }
+
+/* ─── Autocomplétion Scryfall ───────────────────────────────────────────── */
+.card-picker { position: relative; flex: 1 1 auto; min-width: 0; }
+.card-picker input { width: 100%; }
+
+.card-picker-suggestions {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 12rem;
+  overflow-y: auto;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.card-picker-option {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  padding: 0.4rem 0.5rem;
+  border-radius: 8px;
+}
+
+.card-picker-option:hover,
+.card-picker-option.is-active {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+/* Même vignette que le sélecteur de commandant : 36 × 50, le rapport d'une
+   carte Magic, assez grand pour distinguer deux illustrations proches. */
+.card-picker-option img,
+.card-picker-option-fallback {
+  width: 36px;
+  height: 50px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  object-fit: cover;
+  object-position: center top;
+  background: linear-gradient(145deg, #1a2740, #0b1220);
+}
+
+.card-picker-option-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-picker-status {
+  padding: 0.5rem 0.6rem;
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+}
+
+/* ─── Éditeur de carrousels ─────────────────────────────────────────────── */
+.slider-section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.slider-section-head {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.slider-section-head input { flex: 1 1 auto; min-width: 0; }
+.slider-section-actions { display: flex; gap: 6px; flex: 0 0 auto; }
+
+.slider-card-line {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+/* ─── Écran Tags ────────────────────────────────────────────────────────── */
+.tag-admin { max-width: 46rem; margin: 0 auto; }
+
+.tag-admin-add {
+  display: flex;
+  gap: 8px;
+  margin: 18px 0;
+}
+.tag-admin-add input { flex: 1 1 auto; min-width: 0; }
+
+.tag-admin-list { list-style: none; margin: 0; padding: 0; }
+
+.tag-admin-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.tag-admin-row input { flex: 1 1 auto; min-width: 0; }
+
+.tag-admin-identity { flex: 1 1 auto; min-width: 0; }
+.tag-admin-label { display: block; font-weight: 600; }
+.tag-admin-meta { display: block; font-size: 0.8125rem; color: var(--ink-soft); }
+.tag-admin-actions { display: flex; gap: 6px; flex: 0 0 auto; }
+
+.tag-admin-warn {
+  border: 1px solid var(--danger, #ff6b6b);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-top: 18px;
+  background: rgba(255, 107, 107, 0.08);
 }

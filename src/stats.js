@@ -3,6 +3,7 @@ import {
   getUserName,
   commandersKey,
   getCurrentDeckForCommanders,
+  getDeckVersionChain,
   getActiveDecks,
   asCommanderList,
 } from './playersMapping.js'
@@ -70,8 +71,21 @@ export function computeStats(games, users, decks) {
 
   function findDeckStatsKey(deck) {
     if (deck.deckId && winsByDeck[deck.deckId]) return deck.deckId
-    const current = getCurrentDeckForCommanders(decks, deck.commanders)
-    if (current && winsByDeck[current.id]) return current.id
+
+    // Le siège porte l'identifiant d'une version antérieure : on remonte sa
+    // chaîne de versions jusqu'à la version courante. C'est le seul
+    // rattachement fiable, parce qu'il suit le deck lui-même — deux joueurs
+    // peuvent parfaitement jouer le même commandant.
+    if (deck.deckId) {
+      const chain = getDeckVersionChain(decks, deck.deckId)
+      const current = chain[chain.length - 1]
+      if (current && winsByDeck[current.id]) return current.id
+    }
+
+    // Sans identifiant de deck, on apparie sur joueur + commandants. Cet
+    // appariement passe AVANT la recherche par commandants seuls : celle-ci
+    // ignore le propriétaire et attribuait les parties au mauvais joueur dès
+    // que deux personnes jouaient le même commandant.
     const comKey = commandersKey(deck.commanders)
     const byPlayer = Object.keys(winsByDeck).find((id) => {
       const entry = winsByDeck[id]
@@ -81,6 +95,10 @@ export function computeStats(games, users, decks) {
       )
     })
     if (byPlayer) return byPlayer
+
+    const current = getCurrentDeckForCommanders(decks, deck.commanders)
+    if (current && winsByDeck[current.id]) return current.id
+
     return null
   }
 

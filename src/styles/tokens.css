@@ -1,0 +1,49 @@
+/* ---------------------------------------------------------
+   Forge Arcanique — jetons de style
+   Palette, couleurs de bande et typographie. Partagé par la
+   vitrine ET l'administration : c'est le seul endroit où une
+   couleur du site est définie.
+   Voir CHARTE-GRAPHIQUE.md pour la référence complète.
+--------------------------------------------------------- */
+
+:root {
+  /* Fond de page, du header et du footer : la même couleur que la bande
+     noire (voir .deck-band--b dans site.css), un vrai noir neutre. */
+  --bg: #0a0a0b;
+  --ink: #eef5f2;
+  --ink-dim: rgba(238, 245, 242, 0.62);
+  --accent: #2fd6a0;
+  --accent-soft: #22b78a;
+  --line: rgba(238, 245, 242, 0.14);
+  --shadow: rgba(0, 0, 0, 0.4);
+  --panel: #10201b;
+  /* Texte posé SUR un aplat --accent (flèches survolées, bouton CTA).
+     L'accent par défaut est un vert clair : il faut donc un texte foncé.
+     La bande blanche, dont l'accent est un vert foncé, l'inverse. */
+  --on-accent: #04140f;
+  /* --tag-bg n'est PAS défini ici : une custom property déclarée sur :root
+     résoudrait var(--panel) contre le panneau de :root, pas contre celui de
+     la bande. Le défaut (panneau assombri) est donc la valeur de repli du
+     var() dans .deck-banner__tag, et seule la bande blanche le redéfinit. */
+
+  --font-display: "Fraunces", Georgia, serif;
+  --font-title: "Cinzel", "Times New Roman", serif;
+  --font-serif: "Fraunces", Georgia, serif;
+  --font-body: "Inter", "Segoe UI", sans-serif;
+
+  /* Utilisés par l'administration uniquement, mais définis ici comme les
+     autres : une couleur du projet ne doit avoir qu'un seul point de
+     définition. */
+  --danger: #ff6b6b;
+  --radius: 10px;
+
+  /* Durées d'animation. Trois valeurs, pas quatorze : une transition qui ne
+     rentre dans aucune des trois doit se justifier. */
+  --t-fast: 0.15s ease;
+  --t: 0.2s ease;
+  --t-slow: 0.3s ease;
+
+  --gutter: clamp(1.25rem, 3vw, 2.5rem);
+  --max-width: 1480px;
+}
+

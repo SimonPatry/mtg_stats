@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react'
 import { formatBracketLine, formatCommanders, getDeckChainHistory } from './playersMapping'
 import Select from './Select'
+import { api } from './lib/api.js'
+import ColorPicker from './admin/fields/ColorPicker.jsx'
+import TagPicker from './admin/fields/TagPicker.jsx'
+import SliderEditor from './admin/fields/SliderEditor.jsx'
 
 const BRACKET_OPTIONS = [1, 2, 3, 4].flatMap((b) => [
   { value: String(b), label: `B${b}` },
@@ -29,13 +33,56 @@ function packBracket(bracket, bracketVariation) {
 }
 
 
-export default function DeckEditModal({ deck, decks, onSave, onClose, saving }) {
+/**
+ * Édition d'un deck — ses deux faces au même endroit.
+ *
+ * Les statistiques raisonnent en VERSIONS (bracket, lien, motif du changement) ;
+ * la vitrine raisonne en LIGNÉE (titre, description, couleurs, tags,
+ * carrousels). Le formulaire écrit donc à deux endroits : la lignée par
+ * `api.updateDeck`, la version par `onSave` — inchangé — et dans cet ordre, la
+ * création d'une nouvelle version ne devant pas se faire avant que la lignée
+ * soit à jour.
+ */
+export default function DeckEditModal({
+  deck, decks, onSave, onClose, saving, tags, onTagsChange, colorRef,
+}) {
   const [bracketKey, setBracketKey] = useState(() =>
     packBracket(deck.bracket, deck.bracketVariation),
   )
   const [deckUrl, setDeckUrl] = useState(() => deck.deckUrl ?? '')
   const [reason, setReason] = useState('')
   const [error, setError] = useState('')
+
+  // Face vitrine : chargée à l'ouverture, car ces champs vivent sur la lignée
+  // et non sur la ligne de version que manipulent les composants.
+  const [lineage, setLineage] = useState(null)
+  const [showcase, setShowcase] = useState(false)
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [colors, setColors] = useState([])
+  const [tagIds, setTagIds] = useState([])
+  const [slider, setSlider] = useState([])
+
+  useEffect(() => {
+    if (!deck.lineageId) return undefined
+    let cancelled = false
+
+    // Seule la lignée est chargée ici. Le vocabulaire de tags et le référentiel
+    // de couleurs viennent de l'écran : un tag créé dans ce modal doit être
+    // proposé immédiatement dans le formulaire de création, et réciproquement.
+    api.getDeck(deck.lineageId).then((row) => {
+      if (cancelled || !row) return
+      setLineage(row)
+      setShowcase(Boolean(row.showcase))
+      setName(row.name ?? '')
+      setDescription(row.description ?? '')
+      setColors(row.colors ?? [])
+      setTagIds(row.tag_ids ?? [])
+      setSlider(row.slider ?? [])
+    }).catch(() => { /* la face vitrine reste fermée, l'édition du bracket marche */ })
+
+    return () => { cancelled = true }
+  }, [deck.lineageId])
 
   useEffect(() => {
     function onKey(e) {
@@ -62,12 +109,43 @@ export default function DeckEditModal({ deck, decks, onSave, onClose, saving }) 
       return
     }
 
+    if (showcase && !name.trim()) {
+      setError('Un deck affiché sur le site doit avoir un titre.')
+      return
+    }
+    const emptySection = slider.find((s) => !s.title.trim() || s.cards.some((c) => !c.name.trim()))
+    if (showcase && emptySection) {
+      setError('Chaque section de carrousel a besoin d’un titre et de cartes nommées.')
+      return
+    }
+
     try {
+      if (lineage) {
+        await api.updateDeck(lineage.id, {
+          user_id: lineage.user_id,
+          name: name.trim(),
+          description: description.trim(),
+          showcase,
+          active: lineage.active !== false,
+          created_on: lineage.created_on,
+          commanders: lineage.commanders,
+          colors,
+          tag_ids: tagIds,
+          slider: showcase ? slider : [],
+        })
+      }
+      // Modifier la seule face vitrine ne doit pas passer par l'édition de
+      // version : celle-ci refuse un enregistrement sans changement, et on
+      // afficherait « aucune modification » alors qu'on vient d'en écrire.
+      const versionChanged =
+        bracketChanged || deckUrl.trim() !== (deck.deckUrl ?? '')
+
       await onSave({
         bracket,
         bracketVariation,
         reason: bracketChanged ? reason : '',
         deckUrl: deckUrl.trim(),
+        versionChanged,
       })
     } catch (err) {
       setError(err.message)
@@ -164,7 +242,72 @@ export default function DeckEditModal({ deck, decks, onSave, onClose, saving }) 
               </fieldset>
             )}
 
-            {error && <p className="json-editor-error">{error}</p>}
+            <fieldset className="deck-edit-showcase">
+              <label className="form-check">
+                <input
+                  type="checkbox"
+                  checked={showcase}
+                  disabled={!lineage}
+                  onChange={(e) => setShowcase(e.target.checked)}
+                />
+                <span>
+                  <strong>Afficher sur le site</strong>
+                  <small>
+                    Le deck apparaît sur la vitrine publique. Les decks affichés
+                    sont classés du plus récent au plus ancien — c’est ce rang qui
+                    donne à chaque bande sa couleur et son côté d’illustration.
+                  </small>
+                </span>
+              </label>
+
+              {showcase && (
+                <div className="deck-edit-showcase-fields">
+                  <label className="form-field">
+                    <span>Titre affiché *</span>
+                    <input
+                      type="text"
+                      value={name}
+                      maxLength={120}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Le Jardin de Zimone"
+                    />
+                  </label>
+
+                  <label className="form-field">
+                    <span>Description</span>
+                    <textarea
+                      value={description}
+                      rows={5}
+                      maxLength={5000}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Entre crochets, [Sol Ring] devient une carte survolable."
+                    />
+                  </label>
+
+                  <div className="form-field">
+                    <span className="form-field-label">Couleurs</span>
+                    <ColorPicker value={colors} onChange={setColors} colors={colorRef ?? []} />
+                  </div>
+
+                  <div className="form-field">
+                    <span className="form-field-label">Tags</span>
+                    <TagPicker
+                      value={tagIds}
+                      onChange={setTagIds}
+                      tags={tags ?? []}
+                      onTagsChange={onTagsChange}
+                    />
+                  </div>
+
+                  <div className="form-field">
+                    <span className="form-field-label">Carrousels</span>
+                    <SliderEditor sections={slider} onChange={setSlider} />
+                  </div>
+                </div>
+              )}
+            </fieldset>
+
+            {error && <p className="form-error">{error}</p>}
           </div>
 
           <aside className="deck-edit-sidebar">
