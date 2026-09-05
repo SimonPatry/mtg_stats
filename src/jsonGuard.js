@@ -77,21 +77,17 @@ export function validateGamesEdit(before, after) {
       throw new Error(`Partie « ${gameId} » : « decks » doit être un tableau.`)
     }
 
+    // Protéger les deckId (stables) — seatOrder peut être modifié librement.
     for (const beforeDeck of beforeGame.decks || []) {
       if (beforeDeck.deckId === undefined || beforeDeck.deckId === null) continue
-      const seat = beforeDeck.seatOrder
-      const afterDeck = afterGame.decks.find((d) => d.seatOrder === seat)
+      const afterDeck = afterGame.decks.find(
+        (d) => d.deckId === beforeDeck.deckId,
+      )
       if (!afterDeck) {
         throw new Error(
-          `Partie « ${gameId} » : deck #${seat} manquant (deckId protégé).`,
+          `Partie « ${gameId} » : deckId « ${beforeDeck.deckId} » manquant (ne peut pas être retiré).`,
         )
       }
-      assertLinkFieldUnchanged(
-        beforeDeck,
-        afterDeck,
-        'deckId',
-        `Partie « ${gameId} » deck #${seat}`,
-      )
     }
   }
 

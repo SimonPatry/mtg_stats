@@ -262,7 +262,8 @@ export default function JsonEditor({
         copié dans <code>backups/</code> (
         <code>games_*.json</code>). Les <strong>id</strong> de parties et les{' '}
         <strong>deckId</strong> déjà présents ne peuvent ni être supprimés ni
-        modifiés ; de nouvelles parties peuvent être ajoutées.
+        modifiés ; le <strong>seatOrder</strong> peut être changé librement. De
+        nouvelles parties peuvent être ajoutées.
       </>
     ),
     users: (
