@@ -1,22 +1,23 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { api } from '../lib/api.js'
 
 /**
  * Ménage du vocabulaire de tags : renommer, supprimer.
  *
- * La création courante se fait directement dans le formulaire d'un deck ; cet
- * écran existe pour ce que le sélecteur ne sait pas faire — corriger une faute
- * de frappe et retirer un tag devenu inutile.
+ * La création courante se fait dans le formulaire d'un deck, juste au-dessus ;
+ * ce panneau existe pour ce que le sélecteur ne sait pas faire — corriger une
+ * faute de frappe et retirer un tag devenu inutile.
+ *
+ * La liste vient de l'écran et y retourne : renommer un tag ici doit se voir
+ * immédiatement dans le sélecteur voisin, sans rechargement.
  */
-export default function TagAdmin() {
-  const [tags, setTags] = useState(null)
+export default function TagAdmin({ tags, onTagsChange }) {
   const [label, setLabel] = useState('')
   const [error, setError] = useState('')
   const [editing, setEditing] = useState(null)
   const [pending, setPending] = useState(null)
 
-  const reload = () => api.listTags().then(setTags).catch((e) => setError(e.message))
-  useEffect(() => { reload() }, [])
+  const reload = () => api.listTags().then(onTagsChange).catch((e) => setError(e.message))
 
   async function guard(action) {
     setError('')
@@ -40,18 +41,14 @@ export default function TagAdmin() {
 
   const plural = (n) => (n > 1 ? 's' : '')
 
-  if (error && !tags) return <p className="form-error">{error}</p>
-  if (!tags) return <p className="loading">Chargement…</p>
-
   return (
     <div className="tag-admin panel">
-      <div className="panel-header">
-        <h2>Vocabulaire de tags</h2>
-      </div>
+      <h3>Tags</h3>
 
+      <div className="tag-admin-body">
       <p className="form-hint">
-        Ces tags alimentent le sélecteur du formulaire de deck. On peut en créer
-        un directement là-bas ; ici, on les renomme et on les supprime.
+        Le vocabulaire du sélecteur de tags. On en crée depuis le formulaire
+        de deck ; ici on les renomme et on les supprime.
       </p>
 
       <form
@@ -170,6 +167,7 @@ export default function TagAdmin() {
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }

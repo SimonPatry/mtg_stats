@@ -1,6 +1,7 @@
 import CommanderPicker from './CommanderPicker'
 import Select from './Select'
 import ShowcaseFields from './admin/fields/ShowcaseFields.jsx'
+import TagAdmin from './admin/TagAdmin.jsx'
 
 const BRACKET_OPTIONS = [1, 2, 3, 4].flatMap((b) => [
   { value: String(b), label: `B${b}` },
@@ -120,6 +121,10 @@ export default function PlayersAddDesktopForms({
           </button>
         </div>
       </form>
+
+      {/* Le vocabulaire de tags juste sous le formulaire qui s'en sert : on
+          crée un tag dans le sélecteur ci-dessus, on le corrige ici. */}
+      <TagAdmin tags={tags} onTagsChange={onTagsChange} />
     </div>
   )
 }
