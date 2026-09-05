@@ -67,6 +67,20 @@ export async function saveGames(newGames, previousGames, { reason } = {}) {
   return { backupFile }
 }
 
+/** Supprime une partie (mot de passe admin requis côté serveur). */
+export async function deleteGame(gameId, password) {
+  const res = await fetch(gamesUrl('/delete'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: gameId, password }),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.error || `Suppression impossible (HTTP ${res.status})`)
+  }
+  return res.json()
+}
+
 export function createGameId() {
   return uuidv4()
 }

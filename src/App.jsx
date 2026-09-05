@@ -7,7 +7,7 @@ import fakeGames from './data/games_test.json'
 import fakeUsers from './data/users_test.json'
 import fakeDecks from './data/decks_test.json'
 import { fetchCommanderImage } from './scryfall'
-import { BACKUP_REASON, getBoardWipes, getLastPlayer, getLastPlayerLabel, isLastDeck, loadGames, saveGames } from './gamesApi'
+import { BACKUP_REASON, deleteGame, getBoardWipes, getLastPlayer, getLastPlayerLabel, isLastDeck, loadGames, saveGames } from './gamesApi'
 import Select from './Select'
 import { loadUsers, saveUsers } from './usersApi'
 import { loadDecks, saveDecks } from './decksApi'
@@ -32,6 +32,7 @@ import JsonEditor from './JsonEditor'
 import PlayersManager from './PlayersManager'
 import DeckStatsModal from './DeckStatsModal'
 import GameDetailsModal from './GameDetailsModal'
+import DeleteGameModal from './DeleteGameModal'
 import TempGameView from './TempGameView'
 import TempGamePickerModal from './TempGamePickerModal'
 import TempGameStartModal from './TempGameStartModal'
@@ -374,7 +375,7 @@ function DeckCard({ deck, onZoom, onDetail }) {
   )
 }
 
-function GameRow({ game, users, decks, onZoom, onDetails }) {
+function GameRow({ game, users, decks, onZoom, onDetails, onDelete }) {
   const resolvedDecks = [...game.decks]
     .sort((a, b) => a.seatOrder - b.seatOrder)
     .map((deck) => resolveDeck(deck, users, decks))
@@ -399,13 +400,24 @@ function GameRow({ game, users, decks, onZoom, onDetails }) {
             <span className="stat-pill">last: {getLastPlayerLabel(game)}</span>
           )}
         </div>
-        <button
-          type="button"
-          className="btn btn-ghost btn-game-details"
-          onClick={() => onDetails?.(game)}
-        >
-          Détails
-        </button>
+        <div className="game-row-actions">
+          <button
+            type="button"
+            className="btn btn-ghost btn-game-details"
+            onClick={() => onDetails?.(game)}
+          >
+            Détails
+          </button>
+          <button
+            type="button"
+            className="btn-icon btn-game-delete"
+            aria-label={`Supprimer la partie du ${game.date}`}
+            title="Supprimer"
+            onClick={() => onDelete?.(game)}
+          >
+            ×
+          </button>
+        </div>
       </div>
 
       <div className="game-coms-row">
@@ -1063,6 +1075,7 @@ function App() {
   const [cardFloat, setCardFloat] = useState(null)
   const [deckDetail, setDeckDetail] = useState(null)
   const [gameDetail, setGameDetail] = useState(null)
+  const [gameToDelete, setGameToDelete] = useState(null)
   const [activeView, setActiveView] = useState('dashboard')
   const [sideNavOpen, setSideNavOpen] = useState(false)
 
@@ -1324,6 +1337,14 @@ function App() {
     setGames(updatedGames)
   }
 
+  async function handleDeleteGame(password) {
+    if (!gameToDelete) return
+    await deleteGame(gameToDelete.id, password)
+    setGames((prev) => prev.filter((g) => g.id !== gameToDelete.id))
+    setGameDetail((cur) => (cur?.id === gameToDelete.id ? null : cur))
+    setGameToDelete(null)
+  }
+
   function handleCatalogSave({ users: updatedUsers, decks: updatedDecks }) {
     // PlayersManager a déjà persisté avec backup ; on met juste l’état à jour.
     setUsers(updatedUsers)
@@ -1395,6 +1416,13 @@ function App() {
           users={users}
           decks={decks}
           onClose={() => setGameDetail(null)}
+        />
+      )}
+      {gameToDelete && (
+        <DeleteGameModal
+          game={gameToDelete}
+          onConfirm={handleDeleteGame}
+          onClose={() => setGameToDelete(null)}
         />
       )}
       <SideNav
@@ -1680,6 +1708,7 @@ function App() {
                   decks={decks}
                   onZoom={handleZoom}
                   onDetails={setGameDetail}
+                  onDelete={setGameToDelete}
                 />
               ))
             )}

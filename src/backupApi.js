@@ -4,6 +4,7 @@ export const BACKUP_REASON = {
   MANUAL_EDIT: 'manual-edit',
   ROLLBACK: 'rollback',
   ADD_GAME: 'add-game',
+  DELETE_GAME: 'delete-game',
 }
 
 export const BACKUP_KINDS = ['games', 'users', 'decks']

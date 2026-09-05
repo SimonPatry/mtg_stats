@@ -1,6 +1,10 @@
 node_modules
 .DS_Store
 *.local
+.env
+.env.*
+!.env.example
+.mtg_admin_password
 
 # Données runtime (prod / local Express) — jamais versionner ni déployer
 /data/

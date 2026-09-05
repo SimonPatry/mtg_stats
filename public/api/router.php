@@ -102,6 +102,37 @@ function mtg_extract_backup_payload($parsed, $kind) {
   return array($data, $reason);
 }
 
+/** Mot de passe admin : env Plesk MTG_ADMIN_PASSWORD, ou fichier data/.mtg_admin_password */
+function mtg_admin_password($dataDir) {
+  foreach (array('MTG_ADMIN_PASSWORD', 'MTG_DELETE_PASSWORD') as $key) {
+    $v = getenv($key);
+    if (($v === false || $v === '') && isset($_SERVER[$key])) {
+      $v = $_SERVER[$key];
+    }
+    if (is_string($v) && $v !== '') {
+      return $v;
+    }
+  }
+  $file = $dataDir . '/.mtg_admin_password';
+  if (is_file($file)) {
+    $v = trim((string) @file_get_contents($file));
+    if ($v !== '') return $v;
+  }
+  return null;
+}
+
+function mtg_require_admin($dataDir, $password) {
+  $expected = mtg_admin_password($dataDir);
+  if ($expected === null) {
+    out(array(
+      'error' => 'Mot de passe admin non configuré. Définis MTG_ADMIN_PASSWORD (Plesk) ou crée data/.mtg_admin_password.',
+    ), 503);
+  }
+  if (!is_string($password) || $password === '' || !hash_equals($expected, $password)) {
+    out(array('error' => 'Mot de passe incorrect.'), 403);
+  }
+}
+
 /**
  * httpdocs/data — à côté de dist/, dans open_basedir, hors du build.
  * router = .../httpdocs/dist/api/router.php
@@ -282,6 +313,35 @@ try {
   if ($path === '/api/games' && $method === 'POST') {
     mtg_write_file($files['games'], mtg_body());
     out(array('ok' => true));
+  }
+  if ($path === '/api/games/delete' && $method === 'POST') {
+    $parsed = mtg_body();
+    $id = isset($parsed['id']) ? (string) $parsed['id'] : '';
+    $password = isset($parsed['password']) ? $parsed['password'] : '';
+    if ($id === '') out(array('error' => 'id manquant'), 400);
+    mtg_require_admin($dataDir, $password);
+
+    $games = mtg_read_file($files['games']);
+    $found = false;
+    foreach ($games as $g) {
+      if (isset($g['id']) && $g['id'] === $id) {
+        $found = true;
+        break;
+      }
+    }
+    if (!$found) out(array('error' => 'Partie introuvable'), 404);
+
+    $filename = mtg_backup_filename('games', 'delete-game');
+    mtg_write_file($backupsDir . '/' . $filename, $games);
+
+    $next = array();
+    foreach ($games as $g) {
+      if (!isset($g['id']) || $g['id'] !== $id) {
+        $next[] = $g;
+      }
+    }
+    mtg_write_file($files['games'], $next);
+    out(array('ok' => true, 'deleted' => $id, 'backupFile' => $filename));
   }
   if ($path === '/api/games/backup' && $method === 'GET') {
     out(mtg_list_backups($backupDirs, 'games'));
