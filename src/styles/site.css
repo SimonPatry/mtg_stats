@@ -1,0 +1,949 @@
+/* ---------------------------------------------------------
+   Forge Arcanique — habillage du site public.
+   Les jetons (couleurs, polices) viennent de tokens.css.
+--------------------------------------------------------- */
+
+/* Boutons « nus » : leur apparence vient de leur contenu (icône, glyphe,
+   pastille), pas d'un habillage de bouton. Seul point commun, donc — le reste
+   (taille, fond, couleur) appartient à chacun. */
+.site-header__menu-toggle,
+.deck-menu__close,
+.deck-slider__nav,
+.deck-slider__dot {
+  padding: 0;
+  border: none;
+  cursor: pointer;
+}
+
+/* ---------- Header ---------- */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  padding: clamp(1.25rem, 3vh, 2rem) var(--gutter) clamp(0.5rem, 1.5vh, 0.9rem);
+  text-align: center;
+  background: var(--bg);
+}
+
+.site-header__inner {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* Les deux pastilles sont positionnées en absolu, donc invisibles au calcul de
+   largeur du titre : sur écran étroit « Forge Arcanique » passait dessous.
+   On réserve leur place ici — le titre se met alors à la ligne au lieu de les
+   chevaucher. Le burger seul posait déjà le problème avant l'ajout de la clé. */
+@media (max-width: 46rem) {
+  .site-header__inner {
+    padding-inline: 3.3rem;
+  }
+}
+
+/* Icône burger, ancrée à gauche du header (le titre reste centré).
+   z-index au-dessus du tiroir (60) pour rester cliquable/visible quand
+   le menu est ouvert : elle se change alors en croix pour le refermer. */
+.site-header__menu-toggle {
+  position: absolute;
+  left: var(--gutter);
+  top: 50%;
+  z-index: 70;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.9rem;
+  height: 2.9rem;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  transition: background var(--t);
+}
+
+.site-header__menu-toggle:hover {
+  background: var(--line);
+}
+
+.site-header__menu-icon,
+.site-header__menu-icon::before,
+.site-header__menu-icon::after {
+  display: block;
+  width: 1.65rem;
+  height: 2.5px;
+  border-radius: 2px;
+  background: currentColor;
+  transition: transform var(--t), opacity var(--t);
+}
+
+.site-header__menu-icon {
+  position: relative;
+}
+
+.site-header__menu-icon::before,
+.site-header__menu-icon::after {
+  content: "";
+  position: absolute;
+  left: 0;
+}
+
+.site-header__menu-icon::before {
+  top: -0.5rem;
+}
+
+.site-header__menu-icon::after {
+  top: 0.5rem;
+}
+
+/* Quand le menu est ouvert, le burger se transforme en croix. */
+.site-header__menu-toggle[aria-expanded="true"] .site-header__menu-icon {
+  background: transparent;
+}
+
+.site-header__menu-toggle[aria-expanded="true"] .site-header__menu-icon::before {
+  top: 0;
+  transform: rotate(45deg);
+}
+
+.site-header__menu-toggle[aria-expanded="true"] .site-header__menu-icon::after {
+  top: 0;
+  transform: rotate(-45deg);
+}
+
+/* ---------- Menu des decks (tiroir latéral) ---------- */
+
+/* Le conteneur lui-même ne capte jamais les clics (sinon, même
+   invisible sous le header, il bloquerait le burger) : seuls le voile
+   et le panneau — qui démarrent sous le header — les captent. */
+.deck-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.deck-menu.is-open {
+  visibility: visible;
+}
+
+.deck-menu.is-open .deck-menu__overlay,
+.deck-menu.is-open .deck-menu__panel {
+  pointer-events: auto;
+}
+
+/* Le tiroir et son voile démarrent sous le header sticky (pas derrière),
+   pour que le burger — dans le header — reste toujours cliquable au-dessus,
+   et que le propre bouton de fermeture du tiroir ne soit jamais masqué. */
+.deck-menu__overlay {
+  position: absolute;
+  top: var(--header-height, 90px);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  transition: opacity var(--t-slow);
+}
+
+.deck-menu.is-open .deck-menu__overlay {
+  opacity: 1;
+}
+
+.deck-menu__panel {
+  position: absolute;
+  top: var(--header-height, 90px);
+  left: 0;
+  bottom: 0;
+  width: min(320px, 84vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border-right: 1px solid var(--line);
+  box-shadow: 0 0 32px var(--shadow);
+  transform: translateX(-100%);
+  transition: transform var(--t-slow);
+}
+
+.deck-menu.is-open .deck-menu__panel {
+  transform: translateX(0);
+}
+
+.deck-menu__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.25rem 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.deck-menu__title {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent-soft);
+}
+
+.deck-menu__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 1.4rem;
+  line-height: 1;
+  transition: background var(--t);
+}
+
+.deck-menu__close:hover {
+  background: var(--line);
+}
+
+.deck-menu__search {
+  padding: 1rem 1.25rem 0.5rem;
+}
+
+.deck-menu__search-input {
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color var(--t);
+}
+
+.deck-menu__search-input::placeholder {
+  color: var(--ink-dim);
+}
+
+.deck-menu__search-input:focus {
+  border-color: var(--accent);
+}
+
+.deck-menu__list {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 0;
+  overflow-y: auto;
+}
+
+.deck-menu__link {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.75rem 1.25rem;
+  text-decoration: none;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  transition: background var(--t);
+}
+
+.deck-menu__link:hover {
+  background: var(--line);
+}
+
+.deck-menu__link-index {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent-soft);
+}
+
+.deck-menu__empty {
+  padding: 0.75rem 1.25rem;
+  color: var(--ink-dim);
+  font-size: 0.95rem;
+}
+
+.site-header__eyebrow {
+  margin: 0 0 0.35rem;
+  line-height: 1;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--accent-soft);
+}
+
+.site-header__title {
+  margin: 0;
+  line-height: 1;
+  font-family: var(--font-title);
+  font-weight: 600;
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  letter-spacing: 0.03em;
+  color: var(--ink);
+}
+
+/* ---------- Decks (banderoles) ---------- */
+
+.decks {
+  display: flex;
+  flex-direction: column;
+}
+
+.decks__loading,
+.decks__empty {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  text-align: center;
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  color: var(--ink-dim);
+  padding: 5rem var(--gutter);
+}
+
+/* Chaque deck est une bande pleine largeur (bord à bord, sans marge ni espace
+   entre deux decks), dont le fond enchaîne les 5 couleurs de mana (W, U, B, R,
+   G) dans cet ordre, puis reprend au 6e deck.
+
+   Chaque bande redéfinit localement --ink / --ink-dim / --line / --panel : le
+   composant .deck-banner reste rigoureusement identique d'une bande à l'autre,
+   seules les variables sous lui changent. C'est aussi la raison pour laquelle
+   ces couleurs vivent ici et non dans tokens.css — l'administration ne dessine
+   jamais de bandes, elles ne sont donc partagées avec personne. */
+.deck-band {
+  width: 100%;
+  /* Pour que le lien d'ancre (menu burger) ne cache pas le haut de la bande
+     sous le header sticky ; --header-height est publiée par SiteHeader.jsx. */
+  scroll-margin-top: var(--header-height, 120px);
+}
+
+/* Seule bande claire de la série : le texte y est foncé, et le vert clair
+   habituel ne s'y lit pas — d'où un accent plus foncé, et un texte clair posé
+   dessus (un texte foncé tombait à 3,5:1). */
+.deck-band--w {
+  background: #f7f4ee;
+  /* Panneau identique au fond, contrairement aux bandes sombres où il
+     « remonte » vers la lumière : ici les objets se détachent par leur seul
+     contour et leur ombre, d'où un trait et une ombre plus marqués. */
+  --panel: #f7f4ee;
+  --ink: #1f1a12;
+  --ink-dim: rgba(31, 26, 18, 0.62);
+  --line: rgba(31, 26, 18, 0.24);
+  --shadow: rgba(31, 26, 18, 0.16);
+  --accent: #0a7a56;
+  --accent-soft: #066247;
+  --on-accent: #ffffff;
+  /* Panneau déjà blanc : inutile de l'assombrir pour détacher la pilule. */
+  --tag-bg: var(--panel);
+}
+
+.deck-band--u {
+  background: #0f2740;
+  --panel: #163a5c;
+  --ink: #e8f0fb;
+  --ink-dim: rgba(232, 240, 251, 0.62);
+  --line: rgba(232, 240, 251, 0.14);
+}
+
+/* Un vrai noir neutre, pas un gris ou un violet dilué. */
+.deck-band--b {
+  background: #0a0a0b;
+  --panel: #17171a;
+  --ink: #f5f5f7;
+  --ink-dim: rgba(245, 245, 247, 0.62);
+  --line: rgba(245, 245, 247, 0.14);
+}
+
+.deck-band--r {
+  background: #2e1310;
+  --panel: #47201b;
+  --ink: #fbe9e6;
+  --ink-dim: rgba(251, 233, 230, 0.62);
+  --line: rgba(251, 233, 230, 0.14);
+}
+
+.deck-band--g {
+  background: #123023;
+  --panel: #1a4433;
+  --ink: #eaf5ef;
+  --ink-dim: rgba(234, 245, 239, 0.62);
+  --line: rgba(234, 245, 239, 0.14);
+}
+
+.deck-band__inner {
+  /* Le fond (.deck-band) va bord à bord ; seul le contenu est recentré
+     et limité en largeur pour rester lisible. */
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: clamp(2.5rem, 6vh, 4.5rem) var(--gutter);
+}
+
+/* Grille à 2 sections : 1 tier pour le commandant, 2 tiers pour le texte.
+   Chaque section centre son contenu (horizontalement et verticalement). */
+.deck-banner {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  align-items: stretch;
+  gap: clamp(2rem, 5vw, 4.5rem);
+  color: var(--ink);
+  opacity: 0;
+  transform: translateY(24px);
+  animation: deck-rise 0.7s ease forwards;
+}
+
+@keyframes deck-rise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Alternance gauche/droite : les proportions 1/2 tiers restent identiques,
+   seul l'ordre des sections change. */
+.deck-banner--reverse {
+  grid-template-columns: 2fr 1fr;
+}
+
+.deck-banner--reverse .deck-banner__media {
+  order: 2;
+}
+
+.deck-banner--reverse .deck-banner__content {
+  order: 1;
+}
+
+.deck-banner__media {
+  position: relative;
+  justify-self: center;
+  align-self: center;
+  width: 100%;
+}
+
+/* L'illustration est cliquable (page Scryfall de la carte) quand elle vient
+   de Scryfall. Le lien épouse l'image, sans style de lien propre : c'est
+   l'image qui réagit au survol. */
+.deck-banner__media-link {
+  display: block;
+  border-radius: 16px;
+  transition: transform var(--t);
+}
+
+.deck-banner__media-link:hover,
+.deck-banner__media-link:focus-visible {
+  transform: translateY(-4px);
+}
+
+.deck-banner__media-link:hover .deck-banner__image,
+.deck-banner__media-link:focus-visible .deck-banner__image {
+  border-color: var(--accent);
+}
+
+.deck-banner__media-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.deck-banner__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  box-shadow: 0 24px 48px -12px var(--shadow);
+  background: var(--panel);
+}
+
+/* Cadre d'attente : mêmes bordure, rayon et ombre que l'illustration, aux
+   proportions d'une carte Magic (5/7). Il réserve la place le temps que
+   Scryfall réponde, pour que la bande ne change pas de hauteur en cours de
+   route. */
+.deck-banner__image--pending {
+  aspect-ratio: 5 / 7;
+  background: var(--panel);
+}
+
+/* Le texte colle toujours à gauche, dans les deux orientations du deck
+   (commandant à gauche ou à droite) — plus d'alternance gauche/droite. */
+.deck-banner__content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 1rem;
+}
+
+/* Couleurs et nom du deck tiennent sur une seule ligne (elle passe à la
+   ligne suivante seulement si ça ne rentre plus). */
+.deck-banner__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  /* Pleine largeur : c'est ce qui permet au lien Archidekt d'être repoussé
+     tout à droite de la ligne de titre (margin-left:auto). */
+  width: 100%;
+  column-gap: 0.7rem;
+  row-gap: 0.3rem;
+}
+
+/* Identité de couleur (symboles de mana WUBRG), tirée du champ "colors"
+   du metadata.json. Icônes officielles Scryfall (svgs.scryfall.io).
+   Taille alignée sur celle du nom du deck (voir .deck-banner__title),
+   pour que les symboles ne paraissent pas chétifs à côté. */
+.deck-banner__colors {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.deck-banner__color-icon {
+  width: clamp(1.35rem, 2.4vw, 1.9rem);
+  height: clamp(1.35rem, 2.4vw, 1.9rem);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px var(--shadow);
+}
+
+/* Tiret entre les symboles de couleur et le nom du deck (seulement
+   présent quand il y a des couleurs à afficher). */
+.deck-banner__meta-separator {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--ink-dim);
+}
+
+/* Même police que l'ancien label "Deck 0X" (retiré), plutôt que la
+   police serif utilisée pour les titres de section/description. */
+.deck-banner__title {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: clamp(1.6rem, 3vw, 2.3rem);
+  /* Couleur de l'ancien label "Deck 0X" (retiré). */
+  color: var(--accent-soft);
+}
+
+/* La description s'étire sur toute la largeur de la colonne (au lieu de
+   se limiter à ~46ch) : comme le carrousel est centré dans cette même
+   colonne, le texte dépasse ainsi le carrousel d'autant à droite qu'à
+   gauche, plutôt que de s'arrêter bien avant son bord droit. */
+/* Lien Archidekt : action secondaire, donc traitée comme un lien discret et
+   non comme un bouton. Il partage la ligne du titre mais est repoussé tout
+   à droite (margin-left:auto) pour ne pas concurrencer le nom du deck —
+   d'où le width:100% sur .deck-banner__meta, sans quoi la ligne se
+   contenterait de la largeur de son contenu et le lien resterait collé au
+   titre. */
+.deck-banner__archidekt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--ink-dim);
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: color var(--t);
+}
+
+.deck-banner__archidekt-btn:hover,
+.deck-banner__archidekt-btn:focus-visible {
+  color: var(--accent);
+}
+
+/* Pastille ronde : le logo Archidekt a son propre fond sombre incrusté
+   (ses contours blancs disparaîtraient sur un fond clair), donc on l'assume
+   en petite pastille ronde plutôt qu'en carré posé au milieu du texte. */
+.deck-banner__archidekt-logo {
+  display: block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+
+.deck-banner__tags-separator {
+  width: 60%;
+  max-width: 60%;
+  margin: 0;
+  border: none;
+  border-top: 1px solid var(--line);
+}
+
+.deck-banner__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.deck-banner__tag {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: var(--tag-bg, color-mix(in srgb, black 10%, var(--panel)));
+  color: var(--accent-soft);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+}
+
+.deck-banner__description {
+  align-self: stretch;
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  color: var(--ink-dim);
+  max-width: 100%;
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: auto;
+}
+
+.deck-banner__card-ref {
+  color: var(--accent);
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  cursor: pointer;
+  transition: color var(--t-fast);
+}
+
+.deck-banner__card-ref:hover,
+.deck-banner__card-ref:focus-visible {
+  color: var(--accent-soft);
+}
+
+/* ---------- Carrousel de sections (slider) ----------
+   Un seul carrousel par deck : chaque section (thématique + cartes) est
+   une diapositive entière. Les flèches et les points font tourner les
+   sections entre elles, en boucle. */
+
+/* Le carrousel est un enfant de .deck-banner__content, mais contrairement
+   au titre et à la description il reste centré dans la colonne texte plutôt
+   que collé au bord gauche/droite (align-self l'exempte de l'alignement
+   flex-end/flex-start hérité du parent). */
+.deck-slider {
+  /* C'est le conteneur défilant qui définit la largeur d'une diapositive, donc
+     il lui faut une largeur explicite. On la plafonne pour que les flèches
+     restent proches des cartes au lieu d'être repoussées aux extrémités d'une
+     colonne très large. */
+  align-self: center;
+  width: 100%;
+  max-width: min(100%, 52rem);
+  /* Colle le carrousel en bas de la colonne texte (au niveau du bas de
+     l'illustration), quelle que soit la longueur de la description. */
+  margin-top: auto;
+  padding-top: 0.5rem;
+}
+
+.deck-slider__viewport {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Le défilement est natif : le conteneur défile horizontalement et cale
+   chaque diapositive sur son bord gauche (scroll-snap). Plus aucune largeur
+   ni aucun décalage calculés en JavaScript — le navigateur s'en charge, y
+   compris pour la molette, le geste tactile et le clavier. */
+.deck-slider__track {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  /* Barre de défilement masquée : la navigation se fait aux flèches et aux
+     points, la barre ne ferait que trancher sous les cartes. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.deck-slider__track::-webkit-scrollbar {
+  display: none;
+}
+
+.deck-slider__slide {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+}
+
+.deck-slider__title {
+  margin: 0 0 1rem;
+  text-align: center;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent-soft);
+}
+
+.deck-slider__cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin: 0;
+  padding: 0.35rem 0.1rem;
+  list-style: none;
+}
+
+.deck-slider__card {
+  flex: 0 0 auto;
+  width: clamp(120px, 15vw, 160px);
+  aspect-ratio: 5 / 7;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: 0 12px 24px -10px var(--shadow);
+  background: var(--panel);
+  cursor: zoom-in;
+  transition: transform var(--t), box-shadow var(--t);
+}
+
+.deck-slider__card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 28px -10px var(--shadow);
+}
+
+.deck-slider__card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.deck-slider__card--missing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  color: var(--ink-dim);
+}
+
+/* Aperçu agrandi au survol d'une carte du carrousel : un unique élément
+   partagé (créé une fois en JS), repositionné et rempli à chaque survol,
+   plutôt que de faire grossir la carte sur place — trop petite pour
+   rester lisible une fois agrandie de quelques pixels seulement. */
+.deck-card-preview {
+  position: fixed;
+  z-index: 300;
+  width: clamp(260px, 32vw, 380px);
+  aspect-ratio: 5 / 7;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: 0 28px 56px -12px rgba(0, 0, 0, 0.6);
+  background: var(--panel);
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity var(--t-fast), transform var(--t-fast);
+}
+
+.deck-card-preview.is-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.deck-card-preview img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.deck-card-preview__missing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 1.5rem;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  color: var(--ink-dim);
+}
+
+/* Chevrons nus : plus de pastille (ni fond, ni contour), juste le glyphe.
+   La boîte reste dimensionnée pour garder une zone de clic confortable au
+   doigt, elle est simplement invisible. */
+.deck-slider__nav {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  background: none;
+  color: var(--ink);
+  font-size: 2.4rem;
+  line-height: 1;
+  /* Le glyphe ‹ / › est fin : un peu de graisse le rend lisible une fois
+     agrandi et sans pastille pour le porter. */
+  font-weight: 600;
+  transition: transform var(--t), color var(--t);
+}
+
+/* Plus de pastille à remplir : c'est le glyphe lui-même qui passe à
+   l'accent, et il glisse dans sa direction plutôt que vers le haut. */
+.deck-slider__nav:hover {
+  color: var(--accent);
+}
+
+.deck-slider__nav--prev:hover {
+  transform: translateX(-3px);
+}
+
+.deck-slider__nav--next:hover {
+  transform: translateX(3px);
+}
+
+.deck-slider__nav:disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+
+.deck-slider__dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.deck-slider__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--line);
+  transition: background var(--t), transform var(--t);
+}
+
+.deck-slider__dot:hover {
+  transform: scale(1.2);
+}
+
+.deck-slider__dot.is-active {
+  background: var(--accent);
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 760px) {
+  .deck-banner,
+  .deck-banner--reverse {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .deck-banner--reverse .deck-banner__media,
+  .deck-banner--reverse .deck-banner__content {
+    order: initial;
+  }
+
+  .deck-banner__media {
+    max-width: 320px;
+    justify-self: center;
+  }
+
+  /* Une seule colonne : le texte (et donc le carrousel, qui en fait partie)
+     reste centré plutôt que collé à un bord. */
+  .deck-banner__content,
+  .deck-banner--reverse .deck-banner__content {
+    align-items: center;
+    text-align: center;
+  }
+
+  /* Tout étant centré en pile, repousser le lien Archidekt à droite le
+     laisserait seul contre le bord : il suit simplement le titre. */
+  .deck-banner__meta {
+    justify-content: center;
+  }
+
+  .deck-banner__archidekt-btn {
+    margin-left: 0;
+  }
+}
+
+/* ---------- Footer ---------- */
+
+.site-footer {
+  padding: 3rem var(--gutter) 4rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--ink-dim);
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+}
+
+/* ---------- Bandeau de repli ---------- */
+
+/* Affiché quand l'API ne répond pas et que la page est servie depuis la
+   dernière copie locale des decks. Discret : la vitrine reste lisible, on
+   signale simplement que les données ne sont plus fraîches. */
+.site-notice {
+  margin: 0;
+  padding: 0.7rem var(--gutter);
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-dim);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+/* Accès à l'administration : la pastille jumelle du burger, ancrée à droite.
+   Volontairement muette — c'est un lien de service, pas une invitation faite
+   au visiteur — d'où l'icône seule, avec son intitulé accessible. */
+.site-header__admin {
+  position: absolute;
+  right: var(--gutter);
+  top: 50%;
+  z-index: 70;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.9rem;
+  height: 2.9rem;
+  border-radius: 999px;
+  background: transparent;
+  /* Plus discret que le burger au repos : on ne veut pas que l'œil du
+     visiteur s'y pose avant les decks. */
+  color: var(--ink-dim);
+  transition: background var(--t), color var(--t);
+}
+
+.site-header__admin:hover,
+.site-header__admin:focus-visible {
+  background: var(--line);
+  color: var(--ink);
+}
+
+.site-header__admin svg {
+  width: 1.35rem;
+  height: 1.35rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+}

@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import DeckEditModal from './DeckEditModal'
 import PlayersAddDesktopForms from './PlayersAddDesktopForms'
 import PlayersAddModal from './PlayersAddModal'
-import { saveDecks } from './decksApi'
-import { saveUsers } from './usersApi'
+import { loadDecks, saveDecks } from './decksApi'
+import { loadUsers, saveUsers } from './usersApi'
 import {
   addDeckToUser,
   addUser,
@@ -16,6 +16,8 @@ import {
   getUserName,
 } from './playersMapping'
 import { fetchCommanderImage } from './scryfall'
+import { api } from './lib/api.js'
+import { emptyShowcase } from './admin/fields/ShowcaseFields.jsx'
 
 function unpackBracket(value) {
   if (!value) return { bracket: null, bracketVariation: null }
@@ -167,12 +169,17 @@ function RosterDeckCard({ deck, onZoom, onEdit }) {
             </a>
           ) : null}
         </div>
-        <p className="roster-deck-meta">{bracketLine}</p>
-        {deck.previousDeckId ? (
-          <p className="roster-deck-version" title={deck.previousDeckId}>
-            suite v. préc.
-          </p>
-        ) : null}
+        {/* Bracket et marque de version sur la MÊME ligne : en dessous, la
+            carte changeait de hauteur selon qu'un deck succédait ou non à un
+            autre, et la grille devenait irrégulière. */}
+        <p className="roster-deck-meta">
+          {bracketLine}
+          {deck.previousDeckId ? (
+            <span className="roster-deck-version" title={deck.previousDeckId}>
+              suite v. préc.
+            </span>
+          ) : null}
+        </p>
       </div>
       <button type="button" className="roster-deck-edit" onClick={handleEdit}>
         edit
@@ -248,6 +255,9 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
   const [commanderPickerKey, setCommanderPickerKey] = useState(0)
   const [bracketKey, setBracketKey] = useState('')
   const [deckUrl, setDeckUrl] = useState('')
+  const [showcase, setShowcase] = useState(emptyShowcase)
+  const [tags, setTags] = useState([])
+  const [colorRef, setColorRef] = useState([])
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [saving, setSaving] = useState(false)
@@ -260,12 +270,34 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
     ? getDeckById(decks, editingDeckId)
     : null
 
+  // Vocabulaire de tags et référentiel de couleurs, pour le bloc vitrine du
+  // formulaire d'ajout. Un échec ne bloque rien : sans eux, seule la partie
+  // vitrine est indisponible.
+  useEffect(() => {
+    let cancelled = false
+    Promise.all([
+      api.listTags().catch(() => []),
+      api.reference().catch(() => ({ colors: [] })),
+    ]).then(([tagList, reference]) => {
+      if (cancelled) return
+      setTags(tagList)
+      setColorRef(reference.colors ?? [])
+    })
+    return () => { cancelled = true }
+  }, [])
+
   async function persist(updatedUsers, updatedDecks) {
     setSaving(true)
     try {
       await saveUsers(updatedUsers, users)
       await saveDecks(updatedDecks, decks)
-      onSave({ users: updatedUsers, decks: updatedDecks })
+
+      // On relit plutôt que de garder les lignes fabriquées localement : elles
+      // portent un identifiant provisoire et, surtout, pas de `lineageId` —
+      // sans lui l'écran d'édition ne sait pas retrouver la face vitrine du
+      // deck qu'on vient de créer.
+      const [freshUsers, freshDecks] = await Promise.all([loadUsers(), loadDecks()])
+      onSave({ users: freshUsers, decks: freshDecks })
     } finally {
       setSaving(false)
     }
@@ -309,6 +341,11 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
       return
     }
 
+    if (showcase.showcase && !showcase.name.trim()) {
+      setError('Un deck affiché sur le site doit avoir un titre.')
+      return
+    }
+
     try {
       const updatedDecks = addDeckToUser(decks, users, selectedUserId, {
         commanders,
@@ -316,6 +353,11 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
         bracketVariation,
         deckUrl: deckUrl.trim(),
         comPrint,
+        showcase: showcase.showcase,
+        name: showcase.name.trim(),
+        description: showcase.description.trim(),
+        colors: showcase.colors,
+        tagIds: showcase.tagIds,
       })
       await persist(users, updatedDecks)
       setCommanders('')
@@ -323,6 +365,7 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
       setCommanderPickerKey((k) => k + 1)
       setBracketKey('')
       setDeckUrl('')
+      setShowcase(emptyShowcase())
       setSuccess(`Deck ajouté pour ${getUserName(users, selectedUserId)}.`)
       if (isMobile) setAddModalOpen(false)
     } catch (err) {
@@ -332,6 +375,16 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
 
   async function handleEditDeckSave(payload) {
     if (!editingDeckId) return
+
+    // La face vitrine a déjà été écrite par le modal, qui parle directement à
+    // l'API : ici on ne s'occupe que de la version, et seulement si elle bouge.
+    if (!payload.versionChanged) {
+      await persist(users, decks)
+      setEditingDeckId(null)
+      setError('')
+      setSuccess('Vitrine mise à jour.')
+      return
+    }
 
     const updatedDecks = editDeckPowerLevel(decks, editingDeckId, payload)
     await persist(users, updatedDecks)
@@ -353,6 +406,9 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
           deck={editingDeck}
           decks={decks}
           saving={saving}
+          tags={tags}
+          onTagsChange={setTags}
+          colorRef={colorRef}
           onClose={() => setEditingDeckId(null)}
           onSave={handleEditDeckSave}
         />
@@ -378,6 +434,11 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
           onBracketKey={setBracketKey}
           deckUrl={deckUrl}
           onDeckUrl={setDeckUrl}
+          showcase={showcase}
+          onShowcase={setShowcase}
+          tags={tags}
+          onTagsChange={setTags}
+          colorRef={colorRef}
           onAddDeck={handleAddDeck}
           onZoom={onZoom}
         />
@@ -404,6 +465,11 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
             onBracketKey={setBracketKey}
             deckUrl={deckUrl}
             onDeckUrl={setDeckUrl}
+            showcase={showcase}
+            onShowcase={setShowcase}
+            tags={tags}
+            onTagsChange={setTags}
+            colorRef={colorRef}
             onAddDeck={handleAddDeck}
             onZoom={onZoom}
           />

@@ -1,0 +1,36 @@
+/* Éléments de base, communs à la vitrine et à l'administration. */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--accent);
+}
+
+/* Un seul anneau de focus pour tout le projet — vitrine et administration.
+   Auparavant seuls quelques éléments en avaient un : le burger, la croix du
+   menu, les liens du tiroir, les flèches et les points du carrousel n'offraient
+   aucun repère à qui navigue au clavier. Défini ici, tout composant à venir en
+   hérite sans y penser. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}

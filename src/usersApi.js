@@ -1,63 +1,32 @@
-import initialUsers from './data/users.json'
-import { loadDataSource, sourceQuery } from './dataSource'
-import {
-  BACKUP_REASON,
-  createBackup,
-  listBackups,
-  loadBackupFile,
-} from './backupApi'
+import { api } from './lib/api.js'
+import { userFromApi, userToApi, diffById } from './lib/adapters.js'
 
-function usersUrl() {
-  return `/api/users${sourceQuery(loadDataSource())}`
-}
+/** Accès aux joueurs. Même principe que gamesApi : tableau complet en entrée,
+ *  appels par entité en sortie. */
 
-export async function loadUsers(fallback = initialUsers, source = loadDataSource()) {
+export async function loadUsers(fallback = []) {
   try {
-    const res = await fetch(`/api/users${sourceQuery(source)}`)
-    if (!res.ok) throw new Error('load failed')
-    const contentType = res.headers.get('content-type') ?? ''
-    if (!contentType.includes('application/json')) throw new Error('not json')
-    return await res.json()
+    return (await api.listUsers()).map(userFromApi)
   } catch {
     return fallback
   }
 }
 
-export async function listUserBackups() {
-  return listBackups('users')
-}
+export async function saveUsers(nextUsers, previousUsers) {
+  const { created, updated, removed } = diffById(previousUsers, nextUsers)
 
-export async function rollbackUsersBackup(name, currentUsers) {
-  const restored = await loadBackupFile(name)
-  const result = await saveUsers(restored, currentUsers, {
-    reason: BACKUP_REASON.ROLLBACK,
-  })
-  return { restored, backupFile: result.backupFile }
-}
+  for (const user of removed) {
+    // Un joueur qui possède des decks n'est pas supprimable : l'API renvoie
+    // 409, et la désactivation est le bon geste. On ne fait pas échouer tout
+    // l'enregistrement pour autant.
+    try { await api.deleteUser(user.id) } catch { /* conservé, désactivé */ }
+  }
+  for (const user of updated) await api.updateUser(user.id, userToApi(user))
 
-export async function saveUsers(users, previousUsers, { reason } = {}) {
-  let backupFile
-  if (previousUsers !== undefined) {
-    const backup = await createBackup(
-      'users',
-      previousUsers,
-      reason ?? BACKUP_REASON.MANUAL_EDIT,
-    )
-    backupFile = backup.filename
+  const createdIds = new Map()
+  for (const user of created) {
+    const saved = await api.createUser(userToApi(user))
+    createdIds.set(user.id, saved.id)
   }
-
-  const res = await fetch(usersUrl(), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(users),
-  })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err.error || 'Impossible de sauvegarder les joueurs')
-  }
-  const contentType = res.headers.get('content-type') ?? ''
-  if (!contentType.includes('application/json')) {
-    throw new Error('L’API joueurs ne répond pas (le serveur a renvoyé une page HTML).')
-  }
-  return { backupFile }
+  return { createdIds }
 }

@@ -242,6 +242,17 @@ export function addDeckToUser(decks, users, userId, deck) {
   )
   if (exists) throw new Error('Ce deck existe déjà pour ce joueur.')
 
+  // Champs de vitrine, présents seulement si la case « afficher sur le site »
+  // était cochée. Ils voyagent sur la ligne jusqu'à `saveDecks`, qui les passe
+  // à la création de la lignée.
+  if (deck.showcase) {
+    entry.showcase = true
+    entry.name = deck.name ?? ''
+    entry.description = deck.description ?? ''
+    entry.colors = deck.colors ?? []
+    entry.tagIds = deck.tagIds ?? []
+  }
+
   return [...decks, entry]
 }
 

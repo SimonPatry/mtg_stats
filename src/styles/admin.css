@@ -1,0 +1,160 @@
+/* ---------------------------------------------------------
+   Administration — interface dense.
+   Aucune couleur définie ici : tout vient de tokens.css, partagé
+   avec la vitrine. Seuls la densité et les composants de
+   formulaire sont propres à cet écran.
+   Chargé par admin/AdminApp.jsx, donc absent du bundle public.
+--------------------------------------------------------- */
+
+.shell {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 20px 64px;
+  font-family: var(--font-body);
+  font-size: 15px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 0;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+.topbar h1 { font-family: var(--font-title); font-size: 20px; letter-spacing: 0.04em; margin: 0; }
+.topbar nav { display: flex; gap: 16px; margin-left: auto; }
+.topbar nav a { color: var(--ink-dim); text-decoration: none; }
+.topbar nav a.active, .topbar nav a:hover { color: var(--accent); }
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  padding: 8px 14px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+button:hover:not(:disabled) { background: var(--accent-soft); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+button.ghost { background: transparent; border-color: var(--line); color: var(--ink); }
+button.ghost:hover:not(:disabled) { border-color: var(--accent); background: transparent; }
+button.danger { background: transparent; border-color: var(--danger); color: var(--danger); }
+button.danger:hover:not(:disabled) { background: rgba(255, 107, 107, 0.12); }
+button.tiny { padding: 4px 9px; font-size: 13px; }
+
+label { display: block; margin-bottom: 16px; }
+label > span.field-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--ink-dim);
+  letter-spacing: 0.02em;
+}
+
+input[type='text'], input[type='password'], input[type='url'],
+input[type='search'], textarea, select {
+  width: 100%;
+  padding: 9px 11px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  font: inherit;
+}
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); }
+textarea { min-height: 110px; resize: vertical; }
+
+.error { color: var(--danger); font-size: 13px; margin-top: 4px; }
+.hint { color: var(--ink-dim); font-size: 13px; }
+.loading, .empty { color: var(--ink-dim); padding: 40px 20px; text-align: center; }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.row { display: flex; gap: 12px; align-items: center; }
+.row.between { justify-content: space-between; }
+.row.wrap { flex-wrap: wrap; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+.actions { display: flex; gap: 10px; margin-top: 24px; }
+
+.deck-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.deck-row .pos { color: var(--ink-dim); width: 24px; font-variant-numeric: tabular-nums; }
+.deck-row .name { font-weight: 600; }
+.deck-row .meta { color: var(--ink-dim); font-size: 13px; }
+.deck-row .spacer { margin-left: auto; }
+
+.chip {
+  display: inline-block;
+  padding: 2px 9px;
+  margin: 2px 4px 2px 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--ink-dim);
+  background: none;
+}
+.chip.on { border-color: var(--accent); color: var(--accent); }
+.chip button { background: none; border: 0; color: inherit; padding: 0 0 0 6px; }
+
+.section-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 12px;
+  background: rgba(0, 0, 0, 0.2);
+}
+.card-line { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
+.card-line .picker { flex: 1; }
+
+.picker { position: relative; }
+.suggestions {
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  background: #14241f;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  max-height: 220px;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+}
+.suggestions li { padding: 7px 10px; border-radius: 6px; cursor: pointer; }
+.suggestions li:hover, .suggestions li[aria-selected='true'] {
+  background: rgba(47, 214, 160, 0.16);
+  color: var(--accent);
+}
+
+.login { max-width: 340px; margin: 18vh auto; padding: 0 20px; text-align: center; font-family: var(--font-body); }
+.login h1 { font-family: var(--font-title); font-size: 24px; margin-bottom: 6px; }
+.login p { color: var(--ink-dim); margin-top: 0; margin-bottom: 26px; }
+
+.warn {
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin: 12px 0;
+  background: rgba(255, 107, 107, 0.08);
+}
+.warn label.check { display: flex; gap: 9px; align-items: flex-start; margin: 12px 0 0; }
+.warn input[type='checkbox'] { margin-top: 3px; accent-color: var(--danger); }

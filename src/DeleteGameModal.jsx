@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 
 export default function DeleteGameModal({ game, onConfirm, onClose }) {
-  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -16,13 +15,9 @@ export default function DeleteGameModal({ game, onConfirm, onClose }) {
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
-    if (!password.trim()) {
-      setError('Mot de passe requis.')
-      return
-    }
     setBusy(true)
     try {
-      await onConfirm(password)
+      await onConfirm()
     } catch (err) {
       setError(err.message || 'Suppression impossible')
       setBusy(false)
@@ -49,21 +44,9 @@ export default function DeleteGameModal({ game, onConfirm, onClose }) {
         </div>
 
         <p className="delete-game-hint">
-          Partie du <strong>{game.date}</strong>. Un backup sera créé avant
-          suppression. Entre le mot de passe admin pour confirmer.
+          Partie du <strong>{game.date}</strong>. Cette suppression est
+          définitive.
         </p>
-
-        <label className="form-field">
-          <span>Mot de passe</span>
-          <input
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={busy}
-            autoFocus
-          />
-        </label>
 
         {error && <p className="form-error">{error}</p>}
 
@@ -76,7 +59,12 @@ export default function DeleteGameModal({ game, onConfirm, onClose }) {
           >
             Annuler
           </button>
-          <button type="submit" className="btn btn-danger" disabled={busy}>
+          <button
+            type="submit"
+            className="btn btn-danger"
+            disabled={busy}
+            autoFocus
+          >
             {busy ? 'Suppression…' : 'Supprimer'}
           </button>
         </div>

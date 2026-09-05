@@ -1,84 +1,54 @@
 import { v4 as uuidv4 } from 'uuid'
-import { loadDataSource, sourceQuery } from './dataSource'
-import {
-  BACKUP_REASON,
-  createBackup,
-  listBackups,
-  loadBackupFile,
-} from './backupApi'
+import { api } from './lib/api.js'
+import { gameFromApi, gameToApi, diffById } from './lib/adapters.js'
 
-export { BACKUP_REASON }
+/**
+ * Accès aux parties.
+ *
+ * Les fonctions de lecture et d'écriture parlent désormais à l'API ; les
+ * helpers purs en bas du fichier n'ont pas bougé. Les composants continuent de
+ * manipuler des tableaux complets — c'est `saveGames` qui traduit la
+ * différence entre l'ancien et le nouveau tableau en appels par entité.
+ *
+ * Les sauvegardes horodatées ont disparu avec les fichiers JSON : la base est
+ * transactionnelle, et il n'y a plus de tableau global à écraser par mégarde.
+ */
 
-function gamesUrl(path = '') {
-  return `/api/games${path}${sourceQuery(loadDataSource())}`
-}
-
-export async function loadGames(fallback, source = loadDataSource()) {
+export async function loadGames(fallback = []) {
   try {
-    const res = await fetch(`/api/games${sourceQuery(source)}`)
-    if (!res.ok) throw new Error('load failed')
-    return await res.json()
+    return (await api.listGames()).map(gameFromApi)
   } catch {
     return fallback
   }
 }
 
-export async function backupGames(games, reason = BACKUP_REASON.MANUAL_EDIT) {
-  return createBackup('games', games, reason)
-}
+/**
+ * Enregistre le nouveau tableau de parties. Les créations, modifications et
+ * suppressions sont déduites par comparaison avec le tableau précédent.
+ */
+export async function saveGames(nextGames, previousGames, { userIdByName } = {}) {
+  const { created, updated, removed } = diffById(previousGames, nextGames)
+  // Le siège ne porte que le nom du joueur ; on rattache l'identifiant quand on
+  // le connaît, pour que la base garde le lien vers la fiche joueur.
+  const options = userIdByName
+    ? { userIdBySeat: (seat) => seat.userId ?? userIdByName.get(seat.player) ?? null }
+    : undefined
 
-export async function listGameBackups() {
-  return listBackups('games')
-}
+  for (const game of removed) await api.deleteGame(game.id)
+  for (const game of updated) await api.updateGame(game.id, gameToApi(game, options))
 
-export async function loadBackup(name) {
-  return loadBackupFile(name)
-}
-
-export async function rollbackToBackup(name, currentGames) {
-  const restored = await loadBackupFile(name)
-  const result = await saveGames(restored, currentGames, {
-    reason: BACKUP_REASON.ROLLBACK,
-  })
-  return { restored, backupFile: result.backupFile }
-}
-
-export async function saveGames(newGames, previousGames, { reason } = {}) {
-  let backupFile
-  if (previousGames !== undefined) {
-    const backup = await createBackup(
-      'games',
-      previousGames,
-      reason ?? BACKUP_REASON.MANUAL_EDIT,
-    )
-    backupFile = backup.filename
+  // Une partie créée localement porte un identifiant provisoire ; c'est
+  // l'identifiant rendu par l'API qui fait foi ensuite.
+  const createdIds = new Map()
+  for (const game of created) {
+    const saved = await api.createGame(gameToApi(game, options))
+    createdIds.set(game.id, saved.id)
   }
-
-  const res = await fetch(gamesUrl(), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(newGames),
-  })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err.error || 'Impossible de sauvegarder')
-  }
-
-  return { backupFile }
+  return { createdIds }
 }
 
-/** Supprime une partie (mot de passe admin requis côté serveur). */
-export async function deleteGame(gameId, password) {
-  const res = await fetch(gamesUrl('/delete'), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: gameId, password }),
-  })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err.error || `Suppression impossible (HTTP ${res.status})`)
-  }
-  return res.json()
+export async function deleteGame(gameId) {
+  await api.deleteGame(gameId)
 }
 
 export function createGameId() {
