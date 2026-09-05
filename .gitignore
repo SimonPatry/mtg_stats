@@ -9,3 +9,6 @@ node_modules
 # Données runtime (prod / local Express) — jamais versionner ni déployer
 /data/
 /private/mtg_stats_data/
+
+# Sorties de tests
+/tests/tmp/
