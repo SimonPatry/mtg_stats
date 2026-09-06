@@ -1,0 +1,16 @@
+node_modules
+dist
+.git
+.env
+.env.*
+!.env.example
+*.md
+tests
+admintest.mjs
+sitetest.mjs
+showcasetest.mjs
+scripts
+public/backups
+.DS_Store
+.cursor
+agent-transcripts

@@ -120,6 +120,7 @@ function mapSearchCard(card) {
     keywords: card.keywords || [],
     oracleText,
     isPartner: hasPartnerAbility({ keywords: card.keywords || [], oracleText }),
+    colorIdentity: [...(card.color_identity || [])],
   }
 }
 

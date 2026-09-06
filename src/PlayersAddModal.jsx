@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom'
 import CommanderPicker from './CommanderPicker'
 import Select from './Select'
 import ShowcaseFields from './admin/fields/ShowcaseFields.jsx'
-import TagAdmin from './admin/TagAdmin.jsx'
 
 const BRACKET_OPTIONS = [1, 2, 3, 4].flatMap((b) => [
   { value: String(b), label: `B${b}` },
@@ -12,16 +11,12 @@ const BRACKET_OPTIONS = [1, 2, 3, 4].flatMap((b) => [
 ])
 
 export default function PlayersAddModal({
-  tab,
-  onTab,
   onClose,
   saving,
   userNames,
-  newPlayerName,
-  onNewPlayerName,
-  onAddPlayer,
   selectedUserId,
   onSelectedUserId,
+  hidePlayerSelect = false,
   commanders,
   onCommanders,
   comPrint,
@@ -65,105 +60,32 @@ export default function PlayersAddModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-header">
-          <h2 id="players-add-modal-title">Ajouter</h2>
+          <h2 id="players-add-modal-title">Nouveau deck</h2>
           <button type="button" className="btn-icon" onClick={onClose} aria-label="Fermer">
             ×
           </button>
         </div>
 
-        <div className="players-add-tabs" role="tablist" aria-label="Type d'ajout">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'player'}
-            className={`players-add-tab${tab === 'player' ? ' is-active' : ''}`}
-            onClick={() => onTab('player')}
-          >
-            Joueur
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'deck'}
-            className={`players-add-tab${tab === 'deck' ? ' is-active' : ''}`}
-            onClick={() => onTab('deck')}
-          >
-            Deck
-          </button>
-          {/* Sur mobile la colonne de gauche n'existe pas : sans cet onglet, le
-              ménage des tags serait inatteignable depuis un téléphone. */}
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'tags'}
-            className={`players-add-tab${tab === 'tags' ? ' is-active' : ''}`}
-            onClick={() => onTab('tags')}
-          >
-            Tags
-          </button>
-        </div>
-
-        {tab === 'tags' ? (
+        <form className="players-add-form" onSubmit={onAddDeck}>
           <div className="players-add-modal-body">
-            <TagAdmin tags={tags} onTagsChange={onTagsChange} />
-          </div>
-        ) : tab === 'player' ? (
-          <form className="players-add-form" onSubmit={onAddPlayer}>
-            <div className="players-add-modal-body">
-              <label className="form-field">
-                <span>Nom</span>
-                <input
-                  type="text"
-                  value={newPlayerName}
-                  onChange={(e) => onNewPlayerName(e.target.value)}
-                  placeholder="Ex. Léa"
-                  autoComplete="off"
-                  autoFocus
-                />
-              </label>
-            </div>
-            <div className="modal-actions">
-              <button type="button" className="btn btn-ghost" onClick={onClose}>
-                Annuler
-              </button>
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={saving || !newPlayerName.trim()}
-              >
-                Ajouter le joueur
-              </button>
-            </div>
-          </form>
-        ) : (
-          <form className="players-add-form" onSubmit={onAddDeck}>
-            <div className="players-add-modal-body">
-              <label className="form-field">
-                <span>Joueur</span>
-                <Select
-                  value={selectedUserId}
-                  onChange={(e) => onSelectedUserId(e.target.value)}
-                >
-                  <option value="">— Choisir —</option>
-                  {userNames.map((user) => (
-                    <option key={user.id} value={user.id}>
-                      {user.name}
-                    </option>
-                  ))}
-                </Select>
-              </label>
-              <div className="form-field">
-                <span>Commandant(s)</span>
-                <CommanderPicker
-                  key={commanderPickerKey}
-                  value={commanders}
-                  comPrint={comPrint}
-                  onChange={onCommanders}
-                  onComPrintChange={onComPrint}
-                  onZoom={onZoom}
-                  disabled={saving}
-                />
-              </div>
+            <div className="players-form-grid">
+              {!hidePlayerSelect && (
+                <label className="form-field">
+                  <span>Joueur</span>
+                  <Select
+                    value={selectedUserId}
+                    onChange={(e) => onSelectedUserId(e.target.value)}
+                  >
+                    <option value="">— Choisir —</option>
+                    {userNames.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.name}
+                        {user.accountUsername ? ` (@${user.accountUsername})` : ''}
+                      </option>
+                    ))}
+                  </Select>
+                </label>
+              )}
               <label className="form-field">
                 <span>Bracket</span>
                 <Select value={bracketKey} onChange={(e) => onBracketKey(e.target.value)}>
@@ -175,37 +97,50 @@ export default function PlayersAddModal({
                   ))}
                 </Select>
               </label>
-              <label className="form-field">
-                <span>URL deck (optionnel)</span>
-                <input
-                  type="url"
-                  value={deckUrl}
-                  onChange={(e) => onDeckUrl(e.target.value)}
-                  placeholder="https://moxfield.com/decks/…"
-                />
-              </label>
-              <ShowcaseFields
-                value={showcase}
-                onChange={onShowcase}
-                tags={tags}
-                onTagsChange={onTagsChange}
-                colors={colorRef}
+            </div>
+            <div className="form-field">
+              <span>Commandant(s)</span>
+              <CommanderPicker
+                key={commanderPickerKey}
+                value={commanders}
+                comPrint={comPrint}
+                onChange={onCommanders}
+                onComPrintChange={onComPrint}
+                onColorIdentityChange={(colors) => onShowcase({ ...showcase, colors })}
+                onZoom={onZoom}
+                disabled={saving}
               />
             </div>
-            <div className="modal-actions">
-              <button type="button" className="btn btn-ghost" onClick={onClose}>
-                Annuler
-              </button>
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={saving || !selectedUserId || !commanders.trim() || !bracketKey}
-              >
-                Ajouter le deck
-              </button>
-            </div>
-          </form>
-        )}
+            <label className="form-field">
+              <span>URL deck</span>
+              <input
+                type="url"
+                value={deckUrl}
+                onChange={(e) => onDeckUrl(e.target.value)}
+                placeholder="https://moxfield.com/decks/…"
+              />
+            </label>
+            <ShowcaseFields
+              value={showcase}
+              onChange={onShowcase}
+              tags={tags}
+              onTagsChange={onTagsChange}
+              colors={colorRef}
+            />
+          </div>
+          <div className="modal-actions">
+            <button type="button" className="btn btn-ghost" onClick={onClose}>
+              Annuler
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={saving || !selectedUserId || !commanders.trim() || !bracketKey}
+            >
+              Ajouter le deck
+            </button>
+          </div>
+        </form>
       </div>
     </div>,
     document.body,

@@ -9,8 +9,9 @@ const COLOR_CODES = ['W', 'U', 'B', 'R', 'G']
 const LABELS = { W: 'Blanc', U: 'Bleu', B: 'Noir', R: 'Rouge', G: 'Vert' }
 
 /** Ordre canonique WUBRG, quel que soit l'ordre des clics. */
-const sortColors = (codes) =>
-  [...codes].sort((a, b) => COLOR_CODES.indexOf(a) - COLOR_CODES.indexOf(b))
+export const sortColors = (codes) =>
+  [...new Set(codes.filter((c) => COLOR_CODES.includes(c)))]
+    .sort((a, b) => COLOR_CODES.indexOf(a) - COLOR_CODES.indexOf(b))
 
 /** Les couleurs viennent du référentiel : liste figée, jamais de saisie libre. */
 export default function ColorPicker({ value, onChange, colors }) {

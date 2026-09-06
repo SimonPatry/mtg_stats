@@ -5,9 +5,32 @@ import { deckInput, deckVersionInput } from '../../shared/schemas.js'
 import {
   listDecks, getDeck, createDeck, updateDeck, deleteDeck, addVersion, updateVersion,
 } from '../decks-repo.js'
-import { handler, parseBody, invalid } from '../http.js'
+import { findUserByAccountId } from '../catalog-repo.js'
+import { handler, parseBody } from '../http.js'
+import { requireAdmin } from '../auth.js'
 
 const router = Router()
+
+async function rosterPlayerId(accountId) {
+  const player = await findUserByAccountId(pool, accountId)
+  return player?.id ?? null
+}
+
+/** Admin : tout. Membre : uniquement ses lignées. */
+async function assertCanWriteDeck(req, res, deckId) {
+  const deck = await getDeck(pool, deckId)
+  if (!deck) {
+    res.status(404).json({ error: 'Deck introuvable' })
+    return null
+  }
+  if (req.user.role === 'admin') return deck
+  const playerId = await rosterPlayerId(req.user.id)
+  if (!playerId || deck.user_id !== playerId) {
+    res.status(403).json({ error: 'Tu ne peux modifier que tes propres decks' })
+    return null
+  }
+  return deck
+}
 
 router.get('/', handler(async (req, res) => {
   res.json(await listDecks(pool, {
@@ -22,8 +45,6 @@ router.get('/:id', handler(async (req, res) => {
   res.json(deck)
 }))
 
-// Un deck naît avec sa première version : créer une lignée sans état initial
-// n'aurait aucun sens, et laisserait des sièges impossibles à rattacher.
 const createInput = z.object({
   deck: deckInput,
   version: deckVersionInput.partial({ started_on: true }).optional(),
@@ -32,29 +53,51 @@ const createInput = z.object({
 router.post('/', handler(async (req, res) => {
   const input = parseBody(createInput, req, res)
   if (!input) return undefined
+
+  // Un membre ne crée que pour lui-même ; l'admin peut viser n'importe quel joueur.
+  if (req.user.role !== 'admin') {
+    const playerId = await rosterPlayerId(req.user.id)
+    if (!playerId) {
+      return res.status(403).json({ error: 'Aucun joueur associé à ce compte' })
+    }
+    input.deck.user_id = playerId
+  }
+
   const id = await withTransaction((cx) => createDeck(cx, input.deck, input.version ?? {}))
   res.status(201).json(await getDeck(pool, id))
 }))
 
 router.put('/:id', handler(async (req, res) => {
+  const existing = await assertCanWriteDeck(req, res, req.params.id)
+  if (!existing) return undefined
+
   const input = parseBody(deckInput, req, res)
   if (!input) return undefined
+
+  // Empêche de reassigner le deck à un autre joueur.
+  if (req.user.role !== 'admin') {
+    input.user_id = existing.user_id
+  }
+
   const ok = await withTransaction((cx) => updateDeck(cx, req.params.id, input))
   if (!ok) return res.status(404).json({ error: 'Deck introuvable' })
   res.json(await getDeck(pool, req.params.id))
 }))
 
-/** Nouvelle version d'une lignée : nouveau bracket, nouvelle liste, nouvelle URL. */
 router.post('/:id/versions', handler(async (req, res) => {
+  const existing = await assertCanWriteDeck(req, res, req.params.id)
+  if (!existing) return undefined
+
   const input = parseBody(deckVersionInput, req, res)
   if (!input) return undefined
-  const deck = await getDeck(pool, req.params.id)
-  if (!deck) return res.status(404).json({ error: 'Deck introuvable' })
   const version = await withTransaction((cx) => addVersion(cx, req.params.id, input))
   res.status(201).json(version)
 }))
 
 router.put('/:id/versions/:versionId', handler(async (req, res) => {
+  const existing = await assertCanWriteDeck(req, res, req.params.id)
+  if (!existing) return undefined
+
   const input = parseBody(deckVersionInput, req, res)
   if (!input) return undefined
   const ok = await withTransaction((cx) =>
@@ -63,12 +106,7 @@ router.put('/:id/versions/:versionId', handler(async (req, res) => {
   res.json({ id: req.params.versionId, ...input })
 }))
 
-/**
- * Suppression refusée dès qu'une partie référence une version du deck :
- * amputer l'historique est pire que garder une ligne inutile. L'interface
- * propose alors de désactiver la lignée.
- */
-router.delete('/:id', handler(async (req, res) => {
+router.delete('/:id', requireAdmin, handler(async (req, res) => {
   const { deleted, used } = await withTransaction((cx) => deleteDeck(cx, req.params.id))
   if (!deleted && used > 0) {
     return res.status(409).json({

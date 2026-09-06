@@ -4,10 +4,9 @@ import TagPicker from './TagPicker.jsx'
 /**
  * Bloc « vitrine » du formulaire de création d'un deck.
  *
- * Replié derrière une case à cocher : la grande majorité des decks saisis ne
- * servent qu'aux statistiques, et le formulaire doit rester court pour eux.
- * Les carrousels ne sont pas ici — ils prennent trop de place à la création et
- * s'ajoutent ensuite depuis l'édition du deck.
+ * Tags toujours visibles : on peut les poser sans déplier toute la vitrine.
+ * Les champs longs (titre, description, couleurs) restent derrière la case.
+ * Les carrousels s'ajoutent ensuite depuis l'édition du deck.
  */
 export default function ShowcaseFields({ value, onChange, tags, onTagsChange, colors }) {
   const set = (patch) => onChange({ ...value, ...patch })
@@ -22,10 +21,7 @@ export default function ShowcaseFields({ value, onChange, tags, onTagsChange, co
         />
         <span>
           <strong>Afficher sur le site</strong>
-          <small>
-            Le deck rejoint la vitrine publique, en tête de page — les decks
-            affichés sont classés du plus récent au plus ancien.
-          </small>
+          <small>Vitrine publique, du plus récent au plus ancien.</small>
         </span>
       </label>
 
@@ -46,10 +42,10 @@ export default function ShowcaseFields({ value, onChange, tags, onTagsChange, co
             <span>Description</span>
             <textarea
               value={value.description}
-              rows={4}
+              rows={2}
               maxLength={5000}
               onChange={(e) => set({ description: e.target.value })}
-              placeholder="Entre crochets, [Sol Ring] devient une carte survolable."
+              placeholder="[Sol Ring] devient une carte survolable."
             />
           </label>
 
@@ -61,22 +57,18 @@ export default function ShowcaseFields({ value, onChange, tags, onTagsChange, co
               colors={colors}
             />
           </div>
-
-          <div className="form-field">
-            <span className="form-field-label">Tags</span>
-            <TagPicker
-              value={value.tagIds}
-              onChange={(next) => set({ tagIds: next })}
-              tags={tags}
-              onTagsChange={onTagsChange}
-            />
-          </div>
-
-          <p className="form-hint">
-            Les carrousels s’ajoutent après création, depuis l’édition du deck.
-          </p>
         </div>
       )}
+
+      <div className="form-field showcase-tags">
+        <span className="form-field-label">Tags</span>
+        <TagPicker
+          value={value.tagIds}
+          onChange={(next) => set({ tagIds: next })}
+          tags={tags}
+          onTagsChange={onTagsChange}
+        />
+      </div>
     </fieldset>
   )
 }

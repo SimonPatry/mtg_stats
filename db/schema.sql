@@ -44,16 +44,34 @@ CREATE TABLE IF NOT EXISTS kill_styles (
   position TINYINT     NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ─── Comptes (authentification) ────────────────────────────────────────────
+-- Indépendants des joueurs du roster (`users`) : un compte se connecte, un
+-- joueur est une donnée de partie. Le rôle `admin` ouvre le catalogue / JSON ;
+-- le rôle `user` ouvre stats et saisie de parties sur la vitrine.
+
+CREATE TABLE IF NOT EXISTS accounts (
+  id            CHAR(36)     NOT NULL PRIMARY KEY,
+  username      VARCHAR(32)  NOT NULL,
+  password_hash VARCHAR(200) NOT NULL,
+  role          ENUM('admin', 'user') NOT NULL DEFAULT 'user',
+  created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_accounts_username (username)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ─── Joueurs ───────────────────────────────────────────────────────────────
--- Des données, pas des comptes : personne ne se connecte ici. L'accès en
--- écriture au site passe par un mot de passe unique partagé, hors base.
+-- Roster lié aux comptes inscrits : un joueur naît à l'inscription
+-- (users.account_id), l'admin n'ajoute plus de joueurs à la main.
 
 CREATE TABLE IF NOT EXISTS users (
   id         CHAR(36)     NOT NULL PRIMARY KEY,
   name       VARCHAR(100) NOT NULL,
   active     BOOLEAN      NOT NULL DEFAULT TRUE,
+  account_id CHAR(36)     NULL,
   created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY uq_users_name (name)
+  UNIQUE KEY uq_users_name (name),
+  UNIQUE KEY uq_users_account (account_id),
+  CONSTRAINT fk_users_account FOREIGN KEY (account_id) REFERENCES accounts(id)
+    ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ─── Decks ─────────────────────────────────────────────────────────────────

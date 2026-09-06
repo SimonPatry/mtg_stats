@@ -16,6 +16,7 @@ import usersRoutes from './routes/users.js'
 import tagsRoutes from './routes/tags.js'
 import decksRoutes from './routes/decks.js'
 import gamesRoutes from './routes/games.js'
+import accountsRoutes from './routes/accounts.js'
 
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -79,16 +80,15 @@ export function createApp({ clientDir = join(projectRoot, 'dist') } = {}) {
   app.use('/api/auth', authRoutes)
   app.use('/api/showcase', showcaseRoutes)
 
-  // ─── Authentifié ─────────────────────────────────────────────────────────
-  // Tout le reste, statistiques comprises : la page de stats fait partie de
-  // l'administration, elle n'est pas publique.
-  app.use('/api', requireAuth)
-  app.use('/api/reference', referenceRoutes)
-  app.use('/api/stats', statsRoutes)
-  app.use('/api/users', usersRoutes)
-  app.use('/api/tags', tagsRoutes)
-  app.use('/api/decks', decksRoutes)
-  app.use('/api/games', gamesRoutes)
+  // ─── Membre ou admin (stats, lecture catalogue, ajout de parties) ───────
+  app.use('/api/reference', requireAuth, referenceRoutes)
+  app.use('/api/stats', requireAuth, statsRoutes)
+  app.use('/api/users', requireAuth, usersRoutes)
+  app.use('/api/accounts', requireAuth, accountsRoutes)
+  app.use('/api/tags', requireAuth, tagsRoutes)
+  app.use('/api/decks', requireAuth, decksRoutes)
+  app.use('/api/games', requireAuth, gamesRoutes)
+
 
   // Ce 404 est placé avant le front : une route /api inconnue doit répondre en
   // JSON, jamais renvoyer la page d'accueil — sinon une faute de frappe dans un

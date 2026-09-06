@@ -59,7 +59,8 @@ export async function loadShowcase() {
 
 export const api = {
   me: () => request('/auth/me'),
-  login: (password) => post('/auth/login', { password }),
+  login: (username, password) => post('/auth/login', { username, password }),
+  register: (username, password) => post('/auth/register', { username, password }),
   logout: () => post('/auth/logout', {}),
 
   reference: () => request('/reference'),
@@ -70,12 +71,12 @@ export const api = {
   createUser: (user) => post('/users', user),
   updateUser: (id, user) => put(`/users/${id}`, user),
   deleteUser: (id) => request(`/users/${id}`, { method: 'DELETE' }),
+  updateAccount: (id, payload) => put(`/accounts/${id}`, payload),
 
   listTags: () => request('/tags'),
   createTag: (label) => post('/tags', { label }),
   updateTag: (id, label) => put(`/tags/${id}`, { label }),
-  deleteTag: (id, confirmDetach) =>
-    request(`/tags/${id}${confirmDetach ? '?confirm_detach=1' : ''}`, { method: 'DELETE' }),
+  deleteTag: (id) => request(`/tags/${id}`, { method: 'DELETE' }),
 
   getDeck: (id) => request(`/decks/${id}`),
   createDeck: (payload) => post('/decks', payload),

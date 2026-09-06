@@ -5,12 +5,13 @@ import {
   listTags, createTag, updateTag, deleteTag, findTagByLabel, countDecksForTag,
 } from '../catalog-repo.js'
 import { handler, parseBody } from '../http.js'
+import { requireAdmin, requireAuth } from '../auth.js'
 
 const router = Router()
 
 router.get('/', handler(async (req, res) => res.json(await listTags(pool))))
 
-router.post('/', handler(async (req, res) => {
+router.post('/', requireAuth, handler(async (req, res) => {
   const input = parseBody(tagInput, req, res)
   if (!input) return undefined
   if (await findTagByLabel(pool, input.label)) {
@@ -20,7 +21,7 @@ router.post('/', handler(async (req, res) => {
   res.status(201).json({ id, label: input.label, deck_count: 0 })
 }))
 
-router.put('/:id', handler(async (req, res) => {
+router.put('/:id', requireAdmin, handler(async (req, res) => {
   const input = parseBody(tagInput, req, res)
   if (!input) return undefined
   const clash = await findTagByLabel(pool, input.label)
@@ -34,21 +35,10 @@ router.put('/:id', handler(async (req, res) => {
 }))
 
 /**
- * Suppression autorisée même si le tag est utilisé, mais jamais en silence :
- * sans confirm_detach l'API refuse et renvoie le nombre de decks concernés,
- * que l'interface affiche avant de faire cocher la case de confirmation.
+ * Suppression immédiate : détache le tag des decks puis le retire.
  */
-router.delete('/:id', handler(async (req, res) => {
+router.delete('/:id', requireAdmin, handler(async (req, res) => {
   const used = await countDecksForTag(pool, req.params.id)
-  const confirmed = req.query.confirm_detach === '1' || req.body?.confirm_detach === true
-
-  if (used > 0 && !confirmed) {
-    return res.status(409).json({
-      error: 'Ce tag est utilisé',
-      deck_count: used,
-      hint: 'Rappeler la requête avec confirm_detach pour le détacher de ces decks.',
-    })
-  }
   if (!(await deleteTag(pool, req.params.id))) {
     return res.status(404).json({ error: 'Tag introuvable' })
   }

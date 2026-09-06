@@ -4,17 +4,54 @@ import { randomUUID } from 'node:crypto'
 
 export async function listUsers(cx) {
   const [rows] = await cx.query(`
-    SELECT u.id, u.name, u.active,
+    SELECT u.id, u.name, u.active, u.account_id,
+           a.username AS account_username, a.role AS account_role,
            (SELECT COUNT(*) FROM decks d WHERE d.user_id = u.id) AS deck_count
-      FROM users u ORDER BY u.name`)
-  return rows.map((r) => ({ ...r, active: Boolean(r.active), deck_count: Number(r.deck_count) }))
+      FROM users u
+      LEFT JOIN accounts a ON a.id = u.account_id
+     ORDER BY u.name`)
+  return rows.map((r) => ({
+    ...r,
+    active: Boolean(r.active),
+    deck_count: Number(r.deck_count),
+  }))
 }
 
 export async function createUser(cx, input) {
   const id = randomUUID()
-  await cx.execute('INSERT INTO users (id, name, active) VALUES (?, ?, ?)',
-    [id, input.name, input.active])
+  await cx.execute(
+    'INSERT INTO users (id, name, active, account_id) VALUES (?, ?, ?, ?)',
+    [id, input.name, input.active !== false, input.account_id ?? null],
+  )
   return id
+}
+
+/** Crée (ou réactive) le joueur roster pour un compte d'auth. */
+export async function ensurePlayerForAccount(cx, { accountId, username }) {
+  const [existing] = await cx.query(
+    'SELECT id, name, active FROM users WHERE account_id = ? LIMIT 1',
+    [accountId],
+  )
+  if (existing[0]) {
+    if (!existing[0].active) {
+      await cx.execute('UPDATE users SET active = TRUE WHERE id = ?', [existing[0].id])
+    }
+    return existing[0].id
+  }
+
+  // Nom d'affichage = username ; collision rare → suffixe.
+  let name = username
+  const clash = await findUserByName(cx, name)
+  if (clash && clash.account_id !== accountId) {
+    name = `${username}-${accountId.slice(0, 8)}`
+  }
+
+  return createUser(cx, { name, active: true, account_id: accountId })
+}
+
+export async function findUserByAccountId(cx, accountId) {
+  const [rows] = await cx.query('SELECT * FROM users WHERE account_id = ? LIMIT 1', [accountId])
+  return rows[0] ?? null
 }
 
 export async function updateUser(cx, id, input) {

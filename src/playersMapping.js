@@ -372,11 +372,9 @@ export function ensureUserByName(users, name) {
       userId: inactive.id,
     }
   }
-  const id = createUserId()
-  return {
-    users: [...users, { id, name: trimmed, active: true }],
-    userId: id,
-  }
+  throw new Error(
+    `Joueur inconnu « ${trimmed} » — il doit d’abord s’inscrire sur le site.`,
+  )
 }
 
 /** Complète users/decks avec les decks de la partie (sans doublons actifs). */

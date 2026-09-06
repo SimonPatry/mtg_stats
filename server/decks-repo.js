@@ -10,7 +10,22 @@ import { randomUUID } from 'node:crypto'
 
 const SEP = '|~|'
 
-const commandersOf = (row) => (row.commanders ? row.commanders.split(SEP) : [])
+const DECK_SELECT = `
+  SELECT d.*, u.name AS player,
+         cur.id AS version_id, cur.version_number, cur.bracket,
+         cur.bracket_variation, cur.deck_url, cur.started_on,
+         (SELECT GROUP_CONCAT(c.name ORDER BY c.position SEPARATOR '|~|')
+            FROM deck_commanders c WHERE c.deck_id = d.id) AS commanders,
+         (SELECT GROUP_CONCAT(t.label ORDER BY t.label SEPARATOR '|~|')
+            FROM deck_tags dt JOIN tags t ON t.id = dt.tag_id
+           WHERE dt.deck_id = d.id) AS tags
+    FROM decks d
+    JOIN users u ON u.id = d.user_id
+    LEFT JOIN deck_versions cur
+      ON cur.deck_id = d.id
+     AND cur.version_number = (SELECT MAX(v.version_number)
+                                 FROM deck_versions v WHERE v.deck_id = d.id)
+`
 
 /** Forme rendue par l'API pour un deck, vitrine comprise. */
 function shapeDeck(row) {
@@ -24,6 +39,7 @@ function shapeDeck(row) {
     active: Boolean(row.active),
     created_on: row.created_on,
     commanders: commandersOf(row),
+    tags: row.tags ? row.tags.split(SEP) : [],
     current_version: row.version_id
       ? {
           id: row.version_id,
@@ -36,20 +52,6 @@ function shapeDeck(row) {
       : null,
   }
 }
-
-const DECK_SELECT = `
-  SELECT d.*, u.name AS player,
-         cur.id AS version_id, cur.version_number, cur.bracket,
-         cur.bracket_variation, cur.deck_url, cur.started_on,
-         (SELECT GROUP_CONCAT(c.name ORDER BY c.position SEPARATOR '|~|')
-            FROM deck_commanders c WHERE c.deck_id = d.id) AS commanders
-    FROM decks d
-    JOIN users u ON u.id = d.user_id
-    LEFT JOIN deck_versions cur
-      ON cur.deck_id = d.id
-     AND cur.version_number = (SELECT MAX(v.version_number)
-                                 FROM deck_versions v WHERE v.deck_id = d.id)
-`
 
 export async function listDecks(cx, { activeOnly = false, withVersions = false } = {}) {
   const [rows] = await cx.query(

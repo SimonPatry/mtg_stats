@@ -12,14 +12,20 @@ import { loadShowcase } from '../lib/api.js'
  */
 export function useDecks() {
   const [state, setState] = useState({ decks: null, stale: false, savedAt: null, error: null })
+  const [reloadToken, setReloadToken] = useState(0)
 
   useEffect(() => {
     let cancelled = false
+    setState((prev) => ({ ...prev, decks: prev.decks, error: null }))
     loadShowcase()
       .then((result) => { if (!cancelled) setState({ ...result, error: null }) })
       .catch((error) => { if (!cancelled) setState({ decks: [], stale: false, savedAt: null, error }) })
     return () => { cancelled = true }
-  }, [])
+  }, [reloadToken])
 
-  return { ...state, loading: state.decks === null }
+  return {
+    ...state,
+    loading: state.decks === null,
+    reload: () => setReloadToken((n) => n + 1),
+  }
 }

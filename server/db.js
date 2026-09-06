@@ -45,10 +45,30 @@ export async function migrate(target = pool) {
   })
   try {
     await runSqlFile(connection, 'schema.sql')
+    await ensureUsersAccountLink(connection)
     await runSqlFile(connection, 'seed.sql')
   } finally {
     await connection.end()
   }
+}
+
+/** Bases déjà créées avant le lien comptes↔joueurs. */
+async function ensureUsersAccountLink(connection) {
+  const [cols] = await connection.query(`
+    SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE()
+       AND TABLE_NAME = 'users'
+       AND COLUMN_NAME = 'account_id'
+  `)
+  if (cols.length > 0) return
+
+  await connection.query('ALTER TABLE users ADD COLUMN account_id CHAR(36) NULL')
+  await connection.query('ALTER TABLE users ADD UNIQUE KEY uq_users_account (account_id)')
+  await connection.query(`
+    ALTER TABLE users
+      ADD CONSTRAINT fk_users_account
+      FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE SET NULL
+  `)
 }
 
 /** Helper de transaction : commit si tout passe, rollback à la première erreur. */

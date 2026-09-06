@@ -2,20 +2,35 @@ import { useState } from 'react'
 import { api } from '../../lib/api.js'
 
 /**
- * Sélection dans le vocabulaire de tags.
- *
- * La liste déroulante reste la voie normale — c'est tout l'intérêt d'avoir
- * sorti les tags dans leur table. Mais un tag manquant en pleine saisie ne
- * doit pas obliger à quitter le formulaire : on peut en créer un ici, et le
- * ménage (renommer, supprimer) se fait sur l'écran Tags.
+ * Un seul contrôle tags : pastilles style Admin/Membre.
+ * Clic = poser / retirer du deck. × = supprimer du vocabulaire. Créer ajoute et pose.
  */
 export default function TagPicker({ value, onChange, tags, onTagsChange }) {
   const [draft, setDraft] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
-  const selected = tags.filter((t) => value.includes(t.id))
-  const available = tags.filter((t) => !value.includes(t.id))
+  const selectedIds = value.map(String)
+
+  function toggle(id) {
+    const sid = String(id)
+    if (selectedIds.includes(sid)) {
+      onChange(value.filter((x) => String(x) !== sid))
+    } else {
+      onChange([...value, id])
+    }
+  }
+
+  async function removeFromVocab(tag) {
+    setError('')
+    try {
+      await api.deleteTag(tag.id)
+      onTagsChange?.(tags.filter((t) => String(t.id) !== String(tag.id)))
+      onChange(value.filter((id) => String(id) !== String(tag.id)))
+    } catch (err) {
+      setError(err.message || 'Suppression impossible')
+    }
+  }
 
   async function create() {
     const label = draft.trim()
@@ -28,11 +43,12 @@ export default function TagPicker({ value, onChange, tags, onTagsChange }) {
       onChange([...value, tag.id])
       setDraft('')
     } catch (err) {
-      // 409 : le tag existe déjà. On le sélectionne plutôt que de râler.
       const existing = tags.find(
         (t) => t.label.toLowerCase() === label.toLowerCase())
       if (existing) {
-        if (!value.includes(existing.id)) onChange([...value, existing.id])
+        if (!selectedIds.includes(String(existing.id))) {
+          onChange([...value, existing.id])
+        }
         setDraft('')
       } else {
         setError(err.message || 'Création impossible')
@@ -44,51 +60,43 @@ export default function TagPicker({ value, onChange, tags, onTagsChange }) {
 
   return (
     <div className="tag-picker">
-      <div className="chip-row">
-        {selected.length === 0 && <span className="tag-picker-empty">Aucun tag posé.</span>}
-        {selected.map((tag) => (
-          <span key={tag.id} className="chip is-on">
-            {tag.label}
-            <button
-              type="button"
-              title="Retirer"
-              className="chip-remove"
-              onClick={() => onChange(value.filter((id) => id !== tag.id))}
-            >
-              ×
-            </button>
-          </span>
-        ))}
+      <div className="forge-tag-row">
+        {tags.length === 0 && <span className="tag-picker-empty">Aucun tag.</span>}
+        {tags.map((tag) => {
+          const on = selectedIds.includes(String(tag.id))
+          return (
+            <span key={tag.id} className={`forge-tag${on ? ' is-on' : ''}`}>
+              <button
+                type="button"
+                className="forge-tag-label"
+                aria-pressed={on}
+                title={on ? 'Retirer du deck' : 'Ajouter au deck'}
+                onClick={() => toggle(tag.id)}
+              >
+                {tag.label}
+              </button>
+              <button
+                type="button"
+                className="forge-tag-remove"
+                title="Supprimer le tag"
+                aria-label={`Supprimer ${tag.label}`}
+                onClick={() => removeFromVocab(tag)}
+              >
+                ×
+              </button>
+            </span>
+          )
+        })}
       </div>
 
       <div className="tag-picker-controls">
-        <select
-          value=""
-          disabled={available.length === 0}
-          onChange={(e) => {
-            if (e.target.value) onChange([...value, e.target.value])
-          }}
-        >
-          <option value="">
-            {available.length
-              ? 'Ajouter un tag…'
-              : tags.length === 0
-                ? 'Aucun tag dans le vocabulaire'
-                : 'Tous les tags sont déjà posés'}
-          </option>
-          {available.map((tag) => (
-            <option key={tag.id} value={tag.id}>{tag.label}</option>
-          ))}
-        </select>
-
         <input
           type="text"
           value={draft}
-          placeholder="ou créer un tag…"
+          placeholder="Nouveau tag…"
           disabled={busy}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
-            // Entrée créerait le tag ET soumettrait le formulaire parent.
             if (e.key === 'Enter') { e.preventDefault(); create() }
           }}
         />
@@ -98,18 +106,9 @@ export default function TagPicker({ value, onChange, tags, onTagsChange }) {
           disabled={busy || !draft.trim()}
           onClick={create}
         >
-          Créer
+          Ajouter
         </button>
       </div>
-
-      {/* Saisir un nom sans cliquer sur « Créer », puis enregistrer le deck :
-          le tag n'existe nulle part et la saisie est perdue sans un mot. */}
-      {draft.trim() && !busy && (
-        <p className="form-hint tag-picker-pending">
-          « {draft.trim()} » n’est pas encore créé — clique sur Créer, ou appuie
-          sur Entrée.
-        </p>
-      )}
 
       {error && <p className="form-error">{error}</p>}
     </div>

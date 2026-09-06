@@ -2,17 +2,16 @@ import { useEffect, useState } from 'react'
 import DeckEditModal from './DeckEditModal'
 import PlayersAddDesktopForms from './PlayersAddDesktopForms'
 import PlayersAddModal from './PlayersAddModal'
+import AccountEditModal from './admin/AccountEditModal.jsx'
 import { loadDecks, saveDecks } from './decksApi'
 import { loadUsers, saveUsers } from './usersApi'
 import {
   addDeckToUser,
-  addUser,
   asCommanderList,
   editDeckPowerLevel,
   formatCommanders,
   getDeckById,
   getDecksForUser,
-  getActiveUsers,
   getUserName,
 } from './playersMapping'
 import { fetchCommanderImage } from './scryfall'
@@ -194,21 +193,37 @@ function RosterDeckCard({ deck, onZoom, onEdit }) {
   )
 }
 
-function RosterPlayer({ user, decks, onZoom, onEditDeck }) {
+function RosterPlayer({ user, decks, onZoom, onEditDeck, onEditUser }) {
   const userDecks = getDecksForUser(decks, user.id)
+  const roleLabel = user.accountRole === 'admin' ? 'Admin' : 'Membre'
 
   return (
     <li className="roster-player-card">
       <header className="roster-player-head">
         <RosterAvatar userId={user.id} name={user.name} />
         <div className="roster-player-meta">
-          <h4 className="roster-player-name">{user.name}</h4>
+          <h4 className="roster-player-name">
+            {user.name}
+            <span className={`roster-role-pill roster-role-pill--${user.accountRole || 'user'}`}>
+              {roleLabel}
+            </span>
+          </h4>
           <span className="roster-player-count">
+            @{user.accountUsername || '—'}
+            {' · '}
             {userDecks.length === 0
               ? 'Aucun deck'
               : `${userDecks.length} deck${userDecks.length > 1 ? 's' : ''}`}
+            {!user.active ? ' · inactif' : ''}
           </span>
         </div>
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm roster-player-edit"
+          onClick={() => onEditUser?.(user)}
+        >
+          Éditer
+        </button>
       </header>
 
       {userDecks.length > 0 && (
@@ -245,10 +260,10 @@ function usePlayersMobile() {
 }
 
 export default function PlayersManager({ users, decks, onSave, onZoom }) {
-  const activeUsers = getActiveUsers(users)
-  const userNames = [...activeUsers].sort((a, b) => a.name.localeCompare(b.name))
+  // Roster admin = comptes inscrits (y compris inactifs, pour pouvoir les réactiver).
+  const registered = users.filter((u) => u.accountId)
+  const userNames = [...registered].sort((a, b) => a.name.localeCompare(b.name))
 
-  const [newPlayerName, setNewPlayerName] = useState('')
   const [selectedUserId, setSelectedUserId] = useState('')
   const [commanders, setCommanders] = useState('')
   const [comPrint, setComPrint] = useState({})
@@ -262,8 +277,8 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
   const [success, setSuccess] = useState('')
   const [saving, setSaving] = useState(false)
   const [editingDeckId, setEditingDeckId] = useState(null)
+  const [editingUser, setEditingUser] = useState(null)
   const [addModalOpen, setAddModalOpen] = useState(false)
-  const [addModalTab, setAddModalTab] = useState('deck')
   const isMobile = usePlayersMobile()
 
   const editingDeck = editingDeckId
@@ -300,28 +315,6 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
       onSave({ users: freshUsers, decks: freshDecks })
     } finally {
       setSaving(false)
-    }
-  }
-
-  async function handleAddPlayer(e) {
-    e.preventDefault()
-    setError('')
-    setSuccess('')
-
-    try {
-      const updatedUsers = addUser(users, newPlayerName)
-      const trimmed = newPlayerName.trim()
-      await persist(updatedUsers, decks)
-      setNewPlayerName('')
-      const created = updatedUsers.find((u) => u.name === trimmed)
-      if (created) setSelectedUserId(created.id)
-      setSuccess(`Joueur « ${trimmed} » ajouté.`)
-      if (isMobile) {
-        setAddModalOpen(false)
-        setAddModalTab('deck')
-      }
-    } catch (err) {
-      setError(err.message)
     }
   }
 
@@ -399,8 +392,34 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
     )
   }
 
+  async function handleEditUserSave({ name, active, role, accountId }) {
+    if (!editingUser) return
+    setSaving(true)
+    setError('')
+    try {
+      await api.updateUser(editingUser.id, { name, active })
+      if (accountId && role && role !== editingUser.accountRole) {
+        await api.updateAccount(accountId, { role })
+      }
+      const [freshUsers, freshDecks] = await Promise.all([loadUsers(), loadDecks()])
+      onSave({ users: freshUsers, decks: freshDecks })
+      setEditingUser(null)
+      setSuccess(`« ${name} » mis à jour.`)
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
     <div className="players-manager">
+      {editingUser && (
+        <AccountEditModal
+          user={editingUser}
+          saving={saving}
+          onClose={() => setEditingUser(null)}
+          onSave={handleEditUserSave}
+        />
+      )}
       {editingDeck && (
         <DeckEditModal
           deck={editingDeck}
@@ -415,14 +434,9 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
       )}
       {isMobile && addModalOpen && (
         <PlayersAddModal
-          tab={addModalTab}
-          onTab={setAddModalTab}
           onClose={() => setAddModalOpen(false)}
           saving={saving}
           userNames={userNames}
-          newPlayerName={newPlayerName}
-          onNewPlayerName={setNewPlayerName}
-          onAddPlayer={handleAddPlayer}
           selectedUserId={selectedUserId}
           onSelectedUserId={setSelectedUserId}
           commanders={commanders}
@@ -451,9 +465,6 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
           <PlayersAddDesktopForms
             saving={saving}
             userNames={userNames}
-            newPlayerName={newPlayerName}
-            onNewPlayerName={setNewPlayerName}
-            onAddPlayer={handleAddPlayer}
             selectedUserId={selectedUserId}
             onSelectedUserId={setSelectedUserId}
             commanders={commanders}
@@ -475,9 +486,9 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
           />
         )}
         <aside className="players-roster panel">
-          <h3>Roster ({userNames.length})</h3>
+          <h3>Inscrits ({userNames.length})</h3>
           {userNames.length === 0 ? (
-            <p className="players-roster-empty">Aucun joueur pour l&apos;instant.</p>
+            <p className="players-roster-empty">Aucun compte inscrit pour l’instant.</p>
           ) : (
             <ul className="roster-player-list">
               {userNames.map((user) => (
@@ -487,6 +498,7 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
                   decks={decks}
                   onZoom={onZoom}
                   onEditDeck={setEditingDeckId}
+                  onEditUser={setEditingUser}
                 />
               ))}
             </ul>
@@ -498,7 +510,7 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
         <button
           type="button"
           className="players-add-fab"
-          aria-label="Ajouter un joueur ou un deck"
+          aria-label="Ajouter un deck"
           onClick={() => {
             setError('')
             setAddModalOpen(true)

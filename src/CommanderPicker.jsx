@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import CardPrintingsModal from './CardPrintingsModal'
+import { sortColors } from './admin/fields/ColorPicker.jsx'
 import {
   fetchCommanderImage,
   searchCommanders,
@@ -81,11 +82,13 @@ export default function CommanderPicker({
   comPrint = {},
   onChange,
   onComPrintChange,
+  onColorIdentityChange,
   onZoom,
   disabled = false,
 }) {
   const rootRef = useRef(null)
   const [selected, setSelected] = useState(() => parseCommandersInput(value) || [])
+  const [identities, setIdentities] = useState({})
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState([])
   const [loading, setLoading] = useState(false)
@@ -100,6 +103,15 @@ export default function CommanderPicker({
     setSelected(next)
     setPartnerMode(next.length > 1)
   }, [value])
+
+  function emitColors(names, idMap = identities) {
+    if (!onColorIdentityChange) return
+    const union = []
+    for (const name of names) {
+      for (const code of idMap[name] || []) union.push(code)
+    }
+    onColorIdentityChange(sortColors(union))
+  }
 
   function syncComPrint(names) {
     if (!onComPrintChange) return
@@ -174,10 +186,18 @@ export default function CommanderPicker({
     onChange(names.length === 1 ? names[0] : names.join(' / '))
   }
 
-  function selectCommander(name) {
+  function selectCommander(card) {
+    const name = card.name
     const next = partnerMode && selected.length === 1 ? [selected[0], name] : [name]
+    const nextIdentities = {}
+    for (const n of next) {
+      if (n === name) nextIdentities[n] = card.colorIdentity || []
+      else if (identities[n]) nextIdentities[n] = identities[n]
+    }
     setSelected(next)
+    setIdentities(nextIdentities)
     emit(next)
+    emitColors(next, nextIdentities)
     syncComPrint(next)
     setQuery('')
     setSuggestions([])
@@ -188,7 +208,9 @@ export default function CommanderPicker({
   function removeAt(index) {
     if (index === 0) {
       setSelected([])
+      setIdentities({})
       emit([])
+      emitColors([])
       onComPrintChange?.({})
       setPartnerMode(false)
       setQuery('')
@@ -196,8 +218,12 @@ export default function CommanderPicker({
     }
 
     const next = [selected[0]]
+    const nextIdentities = {}
+    if (identities[next[0]]) nextIdentities[next[0]] = identities[next[0]]
     setSelected(next)
+    setIdentities(nextIdentities)
     emit(next)
+    emitColors(next, nextIdentities)
     syncComPrint(next)
     setPartnerMode(false)
     setQuery('')
@@ -275,7 +301,7 @@ export default function CommanderPicker({
                       type="button"
                       className="commander-picker-option"
                       role="option"
-                      onClick={() => selectCommander(card.name)}
+                      onClick={() => selectCommander(card)}
                     >
                       {card.imageUrl ? (
                         <img src={card.imageUrl} alt="" draggable={false} />

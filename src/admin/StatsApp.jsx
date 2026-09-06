@@ -4,6 +4,7 @@ import { fetchCommanderImage } from '../scryfall'
 import { deleteGame, getBoardWipes, getLastPlayer, getLastPlayerLabel, isLastDeck, loadGames, saveGames } from '../gamesApi'
 import { remapGameIds } from '../lib/adapters.js'
 import Select from '../Select'
+import TagFilter, { collectTagLabels, matchesSelectedTags } from '../components/TagFilter.jsx'
 import { loadUsers, saveUsers } from '../usersApi'
 import { loadDecks, saveDecks } from '../decksApi'
 import {
@@ -19,6 +20,7 @@ import {
 } from '../playersMapping'
 import AddGameForm from '../AddGameForm'
 import PlayersManager from '../PlayersManager'
+import MemberDecks from '../MemberDecks'
 import DeckStatsModal from '../DeckStatsModal'
 import GameDetailsModal from '../GameDetailsModal'
 import DeleteGameModal from '../DeleteGameModal'
@@ -34,6 +36,25 @@ import {
 } from '../tempGame'
 import { downloadGamesExcel, downloadGamesJson } from '../exportGames'
 import { computeStats, deckLabel, resolveDeck } from '../stats'
+import { Link } from '../components/Link.jsx'
+import JsonEditor from '../JsonEditor'
+
+import '../index.css'
+
+function ForgeKeyIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden focusable="false">
+      <circle cx="8.5" cy="8.5" r="4.25" fill="none" stroke="currentColor" strokeWidth="1.75" />
+      <path
+        d="M11.6 11.6 L19.5 19.5 M17 17 L15 19 M19.5 19.5 L17.5 21.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
 
 function formatBracket({ bracket, bracketVariation }) {
   if (bracket == null) return 'B?'
@@ -294,15 +315,17 @@ function GameRow({ game, users, decks, onZoom, onDetails, onDelete }) {
           >
             Détails
           </button>
-          <button
-            type="button"
-            className="btn-icon btn-game-delete"
-            aria-label={`Supprimer la partie du ${game.date}`}
-            title="Supprimer"
-            onClick={() => onDelete?.(game)}
-          >
-            ×
-          </button>
+          {onDelete ? (
+            <button
+              type="button"
+              className="btn-icon btn-game-delete"
+              aria-label={`Supprimer la partie du ${game.date}`}
+              title="Supprimer"
+              onClick={() => onDelete(game)}
+            >
+              ×
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -423,6 +446,18 @@ function filterAndSortGames(games, winsByDeck, filters, users, decks) {
       return false
     }
 
+    if (filters.tags?.length) {
+      const matchTag = resolved.some((d) => {
+        const record = d.deckId ? getDeckById(decks, d.deckId) : null
+        const tags =
+          record?.tags
+          ?? (d.deckId && winsByDeck[d.deckId]?.tags)
+          ?? []
+        return matchesSelectedTags(tags, filters.tags)
+      })
+      if (!matchTag) return false
+    }
+
     return true
   })
 
@@ -460,7 +495,7 @@ function filterAndSortGames(games, winsByDeck, filters, users, decks) {
   return sorted
 }
 
-function filterDecks(winsByDeck, { nameQuery, minWinrate, sortWinrate }) {
+function filterDecks(winsByDeck, { nameQuery, minWinrate, sortWinrate, tags }) {
   const q = nameQuery.trim().toLowerCase()
 
   return Object.entries(winsByDeck)
@@ -474,6 +509,7 @@ function filterDecks(winsByDeck, { nameQuery, minWinrate, sortWinrate }) {
       const haystack = `${label} ${data.player ?? ''}`.toLowerCase()
       if (q && !haystack.includes(q)) return false
       if (winrate < minWinrate) return false
+      if (!matchesSelectedTags(data.tags, tags)) return false
       return true
     })
     .sort((a, b) => {
@@ -561,34 +597,46 @@ function FiltersBar({
   showSort = false,
   namePlaceholder = 'Commandant ou joueur…',
   minWinrateLabel = 'Winrate min',
+  tagOptions,
+  selectedTags,
+  onSelectedTags,
 }) {
   return (
-    <div className={`filters ${showSort ? 'filters-3' : 'filters-2'}`}>
-      <label className="filter">
-        <span>Nom</span>
-        <input
-          type="search"
-          placeholder={namePlaceholder}
-          value={nameQuery}
-          onChange={(e) => onNameQuery(e.target.value)}
-        />
-      </label>
-
-      <WinrateMinFilter value={minWinrate} onChange={onMinWinrate} label={minWinrateLabel} />
-
-      {showSort && (
+    <div className="filters-stack">
+      <div className={`filters ${showSort ? 'filters-3' : 'filters-2'}`}>
         <label className="filter">
-          <span>Tri winrate</span>
-          <Select
-            value={sortWinrate}
-            onChange={(e) => onSortWinrate(e.target.value)}
-          >
-            <option value="desc">Du plus haut</option>
-            <option value="asc">Du plus bas</option>
-            <option value="name">Par nom</option>
-          </Select>
+          <span>Nom</span>
+          <input
+            type="search"
+            placeholder={namePlaceholder}
+            value={nameQuery}
+            onChange={(e) => onNameQuery(e.target.value)}
+          />
         </label>
-      )}
+
+        <WinrateMinFilter value={minWinrate} onChange={onMinWinrate} label={minWinrateLabel} />
+
+        {showSort && (
+          <label className="filter">
+            <span>Tri winrate</span>
+            <Select
+              value={sortWinrate}
+              onChange={(e) => onSortWinrate(e.target.value)}
+            >
+              <option value="desc">Du plus haut</option>
+              <option value="asc">Du plus bas</option>
+              <option value="name">Par nom</option>
+            </Select>
+          </label>
+        )}
+      </div>
+      {tagOptions?.length > 0 && onSelectedTags ? (
+        <TagFilter
+          tags={tagOptions}
+          value={selectedTags ?? []}
+          onChange={onSelectedTags}
+        />
+      ) : null}
     </div>
   )
 }
@@ -607,80 +655,92 @@ function GamesFiltersBar({
   onProtected,
   sort,
   onSort,
+  tagOptions,
+  selectedTags,
+  onSelectedTags,
 }) {
   return (
-    <div className="filters filters-games">
-      <label className="filter">
-        <span>Commandant</span>
-        <Select value={comDeckId} onChange={(e) => onComDeckId(e.target.value)}>
-          <option value="">Tous</option>
-          {commanderOptions.map((opt) => (
-            <option key={opt.deckId} value={opt.deckId}>
-              {opt.label} ({opt.player})
-            </option>
-          ))}
-        </Select>
-      </label>
-
-      <label className="filter">
-        <span>Joueur</span>
-        <input
-          type="search"
-          placeholder="Nom…"
-          value={playerQuery}
-          onChange={(e) => onPlayerQuery(e.target.value)}
-        />
-      </label>
-
-      <label className="filter filter-sort-inline">
-        <span>Tri</span>
-        <Select value={sort} onChange={(e) => onSort(e.target.value)}>
-          <option value="date-desc">Date ↓</option>
-          <option value="date-asc">Date ↑</option>
-          <option value="turns-desc">Tours ↓</option>
-          <option value="turns-asc">Tours ↑</option>
-          <option value="bracket-desc">B ↓</option>
-          <option value="bracket-asc">B ↑</option>
-          <option value="wipe-first">Wipe</option>
-          <option value="prot-first">Prot.</option>
-          <option value="winrate-desc">WR ↓</option>
-          <option value="winrate-asc">WR ↑</option>
-        </Select>
-      </label>
-
-      <div className="filters-games-flags">
-        <label className="filter filter-compact">
-          <span>Bracket</span>
-          <Select value={bracket} onChange={(e) => onBracket(e.target.value)}>
+    <div className="filters-stack">
+      <div className="filters filters-games">
+        <label className="filter">
+          <span>Commandant</span>
+          <Select value={comDeckId} onChange={(e) => onComDeckId(e.target.value)}>
             <option value="">Tous</option>
-            <option value="1">B1</option>
-            <option value="2">B2</option>
-            <option value="3">B3</option>
-            <option value="4">B4</option>
+            {commanderOptions.map((opt) => (
+              <option key={opt.deckId} value={opt.deckId}>
+                {opt.label} ({opt.player})
+              </option>
+            ))}
           </Select>
         </label>
 
-        <label className="filter filter-compact">
-          <span>Wipe</span>
-          <Select value={wipe} onChange={(e) => onWipe(e.target.value)}>
-            <option value="">Tous</option>
-            <option value="yes">Oui</option>
-            <option value="no">Non</option>
+        <label className="filter">
+          <span>Joueur</span>
+          <input
+            type="search"
+            placeholder="Nom…"
+            value={playerQuery}
+            onChange={(e) => onPlayerQuery(e.target.value)}
+          />
+        </label>
+
+        <label className="filter filter-sort-inline">
+          <span>Tri</span>
+          <Select value={sort} onChange={(e) => onSort(e.target.value)}>
+            <option value="date-desc">Date ↓</option>
+            <option value="date-asc">Date ↑</option>
+            <option value="turns-desc">Tours ↓</option>
+            <option value="turns-asc">Tours ↑</option>
+            <option value="bracket-desc">B ↓</option>
+            <option value="bracket-asc">B ↑</option>
+            <option value="wipe-first">Wipe</option>
+            <option value="prot-first">Prot.</option>
+            <option value="winrate-desc">WR ↓</option>
+            <option value="winrate-asc">WR ↑</option>
           </Select>
         </label>
 
-        <label className="filter filter-compact">
-          <span>Protégée</span>
-          <Select
-            value={protectedFilter}
-            onChange={(e) => onProtected(e.target.value)}
-          >
-            <option value="">Tous</option>
-            <option value="yes">Oui</option>
-            <option value="no">Non</option>
-          </Select>
-        </label>
+        <div className="filters-games-flags">
+          <label className="filter filter-compact">
+            <span>Bracket</span>
+            <Select value={bracket} onChange={(e) => onBracket(e.target.value)}>
+              <option value="">Tous</option>
+              <option value="1">B1</option>
+              <option value="2">B2</option>
+              <option value="3">B3</option>
+              <option value="4">B4</option>
+            </Select>
+          </label>
+
+          <label className="filter filter-compact">
+            <span>Wipe</span>
+            <Select value={wipe} onChange={(e) => onWipe(e.target.value)}>
+              <option value="">Tous</option>
+              <option value="yes">Oui</option>
+              <option value="no">Non</option>
+            </Select>
+          </label>
+
+          <label className="filter filter-compact">
+            <span>Protégée</span>
+            <Select
+              value={protectedFilter}
+              onChange={(e) => onProtected(e.target.value)}
+            >
+              <option value="">Tous</option>
+              <option value="yes">Oui</option>
+              <option value="no">Non</option>
+            </Select>
+          </label>
+        </div>
       </div>
+      {tagOptions?.length > 0 && onSelectedTags ? (
+        <TagFilter
+          tags={tagOptions}
+          value={selectedTags ?? []}
+          onChange={onSelectedTags}
+        />
+      ) : null}
     </div>
   )
 }
@@ -774,7 +834,7 @@ function MobileDashboardFilters({ activePanel, filterPanels }) {
   )
 }
 
-function SideNav({ open, onClose, activeView, onNavigate, onExportJson, onExportExcel }) {
+function SideNav({ open, onClose, activeView, onNavigate, onExportJson, onExportExcel, mode = 'admin', onBackToForge }) {
   useEffect(() => {
     if (!open) return undefined
     function onKey(e) {
@@ -808,22 +868,27 @@ function SideNav({ open, onClose, activeView, onNavigate, onExportJson, onExport
         </div>
 
         <nav className="side-nav-links" aria-label="Navigation">
-          <button
-            type="button"
-            className={`side-nav-link${activeView === 'dashboard' ? ' is-active' : ''}`}
-            onClick={() => go('dashboard')}
-          >
-            Dashboard
-          </button>
-          <button
-            type="button"
-            className={`side-nav-link${activeView === 'players' ? ' is-active' : ''}`}
-            onClick={() => go('players')}
-          >
-            Joueurs & decks
-          </button>
+          {mode === 'admin' ? (
+            <>
+              <button
+                type="button"
+                className={`side-nav-link${activeView === 'players' ? ' is-active' : ''}`}
+                onClick={() => go('players')}
+              >
+                Joueurs & decks
+              </button>
+              <button
+                type="button"
+                className={`side-nav-link${activeView === 'json' ? ' is-active' : ''}`}
+                onClick={() => go('json')}
+              >
+                Édition JSON
+              </button>
+            </>
+          ) : null}
         </nav>
 
+        {mode === 'admin' ? (
         <div className="side-nav-section">
           <p className="side-nav-section-label">Exports</p>
           <button type="button" className="side-nav-link" onClick={() => { onExportJson(); onClose() }}>
@@ -832,6 +897,20 @@ function SideNav({ open, onClose, activeView, onNavigate, onExportJson, onExport
           <button type="button" className="side-nav-link" onClick={() => { onExportExcel(); onClose() }}>
             ↓ Télécharger Excel
           </button>
+        </div>
+        ) : null}
+
+        <div className="side-nav-section">
+          <p className="side-nav-section-label">Navigation</p>
+          {mode === 'member' && onBackToForge ? (
+            <button type="button" className="side-nav-link" onClick={() => { onClose(); onBackToForge() }}>
+              ← Vitrine des decks
+            </button>
+          ) : (
+            <Link to="/" className="side-nav-link" onClick={onClose}>
+              ← Vitrine des decks
+            </Link>
+          )}
         </div>
 
         {/* Sur écran étroit la déconnexion quitte la barre du haut, où elle
@@ -944,7 +1023,9 @@ function DashboardShell({ children, filterPanels }) {
   )
 }
 
-function StatsApp() {
+function StatsApp({ mode = 'admin', onBackToForge, embedded = false, initialView, onMemberViewChange }) {
+  const isAdminMode = mode === 'admin'
+  const isMemberMode = mode === 'member'
   const [games, setGames] = useState([])
   const [users, setUsers] = useState([])
   const [decks, setDecks] = useState([])
@@ -957,8 +1038,25 @@ function StatsApp() {
   const [deckDetail, setDeckDetail] = useState(null)
   const [gameDetail, setGameDetail] = useState(null)
   const [gameToDelete, setGameToDelete] = useState(null)
-  const [activeView, setActiveView] = useState('dashboard')
+  const [activeView, setActiveView] = useState(
+    isAdminMode ? 'players' : (initialView === 'myDecks' ? 'myDecks' : 'dashboard'),
+  )
   const [sideNavOpen, setSideNavOpen] = useState(false)
+
+  useEffect(() => {
+    if (!isMemberMode) return
+    if (initialView === 'myDecks' || initialView === 'dashboard') {
+      setActiveView(initialView)
+    }
+  }, [initialView, isMemberMode])
+
+  useEffect(() => {
+    if (!isMemberMode || !onMemberViewChange) return
+    if (activeView === 'myDecks') onMemberViewChange('myDecks')
+    else if (activeView === 'dashboard' || activeView === 'tempGame') {
+      onMemberViewChange('dashboard')
+    }
+  }, [activeView, isMemberMode, onMemberViewChange])
 
   // Chargement unique au montage : l'API est la seule source de données.
   useEffect(() => {
@@ -1052,6 +1150,7 @@ function StatsApp() {
   const [comNameQuery, setComNameQuery] = useState('')
   const [comMinWinrate, setComMinWinrate] = useState(0)
   const [comSortWinrate, setComSortWinrate] = useState('desc')
+  const [comTags, setComTags] = useState([])
 
   const [gameComDeckId, setGameComDeckId] = useState('')
   const [gamePlayerQuery, setGamePlayerQuery] = useState('')
@@ -1059,6 +1158,9 @@ function StatsApp() {
   const [gameWipe, setGameWipe] = useState('')
   const [gameProtected, setGameProtected] = useState('')
   const [gameSort, setGameSort] = useState('date-desc')
+  const [gameTags, setGameTags] = useState([])
+
+  const tagOptions = useMemo(() => collectTagLabels(decks), [decks])
 
   const statsFilters = { nameQuery: statsNameQuery, minWinrate: statsMinWinrate }
   const isStatsFiltered =
@@ -1077,9 +1179,13 @@ function StatsApp() {
     nameQuery: comNameQuery,
     minWinrate: comMinWinrate,
     sortWinrate: comSortWinrate,
+    tags: comTags,
   })
   const isComsFiltered =
-    comNameQuery.trim() !== '' || comMinWinrate > 0 || comSortWinrate !== 'desc'
+    comNameQuery.trim() !== ''
+    || comMinWinrate > 0
+    || comSortWinrate !== 'desc'
+    || comTags.length > 0
 
   const gameCommanderOptions = useMemo(
     () => getDeckFilterOptions(users, decks),
@@ -1093,6 +1199,7 @@ function StatsApp() {
     wipe: gameWipe,
     protected: gameProtected,
     sort: gameSort,
+    tags: gameTags,
   }, users, decks)
 
   const isGamesFiltered =
@@ -1100,7 +1207,8 @@ function StatsApp() {
     gamePlayerQuery.trim() !== '' ||
     gameBracket !== '' ||
     gameWipe !== '' ||
-    gameProtected !== ''
+    gameProtected !== '' ||
+    gameTags.length > 0
 
   const dashboardFilterPanels = useMemo(
     () => [
@@ -1130,6 +1238,9 @@ function StatsApp() {
             sortWinrate={comSortWinrate}
             onSortWinrate={setComSortWinrate}
             showSort
+            tagOptions={tagOptions}
+            selectedTags={comTags}
+            onSelectedTags={setComTags}
           />
         ),
       },
@@ -1151,6 +1262,9 @@ function StatsApp() {
             onProtected={setGameProtected}
             sort={gameSort}
             onSort={setGameSort}
+            tagOptions={tagOptions}
+            selectedTags={gameTags}
+            onSelectedTags={setGameTags}
           />
         ),
       },
@@ -1163,6 +1277,8 @@ function StatsApp() {
       comNameQuery,
       comMinWinrate,
       comSortWinrate,
+      comTags,
+      tagOptions,
       isGamesFiltered,
       gameCommanderOptions,
       gameComDeckId,
@@ -1171,6 +1287,7 @@ function StatsApp() {
       gameWipe,
       gameProtected,
       gameSort,
+      gameTags,
     ],
   )
 
@@ -1216,6 +1333,17 @@ function StatsApp() {
     setDecks(updatedDecks)
   }
 
+  async function reloadCatalog() {
+    const [freshGames, freshUsers, freshDecks] = await Promise.all([
+      loadGames(),
+      loadUsers(),
+      loadDecks(),
+    ])
+    setGames(freshGames)
+    setUsers(freshUsers)
+    setDecks(freshDecks)
+  }
+
   function handleZoom(names, origin) {
     setCardFloat({
       names,
@@ -1229,7 +1357,7 @@ function StatsApp() {
   }
 
   return (
-    <div className="page">
+    <div className={`page${embedded ? ' page--embedded' : ''}`}>
       {showAddForm && (
         <AddGameForm
           users={users}
@@ -1290,14 +1418,75 @@ function StatsApp() {
           onClose={() => setGameToDelete(null)}
         />
       )}
-      <SideNav
-        open={sideNavOpen}
-        onClose={() => setSideNavOpen(false)}
-        activeView={activeView}
-        onNavigate={setActiveView}
-        onExportJson={() => downloadGamesJson(games, users, decks)}
-        onExportExcel={() => downloadGamesExcel(games, users, decks)}
-      />
+      {!embedded && (
+        <SideNav
+          open={sideNavOpen}
+          onClose={() => setSideNavOpen(false)}
+          activeView={activeView}
+          onNavigate={setActiveView}
+          onExportJson={() => downloadGamesJson(games, users, decks)}
+          onExportExcel={() => downloadGamesExcel(games, users, decks)}
+          mode={mode}
+          onBackToForge={onBackToForge}
+        />
+      )}
+      {embedded && isMemberMode ? (
+        activeView !== 'myDecks' ? (
+          <div className="member-toolbar">
+            <div className="member-toolbar__actions">
+              <button
+                type="button"
+                className="btn btn-ghost top-bar-add-btn"
+                onClick={openAddForm}
+              >
+                + Partie
+              </button>
+              <button
+                type="button"
+                className={`btn btn-ghost top-bar-live-btn${liveGameCount > 0 ? ' has-temp-game' : ''}`}
+                onClick={openLiveGame}
+              >
+                {liveGameCount > 0 ? `● Live (${liveGameCount})` : 'Live'}
+              </button>
+            </div>
+          </div>
+        ) : null
+      ) : embedded && isAdminMode ? (
+        <div className="member-toolbar">
+          <nav className="member-toolbar__nav" aria-label="Administration">
+            <button
+              type="button"
+              className={`btn btn-tab${activeView === 'players' ? ' is-active' : ''}`}
+              onClick={() => setActiveView('players')}
+            >
+              Joueurs & decks
+            </button>
+            <button
+              type="button"
+              className={`btn btn-tab${activeView === 'json' ? ' is-active' : ''}`}
+              onClick={() => setActiveView('json')}
+            >
+              Édition JSON
+            </button>
+          </nav>
+          <div className="member-toolbar__actions">
+            <button
+              type="button"
+              className="btn btn-ghost top-bar-export-btn"
+              onClick={() => downloadGamesJson(games, users, decks)}
+            >
+              ↓ JSON
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost top-bar-export-btn"
+              onClick={() => downloadGamesExcel(games, users, decks)}
+            >
+              ↓ Excel
+            </button>
+          </div>
+        </div>
+      ) : (
       <header className="page-header top-bar">
         <button
           type="button"
@@ -1314,74 +1503,113 @@ function StatsApp() {
         </button>
 
         <div className="top-bar-brand">
-          <h1>MagicAddicts Stats</h1>
-          <p className="eyebrow">Commander</p>
+          <h1>Forge Arcanique</h1>
+          <p className="eyebrow">{isAdminMode ? 'Administration' : 'Espace membre'}</p>
         </div>
 
         <nav className="top-bar-nav top-bar-nav-desktop" aria-label="Navigation">
-          <button
-            type="button"
-            className={`btn btn-tab${activeView === 'dashboard' ? ' is-active' : ''}`}
-            onClick={() => setActiveView('dashboard')}
-          >
-            Dashboard
-          </button>
-          <button
-            type="button"
-            className={`btn btn-tab${activeView === 'players' ? ' is-active' : ''}`}
-            onClick={() => setActiveView('players')}
-          >
-            Joueurs & decks
-          </button>
+          {isAdminMode ? (
+            <>
+              <button
+                type="button"
+                className={`btn btn-tab${activeView === 'players' ? ' is-active' : ''}`}
+                onClick={() => setActiveView('players')}
+              >
+                Joueurs & decks
+              </button>
+              <button
+                type="button"
+                className={`btn btn-tab${activeView === 'json' ? ' is-active' : ''}`}
+                onClick={() => setActiveView('json')}
+              >
+                Édition JSON
+              </button>
+            </>
+          ) : null}
         </nav>
 
-        {/* Trois groupes séparés par des filets, du plus courant au plus
-            définitif : saisir une partie, exporter, quitter. Les boutons se
-            ressemblent à l'intérieur d'un groupe ; ce sont les filets qui
-            disent où l'on change de nature de geste. */}
         <div className="top-bar-actions">
-          <button
-            type="button"
-            className="btn btn-ghost top-bar-add-btn"
-            onClick={openAddForm}
-          >
-            + Partie
-          </button>
-          <button
-            type="button"
-            className={`btn btn-ghost top-bar-live-btn${liveGameCount > 0 ? ' has-temp-game' : ''}`}
-            onClick={openLiveGame}
-          >
-            {liveGameCount > 0 ? `● Live (${liveGameCount})` : 'Live'}
-          </button>
-          <span className="top-bar-divider" aria-hidden="true" />
-          <button
-            type="button"
-            className="btn btn-ghost top-bar-export-btn"
-            onClick={() => downloadGamesJson(games, users, decks)}
-          >
-            ↓ JSON
-          </button>
-          <button
-            type="button"
-            className="btn btn-ghost top-bar-export-btn"
-            onClick={() => downloadGamesExcel(games, users, decks)}
-          >
-            ↓ Excel
-          </button>
-          <span className="top-bar-divider" aria-hidden="true" />
+          {isMemberMode ? (
+            <>
+              <button
+                type="button"
+                className="btn btn-ghost top-bar-add-btn"
+                onClick={openAddForm}
+              >
+                + Partie
+              </button>
+              <button
+                type="button"
+                className={`btn btn-ghost top-bar-live-btn${liveGameCount > 0 ? ' has-temp-game' : ''}`}
+                onClick={openLiveGame}
+              >
+                {liveGameCount > 0 ? `● Live (${liveGameCount})` : 'Live'}
+              </button>
+              <span className="top-bar-divider" aria-hidden="true" />
+            </>
+          ) : null}
+          {isAdminMode ? (
+            <>
+              <button
+                type="button"
+                className="btn btn-ghost top-bar-export-btn"
+                onClick={() => downloadGamesJson(games, users, decks)}
+              >
+                ↓ JSON
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost top-bar-export-btn"
+                onClick={() => downloadGamesExcel(games, users, decks)}
+              >
+                ↓ Excel
+              </button>
+              <span className="top-bar-divider" aria-hidden="true" />
+            </>
+          ) : null}
+          {isAdminMode ? (
+            <Link
+              to="/"
+              className="top-bar-forge-key"
+              title="Retour à la vitrine"
+              aria-label="Retour à la vitrine"
+            >
+              <ForgeKeyIcon />
+            </Link>
+          ) : onBackToForge ? (
+            <button
+              type="button"
+              className="top-bar-forge-key"
+              title="Retour à la vitrine"
+              aria-label="Retour à la vitrine"
+              onClick={onBackToForge}
+            >
+              <ForgeKeyIcon />
+            </button>
+          ) : (
+            <Link
+              to="/"
+              className="top-bar-forge-key"
+              title="Retour à la vitrine"
+              aria-label="Retour à la vitrine"
+            >
+              <ForgeKeyIcon />
+            </Link>
+          )}
+          <span className="top-bar-divider top-bar-divider-logout" aria-hidden="true" />
           <button
             type="button"
             className="btn btn-ghost top-bar-logout"
-            title="Fermer la session d’administration"
+            title="Fermer la session"
             onClick={signOut}
           >
             Déconnexion
           </button>
         </div>
       </header>
+      )}
 
-      {activeView === 'tempGame' && tempGame ? (
+      {isMemberMode && activeView === 'tempGame' && tempGame ? (
         <TempGameView
           tempGame={tempGame}
           onChange={handleTempGameChange}
@@ -1389,7 +1617,24 @@ function StatsApp() {
           onAbandon={handleAbandonTempGame}
           onBack={() => setActiveView('dashboard')}
         />
-      ) : activeView === 'players' ? (
+      ) : isMemberMode && activeView === 'myDecks' ? (
+        <MemberDecks
+          users={users}
+          decks={decks}
+          onSave={handleCatalogSave}
+          onZoom={handleZoom}
+        />
+      ) : isAdminMode && activeView === 'json' ? (
+        <JsonEditor
+          games={games}
+          users={users}
+          decks={decks}
+          onSaveGames={reloadCatalog}
+          onSaveUsers={reloadCatalog}
+          onSaveDecks={reloadCatalog}
+          onCancel={() => setActiveView('players')}
+        />
+      ) : isAdminMode ? (
         <PlayersManager
           users={users}
           decks={decks}
@@ -1492,6 +1737,9 @@ function StatsApp() {
                 sortWinrate={comSortWinrate}
                 onSortWinrate={setComSortWinrate}
                 showSort
+                tagOptions={tagOptions}
+                selectedTags={comTags}
+                onSelectedTags={setComTags}
               />
             </div>
           </div>
@@ -1545,6 +1793,9 @@ function StatsApp() {
                 onProtected={setGameProtected}
                 sort={gameSort}
                 onSort={setGameSort}
+                tagOptions={tagOptions}
+                selectedTags={gameTags}
+                onSelectedTags={setGameTags}
               />
             </div>
           </div>
@@ -1563,7 +1814,7 @@ function StatsApp() {
                   decks={decks}
                   onZoom={handleZoom}
                   onDetails={setGameDetail}
-                  onDelete={setGameToDelete}
+                  onDelete={isAdminMode ? setGameToDelete : undefined}
                 />
               ))
             )}

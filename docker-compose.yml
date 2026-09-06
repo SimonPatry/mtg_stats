@@ -1,11 +1,15 @@
-# MariaDB de développement pour le projet fusionné.
+# Stack locale complète : MariaDB + API/front (build).
 #
-#   docker compose up -d      démarrer
-#   docker compose down       arrêter (les données sont conservées)
-#   docker compose down -v    arrêter ET effacer les données
+#   docker compose up -d --build    démarrer (app sur :3000, db sur :3306)
+#   docker compose down             arrêter (données DB conservées)
+#   docker compose down -v          arrêter ET effacer les données
+#   docker compose logs -f app      logs de l'app
 #
-# Le port hôte est configurable si 3306 est déjà pris chez vous :
-#   DB_PORT=3307 docker compose up -d
+# Prérequis : un .env à la racine avec au minimum JWT_SECRET et
+# ADMIN_PASSWORD_HASH (voir .env.example et le README).
+#
+# Le port hôte de la DB est configurable si 3306 est déjà pris :
+#   DB_PORT=3307 docker compose up -d --build
 #
 services:
   db:
@@ -21,14 +25,35 @@ services:
       - "${DB_PORT:-3306}:3306"
     volumes:
       - mtg-db-data:/var/lib/mysql
-      # Joué une seule fois, à la création du volume : crée la base de test
-      # à côté de la base de développement.
       - ./db/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 5s
       timeout: 5s
       retries: 12
+
+  app:
+    build: .
+    container_name: mtg-app
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      # Dans le réseau compose, l'hôte de la DB est le service `db`.
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-mtg}
+      DB_PASSWORD: ${DB_PASSWORD:-mtg}
+      DB_NAME: ${DB_NAME:-mtg}
+      PORT: 3000
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH}
+      SECURE_COOKIES: ${SECURE_COOKIES:-0}
+      LOGIN_RATE_LIMIT: ${LOGIN_RATE_LIMIT:-10}
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   mtg-db-data:

@@ -66,6 +66,7 @@ export function computeStats(games, users, decks) {
       player: getUserName(users, record.userId),
       bracket: record.bracket,
       bracketVariation: record.bracketVariation ?? null,
+      tags: record.tags ?? [],
     }
   }
 
@@ -117,6 +118,7 @@ export function computeStats(games, users, decks) {
           player: deck.player,
           bracket: deck.bracket,
           bracketVariation: deck.bracketVariation,
+          tags: [],
         }
       }
       winsByDeck[key].games += 1

@@ -8,21 +8,27 @@
    surtout `overflow: hidden`, qui empêchait la page publique de défiler.
 --------------------------------------------------------------------------- */
 body.admin-theme {
-  --bg-0: #070b14;
-  --bg-1: #0d1424;
-  --ink: #e8eef8;
-  --ink-soft: #8b9bb4;
-  --surface: #121a2a;
-  --surface-2: #161f32;
-  --line: #273247;
-  --accent: #3b82f6;
-  --accent-soft: #1a2f55;
-  --win: #38bdf8;
-  --loss: #64748b;
+  /* Palette alignée sur la Forge (tokens.css). */
+  --bg: #0a0a0b;
+  --bg-0: #0a0a0b;
+  --bg-1: #0c1411;
+  --ink: #eef5f2;
+  --ink-soft: #9bb5ab;
+  --surface: #10201b;
+  --surface-2: #0d1814;
+  --line: rgba(238, 245, 242, 0.14);
+  --accent: #2fd6a0;
+  --accent-soft: #22b78a;
+  --accent-wash: #14352c;
+  --on-accent: #04140f;
+  --win: #5eead4;
+  --loss: #6b7c76;
+  --danger: #ff6b6b;
   --shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
-  --radius: 18px;
+  --radius: 12px;
   --font-display: 'Cinzel', 'Times New Roman', serif;
-  --font-body: 'Manrope', sans-serif;
+  --font-title: 'Cinzel', 'Times New Roman', serif;
+  --font-body: 'Inter', 'Segoe UI', sans-serif;
   --topbar-h: 4.5rem;
 
   margin: 0;
@@ -34,8 +40,8 @@ body.admin-theme {
   color: var(--ink);
   color-scheme: dark;
   background:
-    radial-gradient(ellipse 70% 45% at 0% 0%, #1a2f55 0%, transparent 55%),
-    radial-gradient(ellipse 50% 40% at 100% 0%, #152238 0%, transparent 50%),
+    radial-gradient(ellipse 70% 45% at 0% 0%, rgba(47, 214, 160, 0.14) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 100% 0%, rgba(16, 32, 27, 0.9) 0%, transparent 50%),
     linear-gradient(180deg, var(--bg-0), var(--bg-1));
 }
 
@@ -50,6 +56,89 @@ body.admin-theme #root {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+body.admin-theme .site-shell {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+body.admin-theme .site-main {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+body.admin-theme .deck-menu.is-open {
+  position: relative;
+  top: auto;
+  align-self: stretch;
+  height: auto;
+  max-height: none;
+}
+
+body.admin-theme .site-header {
+  flex-shrink: 0;
+  background: var(--bg-0);
+}
+
+body.admin-theme .member-shell {
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 768px) {
+  /* Compact uniquement en mobile : sur desktop le header reste celui de la vitrine. */
+  body.admin-theme .site-header {
+    padding: 0.3rem var(--gutter);
+    min-height: 2.5rem;
+  }
+
+  body.admin-theme .site-header__eyebrow {
+    display: none;
+  }
+
+  body.admin-theme .site-header__title {
+    font-size: 0.98rem;
+    line-height: 1.15;
+  }
+
+  body.admin-theme .site-header__inner {
+    padding-inline: 2.6rem;
+  }
+
+  body.admin-theme .site-header__menu-toggle,
+  body.admin-theme .site-header__admin {
+    width: 2.1rem;
+    height: 2.1rem;
+  }
+
+  body.admin-theme .site-header__menu-icon,
+  body.admin-theme .site-header__menu-icon::before,
+  body.admin-theme .site-header__menu-icon::after {
+    width: 1.2rem;
+    height: 2px;
+  }
+
+  body.admin-theme .site-header__menu-icon::before {
+    top: -0.38rem;
+  }
+
+  body.admin-theme .site-header__menu-icon::after {
+    top: 0.38rem;
+  }
+
+  .member-toolbar {
+    padding: 0.2rem 0.55rem;
+    min-height: 2.15rem;
+  }
+
+  .member-toolbar .top-bar-add-btn,
+  .member-toolbar .top-bar-live-btn {
+    padding: 0.22rem 0.45rem;
+    font-size: 0.72rem;
+  }
 }
 
 .admin-login {
@@ -87,7 +176,8 @@ body.admin-theme #root {
   color: var(--ink-soft);
 }
 
-.admin-login input[type='password'] {
+.admin-login input[type='password'],
+.admin-login input[type='text'] {
   width: 100%;
   padding: 9px 11px;
   background: rgba(0, 0, 0, 0.35);
@@ -99,7 +189,8 @@ body.admin-theme #root {
   font: inherit;
 }
 
-.admin-login input[type='password']:focus {
+.admin-login input[type='password']:focus,
+.admin-login input[type='text']:focus {
   outline: none;
   border-color: var(--accent);
 }
@@ -120,7 +211,7 @@ body.admin-theme #root {
   border: 1px solid transparent;
   border-radius: 10px;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   transition: filter var(--t, 0.2s ease);
 }
 
@@ -141,6 +232,22 @@ body.admin-theme #root {
 .admin-login__back:hover { color: var(--ink); text-decoration: underline; }
 .admin-login button:disabled { opacity: 0.45; cursor: not-allowed; }
 
+.admin-login__switch {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.admin-login__switch:hover { color: var(--ink); }
+
 .page {
   display: flex;
   flex-direction: column;
@@ -148,6 +255,52 @@ body.admin-theme #root {
   min-height: 0;
   height: 100%;
   overflow: hidden;
+}
+
+.page--embedded {
+  height: auto;
+}
+
+.member-toolbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface-2) 92%, transparent);
+}
+
+.member-toolbar__nav {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.member-toolbar__title {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.member-toolbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
+.member-toolbar .top-bar-add-btn,
+.member-toolbar .top-bar-live-btn {
+  padding: 0.3rem 0.55rem;
+  font-size: 0.78rem;
+  min-height: 0;
 }
 
 .page-header {
@@ -163,7 +316,7 @@ body.admin-theme #root {
   gap: 1rem;
   min-height: var(--topbar-h);
   padding: 1rem 1.25rem;
-  background: color-mix(in srgb, #070b14 82%, transparent);
+  background: color-mix(in srgb, var(--bg-0) 82%, transparent);
   border-bottom: 1px solid var(--line);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -183,6 +336,33 @@ body.admin-theme #root {
   align-items: center;
   gap: 0.5rem;
   flex-shrink: 0;
+}
+
+.top-bar-forge-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-2) 90%, transparent);
+  color: var(--accent);
+  text-decoration: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    border-color var(--t, 0.2s ease),
+    color var(--t, 0.2s ease),
+    background var(--t, 0.2s ease);
+}
+
+.top-bar-forge-key:hover {
+  border-color: var(--accent);
+  background: var(--accent-wash);
+  color: var(--accent);
 }
 
 /* Les deux gestes de saisie, dans le premier groupe de la barre d'actions.
@@ -233,7 +413,7 @@ body.admin-theme #root {
   margin: 0;
   padding: 0;
   border: none;
-  background: rgba(4, 8, 16, 0.62);
+  background: rgba(4, 10, 8, 0.62);
   cursor: pointer;
 }
 
@@ -303,8 +483,10 @@ body.admin-theme #root {
   font-size: 0.9rem;
   font-weight: 600;
   text-align: left;
+  text-decoration: none;
   color: var(--ink-soft);
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 .side-nav-link:hover {
@@ -313,7 +495,7 @@ body.admin-theme #root {
 }
 
 .side-nav-link.is-active {
-  background: var(--accent-soft);
+  background: var(--accent-wash);
   color: var(--accent);
 }
 
@@ -628,7 +810,7 @@ body.admin-theme #root {
 .flag-on {
   color: var(--accent);
   border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
-  background: var(--accent-soft);
+  background: var(--accent-wash);
 }
 
 .flag-off {
@@ -676,7 +858,7 @@ body.admin-theme #root {
   border-radius: 6px;
   overflow: hidden;
   border: 2px solid transparent;
-  background: #0b1220;
+  background: var(--bg-0);
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -688,7 +870,7 @@ body.admin-theme #root {
 .game-com-caption {
   padding: 0.2rem 0.25rem 0.25rem;
   text-align: center;
-  background: color-mix(in srgb, #0b1220 88%, var(--surface-2));
+  background: color-mix(in srgb, var(--bg-0) 88%, var(--surface-2));
   border-top: 1px solid var(--line);
 }
 
@@ -706,7 +888,7 @@ body.admin-theme #root {
 .game-com-thumb.win {
   border-color: transparent;
   background:
-    linear-gradient(#0b1220, #0b1220) padding-box,
+    linear-gradient(var(--bg-0), var(--bg-0)) padding-box,
     linear-gradient(
       125deg,
       #8a6a1a 0%,
@@ -770,7 +952,7 @@ body.admin-theme #root {
   height: 0.45rem;
   border-radius: 50%;
   background: linear-gradient(135deg, #fff4c2, #d4a017);
-  box-shadow: 0 0 0 2px rgba(7, 11, 20, 0.9);
+  box-shadow: 0 0 0 2px rgba(10, 10, 11, 0.9);
   z-index: 3;
 }
 
@@ -781,8 +963,8 @@ body.admin-theme #root {
   width: 0.45rem;
   height: 0.45rem;
   border-radius: 50%;
-  background: linear-gradient(135deg, #c8e6ff, #3b82f6);
-  box-shadow: 0 0 0 2px rgba(7, 11, 20, 0.9);
+  background: linear-gradient(135deg, #a8f5d8, var(--accent));
+  box-shadow: 0 0 0 2px rgba(10, 10, 11, 0.9);
   z-index: 3;
 }
 
@@ -916,7 +1098,7 @@ body.admin-theme #root {
   }
 
   .dashboard-mobile-nav-btn.is-active {
-    background: var(--accent-soft);
+    background: var(--accent-wash);
     color: var(--accent);
   }
 
@@ -1099,6 +1281,12 @@ body.admin-theme #root {
   background: var(--surface-2);
   border: 1px solid var(--line);
   border-radius: 10px;
+}
+
+.filters-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
 }
 
 .filters-2 {
@@ -1329,7 +1517,7 @@ body.admin-theme #root {
   position: relative;
   display: grid;
   grid-template-columns: 1fr;
-  background: #0b1220;
+  background: var(--bg-0);
   aspect-ratio: 5 / 7;
   overflow: hidden;
 }
@@ -1344,7 +1532,7 @@ body.admin-theme #root {
   object-fit: cover;
   object-position: center top;
   display: block;
-  background: linear-gradient(145deg, #1a2740, #0b1220);
+  background: linear-gradient(145deg, var(--surface), var(--bg-0));
 }
 
 .commander-art.loading {
@@ -1481,7 +1669,7 @@ body.admin-theme #root {
 .bracket-chip {
   display: inline-flex;
   padding: 0.28rem 0.55rem;
-  background: var(--accent-soft);
+  background: var(--accent-wash);
   color: var(--accent);
 }
 
@@ -1614,7 +1802,7 @@ body.admin-theme #root {
 }
 
 .deck-stats-version-badge.is-active {
-  background: var(--accent-soft);
+  background: var(--accent-wash);
   color: var(--accent);
 }
 
@@ -1680,7 +1868,7 @@ body.admin-theme #root {
 
 .btn-primary {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 .btn-primary:hover {
@@ -1903,7 +2091,7 @@ body.admin-theme #root {
 }
 
 .number-stepper-btn:active:not(:disabled) {
-  background: var(--accent-soft);
+  background: var(--accent-wash);
   color: var(--ink);
 }
 
@@ -2076,7 +2264,7 @@ body.admin-theme #root {
 }
 
 .native-select-sheet-option:not(.is-disabled):active {
-  background: color-mix(in srgb, var(--accent-soft) 70%, transparent);
+  background: color-mix(in srgb, var(--accent-wash) 70%, transparent);
 }
 
 @keyframes native-select-fade-in {
@@ -2297,7 +2485,7 @@ body.admin-theme #root {
   font-size: 0.72rem;
   font-weight: 600;
   color: var(--accent);
-  background: var(--accent-soft);
+  background: var(--accent-wash);
   border-radius: 6px;
   white-space: nowrap;
 }
@@ -2507,7 +2695,7 @@ body.admin-theme #root {
   box-shadow:
     0 18px 50px rgba(0, 0, 0, 0.55),
     0 0 0 1px rgba(255, 255, 255, 0.08);
-  background: #0b1220;
+  background: var(--bg-0);
 }
 
 @media (max-width: 560px) {
@@ -2633,9 +2821,8 @@ body.admin-theme #root {
 }
 
 .json-editor-body {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
-  gap: 1rem;
+  display: flex;
+  flex-direction: column;
   flex: 1;
   min-height: 0;
 }
@@ -2806,7 +2993,7 @@ body.admin-theme #root {
 }
 
 .players-add-tab.is-active {
-  background: var(--accent-soft);
+  background: var(--accent-wash);
   color: var(--accent);
 }
 
@@ -2837,12 +3024,9 @@ body.admin-theme #root {
 .players-manager-forms {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
   min-height: 0;
   min-width: 0;
-  /* La colonne défile d'un bloc. Avant l'arrivée du panneau de tags, c'était
-     le formulaire de deck qui défilait pour son compte ; à deux panneaux
-     l'un sous l'autre, il se retrouvait comprimé et tronqué. */
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -2850,9 +3034,15 @@ body.admin-theme #root {
 .players-form {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding: 1rem;
+  gap: 0.55rem;
+  padding: 0.85rem;
   min-width: 0;
+}
+
+.players-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
 }
 
 .players-form-compact {
@@ -2927,13 +3117,14 @@ body.admin-theme #root {
   border-radius: 999px;
   flex-shrink: 0;
   object-fit: cover;
-  background: linear-gradient(145deg, #1a2740, #0b1220);
+  background: linear-gradient(145deg, var(--surface), var(--bg-0));
   border: 2px solid color-mix(in srgb, var(--accent) 35%, var(--line));
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
 .roster-player-meta {
   min-width: 0;
+  flex: 1;
 }
 
 .roster-player-name {
@@ -2941,6 +3132,34 @@ body.admin-theme #root {
   font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.roster-role-pill {
+  display: inline-block;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+}
+
+.roster-role-pill--admin {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  background: var(--accent-wash);
+}
+
+.roster-player-edit {
+  flex-shrink: 0;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.78rem;
 }
 
 .roster-player-count {
@@ -2950,6 +3169,24 @@ body.admin-theme #root {
   color: var(--ink-soft);
   text-transform: uppercase;
   letter-spacing: 0.06em;
+}
+
+.account-edit-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1rem 1.25rem;
+}
+
+.account-edit-body .form-field-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  cursor: pointer;
+}
+
+.account-edit-body .form-field-checkbox input {
+  width: auto;
 }
 
 .roster-deck-grid {
@@ -2998,7 +3235,7 @@ body.admin-theme #root {
   width: 3.25rem;
   flex-shrink: 0;
   align-self: stretch;
-  background: #0b1220;
+  background: var(--bg-0);
   border-right: 1px solid var(--line);
 }
 
@@ -3110,7 +3347,7 @@ body.admin-theme #root {
   padding: 0.12rem 0.4rem;
   border-radius: 4px;
   border: 1px solid var(--line);
-  background: color-mix(in srgb, var(--surface-2) 85%, #0b1220);
+  background: color-mix(in srgb, var(--surface-2) 85%, var(--bg-0));
   font-size: 0.58rem;
   font-weight: 800;
   letter-spacing: 0.05em;
@@ -3155,7 +3392,7 @@ body.admin-theme #root {
   padding: 1rem 1.1rem;
   border-radius: var(--radius);
   border: 1px solid var(--line);
-  background: color-mix(in srgb, var(--surface-2) 78%, #0b1220);
+  background: color-mix(in srgb, var(--surface-2) 78%, var(--bg-0));
 }
 
 .deck-edit-sidebar-title {
@@ -3328,7 +3565,7 @@ body.admin-theme #root {
   font-size: 0.68rem;
   padding: 0.1rem 0.3rem;
   border-radius: 4px;
-  background: color-mix(in srgb, var(--surface-2) 90%, #0b1220);
+  background: color-mix(in srgb, var(--surface-2) 90%, var(--bg-0));
   border: 1px solid var(--line);
   word-break: break-all;
 }
@@ -3461,7 +3698,7 @@ body.admin-theme #root {
   height: 1.5rem;
   border: none;
   border-radius: 999px;
-  background: rgba(8, 12, 20, 0.82);
+  background: rgba(8, 16, 12, 0.82);
   color: #fff;
   font-size: 1rem;
   line-height: 1;
@@ -3511,7 +3748,7 @@ body.admin-theme #root {
   overflow: auto;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: #0b1220;
+  background: var(--bg-0);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
 }
 
@@ -3541,7 +3778,7 @@ body.admin-theme #root {
   flex-shrink: 0;
   border-radius: 4px;
   object-fit: cover;
-  background: linear-gradient(145deg, #1a2740, #0b1220);
+  background: linear-gradient(145deg, var(--surface), var(--bg-0));
 }
 
 .commander-picker-option-text {
@@ -3629,7 +3866,7 @@ body.admin-theme #root {
   padding: 0.75rem;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: color-mix(in srgb, var(--surface-2) 88%, #0b1220);
+  background: color-mix(in srgb, var(--surface-2) 88%, var(--bg-0));
   color: inherit;
   text-decoration: none;
   font: inherit;
@@ -3674,7 +3911,7 @@ body.admin-theme #root {
   aspect-ratio: 5 / 7;
   border-radius: 8px;
   object-fit: cover;
-  background: linear-gradient(145deg, #1a2740, #0b1220);
+  background: linear-gradient(145deg, var(--surface), var(--bg-0));
 }
 
 .printing-card-fallback {
@@ -4049,7 +4286,7 @@ body.admin-theme #root {
 }
 
 .temp-game-toggle-group .btn.is-active {
-  background: var(--accent-soft);
+  background: var(--accent-wash);
   color: var(--accent);
   border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
 }
@@ -4063,7 +4300,7 @@ body.admin-theme #root {
   margin: 0 0 0.75rem;
   padding: 0.55rem 0.65rem;
   border-radius: 8px;
-  background: var(--accent-soft);
+  background: var(--accent-wash);
   color: var(--accent);
   font-size: 0.82rem;
   font-weight: 500;
@@ -4177,7 +4414,7 @@ body.admin-theme #root {
 }
 
 .game-details-stat-flag {
-  background: var(--accent-soft);
+  background: var(--accent-wash);
   border-color: color-mix(in srgb, var(--accent) 25%, var(--line));
 }
 
@@ -4287,7 +4524,7 @@ body.admin-theme #root {
 }
 
 .game-details-badge-last {
-  background: color-mix(in srgb, #3b82f6 20%, var(--surface));
+  background: color-mix(in srgb, var(--accent) 20%, var(--surface));
   color: #2563eb;
 }
 
@@ -4592,7 +4829,7 @@ body.admin-theme #root {
 
 .chip.is-on {
   border-color: var(--accent);
-  background: var(--accent-soft);
+  background: var(--accent-wash);
   color: var(--ink);
 }
 
@@ -4613,15 +4850,15 @@ body.admin-theme #root {
 .deck-edit-showcase {
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 14px;
-  margin: 16px 0 0;
+  padding: 0.65rem 0.75rem;
+  margin: 0.25rem 0 0;
   background: var(--surface-2, rgba(255, 255, 255, 0.02));
 }
 
 .showcase-fields > .form-check,
 .deck-edit-showcase > .form-check {
   display: flex;
-  gap: 10px;
+  gap: 0.55rem;
   align-items: flex-start;
 }
 
@@ -4634,46 +4871,184 @@ body.admin-theme #root {
 .showcase-fields > .form-check small,
 .deck-edit-showcase > .form-check small {
   display: block;
-  margin-top: 3px;
+  margin-top: 2px;
   color: var(--ink-soft);
-  font-size: 0.8125rem;
-  line-height: 1.45;
+  font-size: 0.75rem;
+  line-height: 1.35;
 }
 
 .showcase-fields-body,
 .deck-edit-showcase-fields {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin-top: 16px;
-  padding-top: 16px;
+  gap: 0.55rem;
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
   border-top: 1px solid var(--line);
+}
+
+.showcase-tags {
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--line);
+  /* Les chips / contrôles ne doivent pas hériter du uppercase des labels. */
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.showcase-tags > .form-field-label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+
+/* Pastilles type Admin / Membre du roster */
+.forge-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.forge-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0.12rem 0.4rem 0.12rem 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.3;
+  cursor: pointer;
+  transition:
+    border-color var(--t, 0.2s ease),
+    color var(--t, 0.2s ease),
+    background var(--t, 0.2s ease);
+}
+
+.forge-tag:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  color: var(--accent);
+}
+
+.forge-tag.is-on {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  background: var(--accent-wash);
+}
+
+.forge-tag.is-editing {
+  padding: 0.08rem 0.35rem;
+  cursor: default;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.forge-tag.is-editing input {
+  width: 6.5rem;
+  max-width: 40vw;
+  margin: 0;
+  padding: 0.05rem 0.2rem;
+  border: 0;
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.forge-tag.is-editing input:focus {
+  outline: none;
+}
+
+.forge-tag-label {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.forge-tag-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.9rem;
+  height: 0.9rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 0.55;
+  cursor: pointer;
+}
+
+.forge-tag-remove:hover {
+  opacity: 1;
+  color: var(--danger, #ff6b6b);
+  background: color-mix(in srgb, var(--danger, #ff6b6b) 12%, transparent);
 }
 
 /* ─── Sélecteur de tags ─────────────────────────────────────────────────── */
 .tag-picker-pending {
-  margin: 0.4rem 0 0;
+  margin: 0.35rem 0 0;
   color: #e0b341;
+  font-size: 0.75rem;
 }
 
 .tag-picker-empty {
-  font-size: 0.8125rem;
+  font-size: 0.8rem;
   color: var(--ink-soft);
-  /* Une règle du formulaire met les <span> en petites capitales italiques,
-     ce qui convient à un intitulé de champ, pas à une phrase. */
   text-transform: none;
   font-style: normal;
   letter-spacing: 0;
 }
 
 .tag-picker-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.4rem;
+  margin-top: 0.45rem;
+  align-items: stretch;
 }
-.tag-picker-controls select { flex: 1 1 12rem; min-width: 0; }
-.tag-picker-controls input { flex: 1 1 10rem; min-width: 0; }
+
+.tag-picker-controls input {
+  min-width: 0;
+  width: 100%;
+}
+
+.tag-picker-controls .btn {
+  white-space: nowrap;
+}
 
 /* ─── Autocomplétion Scryfall ───────────────────────────────────────────── */
 .card-picker { position: relative; flex: 1 1 auto; min-width: 0; }
@@ -4726,7 +5101,7 @@ body.admin-theme #root {
   border-radius: 4px;
   object-fit: cover;
   object-position: center top;
-  background: linear-gradient(145deg, #1a2740, #0b1220);
+  background: linear-gradient(145deg, var(--surface), var(--bg-0));
 }
 
 .card-picker-option-text {
@@ -4765,83 +5140,12 @@ body.admin-theme #root {
   margin-bottom: 8px;
 }
 
-/* ─── Écran Tags ────────────────────────────────────────────────────────── */
-/* Le panneau vit dans la colonne de gauche de « Joueurs & decks », sous le
-   formulaire de deck. Même mise en page que ses voisins « Nouveau joueur » et
-   « Nouveau deck » : c'est la colonne qui défile, pas chacun des panneaux. */
-.tag-admin {
-  flex: 0 0 auto;
-  padding: 1rem;
-  gap: 0.75rem;
-}
-
-.tag-admin > h3 { margin: 0; }
-
-/* Dans le modal mobile, le panneau est déjà dans un cadre : le sien ferait
-   double. */
-.players-add-modal-body .tag-admin {
-  padding: 0;
-  border: 0;
-  background: none;
-  backdrop-filter: none;
-}
-
-.players-add-modal-body .tag-admin > h3 { display: none; }
-
-/* Le panneau ne porte de rembourrage que sur son en-tête ; le corps doit
-   apporter le sien, sans quoi tout vient buter contre la bordure. */
-.tag-admin-body {
-  padding: 0;
-}
-
-.tag-admin-add {
-  display: flex;
-  align-items: stretch;
-  gap: 0.5rem;
-  margin: 1rem 0 0.5rem;
-}
-.tag-admin-add input { flex: 1 1 auto; min-width: 0; }
-
-.tag-admin-list { list-style: none; margin: 0; padding: 0; }
-
-.tag-admin-row {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-  padding: 0.65rem 0;
-  border-bottom: 1px solid var(--line);
-}
-
-/* La dernière ligne n'a rien à séparer d'elle : un filet y flotterait juste
-   au-dessus du bord du panneau. */
-.tag-admin-row:last-child { border-bottom: 0; }
-
-.tag-admin-row input { flex: 1 1 auto; min-width: 0; }
-
-.tag-admin-identity { flex: 1 1 auto; min-width: 0; }
-.tag-admin-label { display: block; font-weight: 600; }
-.tag-admin-meta { display: block; font-size: 0.8125rem; color: var(--ink-soft); }
-.tag-admin-actions { display: flex; gap: 6px; flex: 0 0 auto; }
-
-.tag-admin-warn {
-  border: 1px solid var(--danger, #ff6b6b);
-  border-radius: var(--radius);
-  padding: 0.9rem;
-  margin-top: 1.25rem;
-  background: rgba(255, 107, 107, 0.08);
-}
-
-.tag-admin-warn .modal-actions { margin-top: 0.9rem; }
-
 /* ─── Champs de saisie des écrans repris d'edh-forge ──────────────────────
    Le projet ne stylait les champs que sous `.form-field` ; ceux-ci, écrits
    sans cette enveloppe, tombaient sur l'apparence par défaut du navigateur —
    un rectangle clair au milieu d'une interface sombre.
 ------------------------------------------------------------------------- */
-.tag-admin-add input,
-.tag-admin-row > input,
 .tag-picker-controls input,
-.tag-picker-controls select,
 .slider-section-head input,
 .card-picker input {
   font: inherit;
@@ -4854,10 +5158,7 @@ body.admin-theme #root {
   background: var(--surface);
 }
 
-.tag-admin-add input:focus,
-.tag-admin-row > input:focus,
 .tag-picker-controls input:focus,
-.tag-picker-controls select:focus,
 .slider-section-head input:focus,
 .card-picker input:focus {
   outline: none;

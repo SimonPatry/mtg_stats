@@ -3,50 +3,53 @@ import { createStore } from '../lib/store.js'
 import { api } from '../lib/api.js'
 
 /**
- * Session d'administration. `null` signifie « on ne sait pas encore ».
- *
- * Volontairement hors de React : /api/auth/me n'est appelé qu'une fois, et
- * seulement sous /admin — un visiteur de la vitrine ne déclenche aucune
- * requête d'authentification.
+ * Session compte. `null` = pas encore résolu.
+ * Persistée via cookie httpOnly (7 jours, renouvelé à chaque /me).
  */
 const store = createStore(null)
 let inFlight = null
 
-/**
- * Ferme la session.
- *
- * L'écran bascule d'abord, la requête part ensuite. Attendre la réponse avant
- * de changer quoi que ce soit faisait payer à l'utilisateur un aller-retour
- * réseau pour un geste dont l'issue ne fait aucun doute — et sur une liaison
- * lente, ce n'est plus dix millisecondes.
- *
- * Exportée à part, sans abonnement au magasin : un composant qui veut
- * seulement pouvoir déconnecter n'a aucune raison de se redessiner à chaque
- * changement d'état de session.
- */
-export function signOut() {
-  store.set(false)
-  return api.logout().catch(() => {
-    // Le cookie est httpOnly : sans réponse du serveur on ne peut pas le
-    // retirer soi-même. On reste déconnecté côté écran, et la prochaine route
-    // protégée tranchera.
-  })
+function normalize(payload) {
+  if (!payload?.authenticated || !payload.user) return false
+  const role = payload.user.role === 'admin' ? 'admin' : 'user'
+  return {
+    authenticated: true,
+    role,
+    user: {
+      id: payload.user.id,
+      username: payload.user.username,
+      role,
+      playerId: payload.user.playerId ?? null,
+    },
+  }
 }
 
-export function useAuth() {
-  const authenticated = store.use()
+export function signOut() {
+  store.set(false)
+  return api.logout().catch(() => {})
+}
+
+export function useAuth({ probe = true } = {}) {
+  const session = store.use()
 
   useEffect(() => {
+    if (!probe) return
     if (store.get() !== null || inFlight) return
     inFlight = api.me()
-      .then((r) => store.set(Boolean(r.authenticated)))
+      .then((r) => store.set(normalize(r)))
       .catch(() => store.set(false))
       .finally(() => { inFlight = null })
-  }, [])
+  }, [probe])
+
+  const signedIn = session && session.authenticated === true
 
   return {
-    authenticated,
-    signIn: () => store.set(true),
+    authenticated: session === null ? null : Boolean(signedIn),
+    role: signedIn ? session.role : null,
+    user: signedIn ? session.user : null,
+    isAdmin: signedIn && session.role === 'admin',
+    isMember: signedIn,
+    signIn: (payload) => store.set(normalize(payload)),
     signOut,
   }
 }

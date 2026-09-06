@@ -10,11 +10,10 @@ Une seule application React, une API Express, une base MariaDB.
 
 ## Installation
 
-Il faut Node 20 ou plus, et Docker pour la base.
+Il faut Node 20 ou plus, et Docker.
 
 ```bash
 npm install
-docker compose up -d          # MariaDB sur le port 3306
 cp .env.example .env
 ```
 
@@ -28,10 +27,21 @@ node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
 npm run hash-password -- "mon mot de passe"
 ```
 
-Enfin, charger le jeu de données de test :
+**Option A — tout en Docker** (app + MariaDB) :
 
 ```bash
-npm run import:test
+docker compose up -d --build
+# http://localhost:3000
+docker compose down            # stop
+docker compose logs -f app     # logs
+```
+
+**Option B — MariaDB en Docker, app en Node** :
+
+```bash
+docker compose up -d db
+npm run import:test           # optionnel : données de test
+npm run serve
 ```
 
 Si le port 3306 est déjà pris, `DB_PORT=3307 docker compose up -d` et la même
@@ -41,11 +51,21 @@ valeur dans `.env`.
 
 ## Démarrer
 
-Il y a **deux façons** de lancer l'application, pour deux usages différents.
+### Docker — app + MariaDB d'un coup
+
+Prérequis : `.env` avec `JWT_SECRET` et `ADMIN_PASSWORD_HASH` remplis.
+
+```bash
+docker compose up -d --build
+```
+
+`http://localhost:3000` — site, admin et API.  
+Logs : `docker compose logs -f app`. Arrêt : `docker compose down`.
 
 ### Avec Node seul — pour utiliser le site
 
 ```bash
+docker compose up -d db       # MariaDB seule si besoin
 npm run serve                 # compile le front puis démarre le serveur
 ```
 
@@ -63,9 +83,10 @@ Pour redémarrer sans recompiler : `npm start`.
 
 ### Avec Vite — pour développer
 
-Deux terminaux, et les deux sont nécessaires :
+Deux terminaux, et les deux sont nécessaires (DB déjà up) :
 
 ```bash
+docker compose up -d db       # si pas déjà lancé
 npm start                     # terminal 1 : l'API sur le port 3000
 npm run dev                   # terminal 2 : Vite sur le port 5173
 ```
@@ -130,6 +151,9 @@ tests/          unitaires à la racine, sur base réelle dans integration/
 
 | commande | effet |
 |---|---|
+| `docker compose up -d --build` | MariaDB + app sur :3000 |
+| `docker compose down` | arrête les conteneurs |
+| `docker compose up -d db` | MariaDB seule (dev Node) |
 | `npm run dev` | serveur de développement Vite (port 5173) |
 | `npm start` | API + front compilé (port 3000) |
 | `npm run build` | compile le front dans `dist/` |

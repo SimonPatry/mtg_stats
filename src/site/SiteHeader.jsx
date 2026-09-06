@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Link } from '../components/Link.jsx'
+import { useLocation } from '../lib/router.js'
 
 /**
  * En-tête collant. Il publie sa hauteur dans --header-height, dont se sert le
@@ -12,6 +13,8 @@ import { Link } from '../components/Link.jsx'
  */
 export function SiteHeader({ menuOpen, onToggleMenu }) {
   const header = useRef(null)
+  const [pathname] = useLocation()
+  const onAdmin = pathname.startsWith('/admin')
 
   useEffect(() => {
     const el = header.current
@@ -42,17 +45,14 @@ export function SiteHeader({ menuOpen, onToggleMenu }) {
       </div>
 
       {/* En miroir du burger : même pastille ronde, même taille, ancrée à
-          droite. Le header se lit alors comme un triptyque — un geste à
-          gauche, le titre au centre, un geste à droite — au lieu d'une
-          étiquette « ADMIN » en capitales à côté d'un titre en serif.
-
-          Lien interne et non <a> nu : la navigation reste sans rechargement,
-          et le paquet de l'administration n'est téléchargé qu'au clic. */}
+          droite. La clé bascule admin ↔ vitrine — sinon un second clic sur
+          /admin ne faisait rien (même chemin). */}
       <Link
-        to="/admin"
-        className="site-header__admin"
-        title="Administration"
-        aria-label="Administration"
+        to={onAdmin ? '/' : '/admin'}
+        className={`site-header__admin${onAdmin ? ' is-active' : ''}`}
+        title={onAdmin ? 'Retour à la vitrine' : 'Administration'}
+        aria-label={onAdmin ? 'Retour à la vitrine' : 'Administration'}
+        aria-current={onAdmin ? 'page' : undefined}
       >
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
           {/* Une clé : l'anneau, la tige, et deux dents. */}

@@ -1,7 +1,6 @@
 import CommanderPicker from './CommanderPicker'
 import Select from './Select'
 import ShowcaseFields from './admin/fields/ShowcaseFields.jsx'
-import TagAdmin from './admin/TagAdmin.jsx'
 
 const BRACKET_OPTIONS = [1, 2, 3, 4].flatMap((b) => [
   { value: String(b), label: `B${b}` },
@@ -12,11 +11,9 @@ const BRACKET_OPTIONS = [1, 2, 3, 4].flatMap((b) => [
 export default function PlayersAddDesktopForms({
   saving,
   userNames,
-  newPlayerName,
-  onNewPlayerName,
-  onAddPlayer,
   selectedUserId,
   onSelectedUserId,
+  hidePlayerSelect = false,
   commanders,
   onCommanders,
   comPrint,
@@ -36,42 +33,35 @@ export default function PlayersAddDesktopForms({
 }) {
   return (
     <div className="players-manager-forms">
-      <form className="players-form players-form-compact panel" onSubmit={onAddPlayer}>
-        <h3>Nouveau joueur</h3>
-        <label className="form-field">
-          <span>Nom</span>
-          <input
-            type="text"
-            value={newPlayerName}
-            onChange={(e) => onNewPlayerName(e.target.value)}
-            placeholder="Ex. Léa"
-            autoComplete="off"
-          />
-        </label>
-        <div className="players-form-actions">
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={saving || !newPlayerName.trim()}
-          >
-            Ajouter le joueur
-          </button>
-        </div>
-      </form>
-
       <form className="players-form players-form-deck panel" onSubmit={onAddDeck}>
         <h3>Nouveau deck</h3>
-        <label className="form-field">
-          <span>Joueur</span>
-          <Select value={selectedUserId} onChange={(e) => onSelectedUserId(e.target.value)}>
-            <option value="">— Choisir —</option>
-            {userNames.map((user) => (
-              <option key={user.id} value={user.id}>
-                {user.name}
-              </option>
-            ))}
-          </Select>
-        </label>
+        <div className="players-form-grid">
+          {!hidePlayerSelect && (
+            <label className="form-field">
+              <span>Joueur</span>
+              <Select value={selectedUserId} onChange={(e) => onSelectedUserId(e.target.value)}>
+                <option value="">— Choisir —</option>
+                {userNames.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.name}
+                    {user.accountUsername ? ` (@${user.accountUsername})` : ''}
+                  </option>
+                ))}
+              </Select>
+            </label>
+          )}
+          <label className="form-field">
+            <span>Bracket</span>
+            <Select value={bracketKey} onChange={(e) => onBracketKey(e.target.value)}>
+              <option value="">— Choisir —</option>
+              {BRACKET_OPTIONS.map(({ value, label }) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </Select>
+          </label>
+        </div>
         <div className="form-field">
           <span>Commandant(s)</span>
           <CommanderPicker
@@ -80,23 +70,13 @@ export default function PlayersAddDesktopForms({
             comPrint={comPrint}
             onChange={onCommanders}
             onComPrintChange={onComPrint}
+            onColorIdentityChange={(colors) => onShowcase({ ...showcase, colors })}
             onZoom={onZoom}
             disabled={saving}
           />
         </div>
         <label className="form-field">
-          <span>Bracket</span>
-          <Select value={bracketKey} onChange={(e) => onBracketKey(e.target.value)}>
-            <option value="">— Choisir —</option>
-            {BRACKET_OPTIONS.map(({ value, label }) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </Select>
-        </label>
-        <label className="form-field">
-          <span>URL deck (optionnel)</span>
+          <span>URL deck</span>
           <input
             type="url"
             value={deckUrl}
@@ -121,10 +101,6 @@ export default function PlayersAddDesktopForms({
           </button>
         </div>
       </form>
-
-      {/* Le vocabulaire de tags juste sous le formulaire qui s'en sert : on
-          crée un tag dans le sélecteur ci-dessus, on le corrige ici. */}
-      <TagAdmin tags={tags} onTagsChange={onTagsChange} />
     </div>
   )
 }

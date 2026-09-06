@@ -18,6 +18,9 @@ export const userFromApi = (user) => ({
   id: user.id,
   name: user.name,
   active: user.active !== false,
+  accountId: user.account_id ?? null,
+  accountUsername: user.account_username ?? null,
+  accountRole: user.account_role ?? null,
 })
 
 export const userToApi = (user) => ({
@@ -52,6 +55,7 @@ export function decksFromApi(decks) {
         active: deck.active !== false,
         createdAt: deck.created_on ?? null,
         lineageId: deck.id,
+        tags: deck.tags ?? [],
       })
       continue
     }
@@ -73,6 +77,7 @@ export function decksFromApi(decks) {
         lineageId: deck.id,
         versionNumber: version.version_number,
         cause: version.cause,
+        tags: deck.tags ?? [],
       })
     })
   }

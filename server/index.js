@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 
 import { createApp } from './app.js'
 import { migrate } from './db.js'
+import { bootstrapAdminAccount } from './routes/auth.js'
 
 const port = Number(process.env.PORT) || 3000
 const clientDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist')
@@ -12,6 +13,7 @@ const clientDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist')
 // Le schéma et les référentiels sont appliqués au démarrage : une base neuve
 // (conteneur fraîchement créé) devient utilisable sans étape manuelle.
 await migrate()
+await bootstrapAdminAccount()
 
 createApp({ clientDir }).listen(port, () => {
   const served = existsSync(join(clientDir, 'index.html'))

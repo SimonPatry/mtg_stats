@@ -5,6 +5,7 @@ import { execFileSync } from 'node:child_process'
 import { createApp } from '../../server/app.js'
 import { pool, migrate } from '../../server/db.js'
 import { hashPassword } from '../../server/auth.js'
+import { bootstrapAdminAccount } from '../../server/routes/auth.js'
 import { computeStats } from '../../src/stats.js'
 import { users as jsonUsers, decks as jsonDecks, games as jsonGames } from '../helpers.js'
 
@@ -47,9 +48,11 @@ async function call(path, options = {}) {
 
 before(async () => {
   process.env.JWT_SECRET = 'secret-de-test-suffisamment-long-pour-passer-la-verification'
+  process.env.ADMIN_USERNAME = 'admin'
   process.env.ADMIN_PASSWORD_HASH = await hashPassword(PASSWORD)
 
   await migrate()
+  await bootstrapAdminAccount()
   execFileSync(process.execPath, ['scripts/import-json.mjs', '--test'], {
     cwd: new URL('../..', import.meta.url).pathname,
     env: process.env,
@@ -98,16 +101,20 @@ describe('ce qui est ouvert, et ce qui ne l’est pas', () => {
 
 describe('authentification', () => {
   test('un mauvais mot de passe est refusé', async () => {
-    const { status } = await call('/api/auth/login', { method: 'POST', body: { password: 'non' } })
+    const { status } = await call('/api/auth/login', {
+      method: 'POST', body: { username: 'admin', password: 'incorrect' },
+    })
     assert.equal(status, 401)
   })
 
   test('le bon mot de passe ouvre une session dans un cookie httpOnly', async () => {
     const { status, body, setCookie } = await call('/api/auth/login', {
-      method: 'POST', body: { password: PASSWORD },
+      method: 'POST', body: { username: 'admin', password: PASSWORD },
     })
     assert.equal(status, 200)
-    assert.deepEqual(body, { authenticated: true })
+    assert.equal(body.authenticated, true)
+    assert.equal(body.user.role, 'admin')
+    assert.equal(body.user.username, 'admin')
     const session = setCookie.find((c) => c.startsWith('mtg_session='))
     assert.match(session, /HttpOnly/i)
     assert.match(session, /SameSite=Strict/i)
@@ -117,6 +124,7 @@ describe('authentification', () => {
     const { body } = await call('/api/auth/me')
     assert.equal(body.authenticated, true)
     assert.equal(body.user.role, 'admin')
+    assert.equal(body.user.username, 'admin')
   })
 })
 
@@ -144,41 +152,25 @@ describe('statistiques', () => {
 })
 
 describe('joueurs', () => {
-  let createdId
-
-  test('la liste reprend les joueurs importés', async () => {
+  test('la liste inclut les joueurs importés et les inscrits', async () => {
     const { body } = await call('/api/users')
-    assert.equal(body.length, jsonUsers.length)
+    assert.ok(body.length >= jsonUsers.length)
     assert.ok(body.every((u) => typeof u.deck_count === 'number'))
+    assert.ok(body.some((u) => u.account_id && u.account_username === 'admin'))
   })
 
-  test('création', async () => {
+  test('création manuelle refusée — inscription uniquement', async () => {
     const { status, body } = await call('/api/users', {
       method: 'POST', body: { name: 'Nouveau Joueur' },
     })
-    assert.equal(status, 201)
-    createdId = body.id
+    assert.equal(status, 403)
+    assert.match(body.error, /inscription/i)
   })
 
-  test('un nom en double est refusé', async () => {
-    const { status } = await call('/api/users', { method: 'POST', body: { name: 'Simon' } })
-    assert.equal(status, 409)
-  })
-
-  test('un nom vide est refusé avec le détail du champ', async () => {
-    const { status, body } = await call('/api/users', { method: 'POST', body: { name: '  ' } })
-    assert.equal(status, 400)
-    assert.ok(body.fields.name)
-  })
-
-  test('un joueur sans deck peut être supprimé', async () => {
-    const { status } = await call(`/api/users/${createdId}`, { method: 'DELETE' })
-    assert.equal(status, 204)
-  })
-
-  test('un joueur avec des decks ne peut pas l’être', async () => {
+  test('un joueur avec des decks ne peut pas être supprimé', async () => {
     const { body: list } = await call('/api/users')
     const owner = list.find((u) => u.deck_count > 0)
+    assert.ok(owner, 'au moins un joueur avec deck dans le jeu de test')
     const { status, body } = await call(`/api/users/${owner.id}`, { method: 'DELETE' })
     assert.equal(status, 409)
     assert.ok(body.deck_count > 0)
