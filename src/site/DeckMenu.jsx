@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Login } from '../admin/Login.jsx'
 import { useAuth, signOut } from '../hooks/useAuth.js'
-import { Link } from '../components/Link.jsx'
 import TagFilter, { matchesSelectedTags } from '../components/TagFilter.jsx'
 
 /**
  * Colonne latérale (pas un overlay) : navigation + login + liste des decks.
- * Ouverture / fermeture gérées par le shell parent (flex ~15 % / 85 %).
+ * L’admin passe par la clé du header, pas par un lien ici.
  */
 export function DeckMenu({
   decks,
@@ -23,7 +22,7 @@ export function DeckMenu({
   tagOptions = [],
 }) {
   const [query, setQuery] = useState('')
-  const { authenticated, isMember, isAdmin, signIn } = useAuth()
+  const { authenticated, isMember, signIn } = useAuth()
 
   useEffect(() => {
     if (!open) return undefined
@@ -90,18 +89,6 @@ export function DeckMenu({
                 >
                   Mes decks
                 </button>
-              )
-            )}
-            {isAdmin && (
-              adminActive ? (
-                <span className="deck-menu__nav-link is-active">Administration</span>
-              ) : (
-                <Link
-                  to="/admin"
-                  className="deck-menu__nav-link"
-                >
-                  Administration
-                </Link>
               )
             )}
           </div>

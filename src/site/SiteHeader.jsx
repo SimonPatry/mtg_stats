@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Link } from '../components/Link.jsx'
 import { useLocation } from '../lib/router.js'
+import { useAuth } from '../hooks/useAuth.js'
 
 /**
  * En-tête collant. Il publie sa hauteur dans --header-height, dont se sert le
@@ -14,6 +15,7 @@ import { useLocation } from '../lib/router.js'
 export function SiteHeader({ menuOpen, onToggleMenu }) {
   const header = useRef(null)
   const [pathname] = useLocation()
+  const { isAdmin } = useAuth()
   const onAdmin = pathname.startsWith('/admin')
 
   useEffect(() => {
@@ -44,24 +46,23 @@ export function SiteHeader({ menuOpen, onToggleMenu }) {
         <h1 className="site-header__title">Forge Arcanique</h1>
       </div>
 
-      {/* En miroir du burger : même pastille ronde, même taille, ancrée à
-          droite. La clé bascule admin ↔ vitrine — sinon un second clic sur
-          /admin ne faisait rien (même chemin). */}
-      <Link
-        to={onAdmin ? '/' : '/admin'}
-        className={`site-header__admin${onAdmin ? ' is-active' : ''}`}
-        title={onAdmin ? 'Retour à la vitrine' : 'Administration'}
-        aria-label={onAdmin ? 'Retour à la vitrine' : 'Administration'}
-        aria-current={onAdmin ? 'page' : undefined}
-      >
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          {/* Une clé : l'anneau, la tige, et deux dents. */}
-          <circle cx="8.5" cy="8.5" r="4.25" />
-          <path d="M11.6 11.6 L19.5 19.5" />
-          <path d="M17 17 L15 19" />
-          <path d="M19.5 19.5 L17.5 21.5" />
-        </svg>
-      </Link>
+      {/* Clé admin ↔ vitrine : réservée aux comptes admin connectés. */}
+      {isAdmin ? (
+        <Link
+          to={onAdmin ? '/' : '/admin'}
+          className={`site-header__admin${onAdmin ? ' is-active' : ''}`}
+          title={onAdmin ? 'Retour à la vitrine' : 'Administration'}
+          aria-label={onAdmin ? 'Retour à la vitrine' : 'Administration'}
+          aria-current={onAdmin ? 'page' : undefined}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <circle cx="8.5" cy="8.5" r="4.25" />
+            <path d="M11.6 11.6 L19.5 19.5" />
+            <path d="M17 17 L15 19" />
+            <path d="M19.5 19.5 L17.5 21.5" />
+          </svg>
+        </Link>
+      ) : null}
     </header>
   )
 }
