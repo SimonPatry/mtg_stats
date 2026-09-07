@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <rect width="32" height="32" rx="7" fill="#0a0a0b"/>
+  <!-- Clé Forge : anneau + tige + dents -->
+  <circle cx="12" cy="12" r="5.25" stroke="#2fd6a0" stroke-width="2.4"/>
+  <circle cx="12" cy="12" r="1.6" fill="#2fd6a0"/>
+  <path
+    d="M15.6 15.6 L24.2 24.2"
+    stroke="#2fd6a0"
+    stroke-width="2.4"
+    stroke-linecap="round"
+  />
+  <path
+    d="M21.4 21.4 L19.2 23.6 M24.2 24.2 L21.8 26.6"
+    stroke="#2fd6a0"
+    stroke-width="2.4"
+    stroke-linecap="round"
+  />
+</svg>
