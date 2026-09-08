@@ -11,8 +11,8 @@
     "test:integration": "node --import ./tests/register.js --test tests/integration/*.test.js",
     "test:all": "npm run test && npm run test:integration",
     "test:browser": "node admintest.mjs && node sitetest.mjs && node showcasetest.mjs",
-    "start": "node server/index.js",
-    "serve": "npm run build && node server/index.js",
+    "start": "node app.js",
+    "serve": "npm run build && node app.js",
     "hash-password": "node scripts/hash-password.mjs",
     "import:test": "node scripts/import-json.mjs --test"
   },

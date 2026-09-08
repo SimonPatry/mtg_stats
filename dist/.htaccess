@@ -6,11 +6,10 @@
   RewriteEngine On
   RewriteBase /
 
-  # API → PHP
-  RewriteRule ^api(/.*)?$ api/router.php [QSA,L]
+  # /api est servi par Node (Express). Ne pas le réécrire vers PHP ni vers index.html.
+  RewriteRule ^api(/|$) - [L]
 
-  RewriteRule ^backups/ - [L]
-
+  # SPA : URLs front sans fichier → index.html (refresh /admin, /deck/…)
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule ^ index.html [QSA,L]
