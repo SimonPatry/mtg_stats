@@ -10,24 +10,30 @@ import { bootstrapAdminAccount } from './routes/auth.js'
 const port = Number(process.env.PORT) || 3000
 const clientDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist')
 
-// Le schéma et les référentiels sont appliqués au démarrage : une base neuve
-// (conteneur fraîchement créé) devient utilisable sans étape manuelle.
-await migrate()
-await bootstrapAdminAccount()
-
-const app = createApp({ clientDir })
-// Plesk/Passenger ignore le numéro de port et intercepte le premier listen().
-const underPassenger = typeof globalThis.PhusionPassenger !== 'undefined'
-if (underPassenger) {
-  globalThis.PhusionPassenger.configure({ autoInstall: false })
+/**
+ * Sur Plesk, si migrate() plante (DB absente / mauvais .env) AVANT listen(),
+ * Passenger affiche une page HTML 500 opaque. On écoute toujours, et
+ * /api/health expose l'erreur pour diagnostiquer.
+ */
+let bootError = null
+try {
+  await migrate()
+  await bootstrapAdminAccount()
+} catch (err) {
+  bootError = err
+  console.error('Bootstrap DB échoué — l’API tourne en mode dégradé:', err)
 }
+
+const app = createApp({ clientDir, bootError })
+
+const underPassenger = typeof globalThis.PhusionPassenger !== 'undefined'
 app.listen(underPassenger ? 'passenger' : port, () => {
   const served = existsSync(join(clientDir, 'index.html'))
   console.log(`MagicAddicts sur http://localhost:${port}`)
+  if (bootError) {
+    console.error(`  ATTENTION: bootstrap en échec (${bootError.code || bootError.message})`)
+  }
   console.log(served
-    // Un seul processus : le site et l'API partagent l'origine.
     ? '  site et API servis par ce processus'
-    // Sans build, Express ne sert que l'API ; c'est le mode développement,
-    // où Vite sert le front sur 5173 et relaie /api ici.
     : '  API seule (pas de build dans dist/ — lance `npm run build`, ou `npm run dev` pour Vite)')
 })

@@ -29,7 +29,7 @@ const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
  * de cookie inter-origines. En développement c'est Vite qui sert le front et
  * relaie /api, et ce dossier n'existe pas — le serveur démarre quand même.
  */
-export function createApp({ clientDir = join(projectRoot, 'dist') } = {}) {
+export function createApp({ clientDir = join(projectRoot, 'dist'), bootError = null } = {}) {
   const app = express()
 
   app.disable('x-powered-by')
@@ -74,7 +74,28 @@ export function createApp({ clientDir = join(projectRoot, 'dist') } = {}) {
   app.use(express.json({ limit: '1mb' }))
   app.use(cookieParser())
 
-  app.get('/api/health', (req, res) => res.json({ ok: true }))
+  app.get('/api/health', (req, res) => {
+    if (bootError) {
+      return res.status(503).json({
+        ok: false,
+        error: bootError.message,
+        code: bootError.code || null,
+      })
+    }
+    return res.json({ ok: true })
+  })
+
+  // Si la DB n'a pas démarré, mieux vaut un JSON clair qu'une cascade de 500.
+  if (bootError) {
+    app.use('/api', (req, res, next) => {
+      if (req.path === '/health') return next()
+      return res.status(503).json({
+        error: 'Base de données indisponible',
+        detail: bootError.message,
+        code: bootError.code || null,
+      })
+    })
+  }
 
   // ─── Ouvert ──────────────────────────────────────────────────────────────
   app.use('/api/auth', authRoutes)
