@@ -1,20 +1,47 @@
 /**
- * Wrapper Plesk / Phusion Passenger.
- * Passenger charge le fichier de démarrage via require() (CommonJS) ;
- * ce projet est en ESM ("type": "module"). On importe dynamiquement.
+ * Wrapper Plesk / Phusion Passenger (CommonJS → ESM).
+ * Fichier de démarrage Plesk : _passenger.cjs
  *
- * Dans Plesk → Node.js → Fichier de démarrage : _passenger.cjs
+ * En cas d'échec, lit httpdocs/passenger-boot.log (Gestionnaire de fichiers).
  */
-if (typeof PhusionPassenger !== 'undefined') {
-  PhusionPassenger.configure({ autoInstall: false })
+const fs = require('fs')
+const path = require('path')
+
+const logFile = path.join(__dirname, 'passenger-boot.log')
+
+function log(message, err) {
+  const line =
+    new Date().toISOString() +
+    ' ' +
+    message +
+    (err ? '\n' + (err.stack || String(err)) : '') +
+    '\n'
+  try {
+    fs.appendFileSync(logFile, line)
+  } catch {
+    console.error(line)
+  }
+  console.error(line)
 }
 
-async function main() {
-  await import('./app.js')
+log('boot: start, cwd=' + process.cwd() + ' node=' + process.version)
+
+try {
+  if (typeof PhusionPassenger !== 'undefined') {
+    PhusionPassenger.configure({ autoInstall: false })
+    log('boot: PhusionPassenger configured')
+  } else {
+    log('boot: PhusionPassenger absent (hors Passenger ?)')
+  }
+} catch (err) {
+  log('boot: configure failed', err)
 }
 
-main().catch((err) => {
-  console.error('Démarrage MagicAddicts échoué:', err)
-  // Laisser le message dans les logs Passenger ; exit → page 500 HTML.
-  process.exit(1)
-})
+import('./app.js')
+  .then(() => {
+    log('boot: app.js importé OK')
+  })
+  .catch((err) => {
+    log('boot: ÉCHEC import app.js', err)
+    process.exit(1)
+  })

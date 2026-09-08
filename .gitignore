@@ -5,6 +5,7 @@ node_modules
 .env.*
 !.env.example
 .mtg_admin_password
+passenger-boot.log
 
 # Données runtime (prod / local Express) — jamais versionner ni déployer
 /data/
