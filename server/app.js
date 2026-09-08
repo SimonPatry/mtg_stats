@@ -156,7 +156,14 @@ export function createApp({ clientDir = join(projectRoot, 'dist'), bootError = n
     if (err?.code === 'ER_NO_REFERENCED_ROW_2') {
       return res.status(400).json({ error: 'Référence inconnue' })
     }
-    res.status(500).json({ error: 'Erreur serveur' })
+    // En prod Plesk les logs Passenger sont peu accessibles : remonter un
+    // détail SQL sûr (code + message) aide le diagnostic sans stack trace.
+    const detail = err?.sqlMessage || err?.message || null
+    const code = err?.code || null
+    res.status(500).json({
+      error: 'Erreur serveur',
+      ...(detail ? { detail, code } : {}),
+    })
   })
 
   return app

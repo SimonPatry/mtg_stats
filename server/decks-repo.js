@@ -10,6 +10,10 @@ import { randomUUID } from 'node:crypto'
 
 const SEP = '|~|'
 
+function commandersOf(row) {
+  return row.commanders ? String(row.commanders).split(SEP) : []
+}
+
 const DECK_SELECT = `
   SELECT d.*, u.name AS player,
          cur.id AS version_id, cur.version_number, cur.bracket,
