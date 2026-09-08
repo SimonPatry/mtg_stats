@@ -15,7 +15,13 @@ const clientDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist')
 await migrate()
 await bootstrapAdminAccount()
 
-createApp({ clientDir }).listen(port, () => {
+const app = createApp({ clientDir })
+// Plesk/Passenger ignore le numéro de port et intercepte le premier listen().
+const underPassenger = typeof globalThis.PhusionPassenger !== 'undefined'
+if (underPassenger) {
+  globalThis.PhusionPassenger.configure({ autoInstall: false })
+}
+app.listen(underPassenger ? 'passenger' : port, () => {
   const served = existsSync(join(clientDir, 'index.html'))
   console.log(`MagicAddicts sur http://localhost:${port}`)
   console.log(served
