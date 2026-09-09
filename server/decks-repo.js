@@ -240,6 +240,7 @@ export async function updateVersion(cx, deckId, versionId, input) {
 export async function listShowcase(cx) {
   const [rows] = await cx.query(`
     SELECT d.id, d.name, d.description,
+           u.name AS author,
            cur.deck_url,
            (SELECT GROUP_CONCAT(c.name ORDER BY c.position SEPARATOR '|~|')
               FROM deck_commanders c WHERE c.deck_id = d.id) AS commanders,
@@ -252,6 +253,7 @@ export async function listShowcase(cx) {
               FROM deck_tags dt JOIN tags t ON t.id = dt.tag_id
              WHERE dt.deck_id = d.id) AS tags
       FROM decks d
+      JOIN users u ON u.id = d.user_id
       LEFT JOIN deck_versions cur
         ON cur.deck_id = d.id
        AND cur.version_number = (SELECT MAX(v.version_number)
@@ -270,6 +272,7 @@ export async function listShowcase(cx) {
       id: row.id,
       name: row.name || commandersOf(row)[0] || 'Deck',
       description: row.description || '',
+      author: row.author || '',
       commander: commandersOf(row)[0] ?? '',
       commanders: commandersOf(row),
       set_code: setCode,

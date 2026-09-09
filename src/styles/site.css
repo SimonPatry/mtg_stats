@@ -547,10 +547,34 @@
    ces couleurs vivent ici et non dans tokens.css — l'administration ne dessine
    jamais de bandes, elles ne sont donc partagées avec personne. */
 .deck-band {
+  position: relative;
+  overflow: hidden;
   width: 100%;
   /* Pour que le lien d'ancre (menu burger) ne cache pas le haut de la bande
      sous le header sticky ; --header-height est publiée par SiteHeader.jsx. */
   scroll-margin-top: var(--header-height, 120px);
+}
+
+/* Filigrane Scryfall : symbole de mana = couleur de la bande (rotation WUBRG).
+   Centré dans la bande et calé sur sa hauteur. Décoratif uniquement —
+   les symboles restent © Wizards of the Coast. */
+.deck-band__watermark {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: auto;
+  height: 115%;
+  max-width: none;
+  opacity: 0.1;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  object-fit: contain;
+}
+
+.deck-band--w .deck-band__watermark {
+  opacity: 0.14;
+  filter: drop-shadow(0 8px 24px rgba(31, 26, 18, 0.12));
 }
 
 /* Seule bande claire de la série : le texte y est foncé, et le vert clair
@@ -607,6 +631,8 @@
 }
 
 .deck-band__inner {
+  position: relative;
+  z-index: 1;
   /* Le fond (.deck-band) va bord à bord ; seul le contenu est recentré
      et limité en largeur pour rester lisible. */
   max-width: var(--max-width);
@@ -756,6 +782,14 @@
   font-size: clamp(1.6rem, 3vw, 2.3rem);
   /* Couleur de l'ancien label "Deck 0X" (retiré). */
   color: var(--accent-soft);
+}
+
+.deck-banner__author {
+  margin: -0.35rem 0 0;
+  font-family: var(--font-body);
+  font-size: clamp(0.95rem, 1.6vw, 1.1rem);
+  font-weight: 500;
+  color: var(--ink-dim);
 }
 
 /* La description s'étire sur toute la largeur de la colonne (au lieu de

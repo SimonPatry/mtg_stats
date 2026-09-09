@@ -1,12 +1,12 @@
 import { useCardImage } from '../hooks/useCardImage.js'
+import { manaSymbolUrl } from '../lib/scryfall.js'
 import { ManaSymbols } from '../components/ManaSymbols.jsx'
 import { DeckDescription } from './DeckDescription.jsx'
 import { DeckCarousel } from './DeckCarousel.jsx'
 
 // La couleur de la bande et le côté de l'illustration suivent la POSITION du
 // deck, pas ses couleurs : les bandes s'enchaînent blanc → bleu → noir →
-// rouge → vert puis rebouclent. Trois lignes utilisées ici et nulle part
-// ailleurs — elles n'ont pas besoin de leur propre fichier.
+// rouge → vert puis rebouclent. Le filigrane de mana suit cette même rotation.
 const BAND_COLORS = ['w', 'u', 'b', 'r', 'g']
 const bandColor = (i) => BAND_COLORS[i % BAND_COLORS.length]
 const isReversed = (i) => i % 2 === 1
@@ -62,9 +62,18 @@ function CommanderArt({ deck }) {
 
 export function DeckBand({ deck, index }) {
   const sections = (deck.slider || []).filter((s) => s.cards?.length > 0)
+  const color = bandColor(index)
+  const manaLetter = color.toUpperCase()
 
   return (
-    <section className={`deck-band deck-band--${bandColor(index)}`} id={`deck-${deck.id}`}>
+    <section className={`deck-band deck-band--${color}`} id={`deck-${deck.id}`}>
+      <img
+        className="deck-band__watermark"
+        src={manaSymbolUrl(manaLetter)}
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+      />
       <div className="deck-band__inner">
         <article
           className={`deck-banner ${isReversed(index) ? 'deck-banner--reverse' : ''}`}
@@ -81,6 +90,10 @@ export function DeckBand({ deck, index }) {
               <h2 className="deck-banner__title">{deck.name}</h2>
               <ArchidektLink link={deck.link} />
             </div>
+
+            {deck.author ? (
+              <p className="deck-banner__author">par {deck.author}</p>
+            ) : null}
 
             {deck.tags?.length > 0 && (
               <>

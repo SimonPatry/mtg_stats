@@ -82,9 +82,10 @@ describe('ce qui est ouvert, et ce qui ne l’est pas', () => {
     assert.ok(Array.isArray(body))
   })
 
-  test('la vitrine ne divulgue ni joueur ni statistique', async () => {
+  test('la vitrine ne divulgue ni id joueur ni statistique', async () => {
     const { body } = await call('/api/showcase/decks')
     const json = JSON.stringify(body)
+    // « author » (nom public) est volontaire ; on refuse les champs internes.
     for (const leak of ['player', 'user_id', 'wins', 'bracket', 'version']) {
       assert.equal(json.includes(`"${leak}"`), false, `la vitrine expose « ${leak} »`)
     }
@@ -244,6 +245,8 @@ describe('decks', () => {
     assert.ok(deck, 'le deck vitrine est absent de la page publique')
     assert.deepEqual(deck.commanders, ['Tana, the Bloodsower', 'Tymna the Weaver'])
     assert.deepEqual(deck.colors, ['W', 'B', 'R', 'G'])
+    assert.equal(typeof deck.author, 'string')
+    assert.ok(deck.author.length > 0, 'l’auteur du deck doit être exposé')
   })
 
   test('trois commandants sont refusés', async () => {
