@@ -60,30 +60,25 @@ export default function AdminApp() {
   return (
     <>
       <SiteHeader menuOpen={menuOpen} onToggleMenu={toggleMenu} />
-      <div className={`site-shell${menuOpen ? ' is-menu-open' : ''}`}>
-        <DeckMenu
-          decks={decks ?? []}
-          open={menuOpen}
-          onClose={closeMenu}
-          adminActive
-          memberActive={false}
-          onOpenMember={goMember}
-          onBackToVitrine={goVitrine}
-          onOpenDeck={(deckId) => {
-            closeMenu()
-            navigate('/')
-            requestAnimationFrame(() => {
-              window.location.hash = `deck-${deckId}`
-            })
-          }}
-        />
-        <div
-          className="site-main"
-          onClick={menuOpen ? closeMenu : undefined}
-        >
-          <div className="member-shell">
-            <StatsApp mode="admin" embedded />
-          </div>
+      <DeckMenu
+        decks={decks ?? []}
+        open={menuOpen}
+        onClose={closeMenu}
+        adminActive
+        memberActive={false}
+        onOpenMember={goMember}
+        onBackToVitrine={goVitrine}
+        onOpenDeck={(deckId) => {
+          closeMenu()
+          navigate('/')
+          requestAnimationFrame(() => {
+            window.location.hash = `deck-${deckId}`
+          })
+        }}
+      />
+      <div className="site-main">
+        <div className="member-shell">
+          <StatsApp mode="admin" embedded />
         </div>
       </div>
     </>

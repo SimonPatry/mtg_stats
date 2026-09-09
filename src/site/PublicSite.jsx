@@ -5,7 +5,7 @@ import { useSiteMenu } from '../hooks/useSiteMenu.js'
 import { SiteHeader } from './SiteHeader.jsx'
 import { DeckMenu } from './DeckMenu.jsx'
 import { DeckBand } from './DeckBand.jsx'
-import TagFilter, { collectTagLabels, matchesSelectedTags } from '../components/TagFilter.jsx'
+import { collectTagLabels, matchesSelectedTags } from '../components/TagFilter.jsx'
 import { consumeOpenMemberIntent } from './memberHandoff.js'
 
 const StatsApp = lazy(() => import('../admin/StatsApp.jsx'))
@@ -16,7 +16,7 @@ const formatDate = (date) =>
 /**
  * Vitrine Forge : liste des decks + espace membre (stats / parties) après login.
  * Header + menu gauche restent partagés : stats s’ouvre dans le même cadre.
- * Menu = colonne dans la page (pas un overlay) : fermé = 100 %, ouvert ≈ 15 / 85.
+ * Menu = tiroir overlay ; desktop s’ouvre aussi au survol du bord gauche.
  */
 export function PublicSite() {
   const { decks, loading, error, stale, savedAt, reload } = useDecks()
@@ -77,93 +77,73 @@ export function PublicSite() {
   return (
     <>
       <SiteHeader menuOpen={menuOpen} onToggleMenu={toggleMenu} />
-      <div className={`site-shell${menuOpen ? ' is-menu-open' : ''}`}>
-        <DeckMenu
-          decks={allDecks}
-          open={menuOpen}
-          onClose={closeMenu}
-          memberActive={showMember}
-          memberView={memberView}
-          onOpenMember={openMember}
-          onBackToVitrine={backToVitrine}
-          onOpenDeck={openDeck}
-          selectedTags={selectedTags}
-          onSelectedTags={setSelectedTags}
-          tagOptions={tagOptions}
-        />
-        <div
-          className="site-main"
-          onClick={menuOpen ? closeMenu : undefined}
-        >
-          {showMember ? (
-            <Suspense fallback={<p className="member-shell__loading">Ouverture de l’espace membre…</p>}>
-              <div className="member-shell">
-                <StatsApp
-                  mode="member"
-                  embedded
-                  initialView={memberView}
-                  onMemberViewChange={setMemberView}
-                  onBackToForge={backToVitrine}
-                />
-              </div>
-            </Suspense>
-          ) : (
-            <>
-              {stale && (
-                <p className="site-notice">
-                  L'administration est injoignable — decks affichés depuis la dernière
-                  copie locale{savedAt ? ` du ${formatDate(savedAt)}` : ''}.
+      <DeckMenu
+        decks={allDecks}
+        open={menuOpen}
+        onClose={closeMenu}
+        memberActive={showMember}
+        memberView={memberView}
+        onOpenMember={openMember}
+        onBackToVitrine={backToVitrine}
+        onOpenDeck={openDeck}
+        selectedTags={selectedTags}
+        onSelectedTags={setSelectedTags}
+        tagOptions={tagOptions}
+      />
+      <div className="site-main">
+        {showMember ? (
+          <Suspense fallback={<p className="member-shell__loading">Ouverture de l’espace membre…</p>}>
+            <div className="member-shell">
+              <StatsApp
+                mode="member"
+                embedded
+                initialView={memberView}
+                onMemberViewChange={setMemberView}
+                onBackToForge={backToVitrine}
+              />
+            </div>
+          </Suspense>
+        ) : (
+          <>
+            {stale && (
+              <p className="site-notice">
+                L'administration est injoignable — decks affichés depuis la dernière
+                copie locale{savedAt ? ` du ${formatDate(savedAt)}` : ''}.
+              </p>
+            )}
+
+            <main id="decks" className="decks" aria-live="polite">
+              {loading && <p className="decks__loading">Invocation des decks…</p>}
+
+              {error && (
+                <p className="decks__empty">
+                  Impossible de charger le grimoire des decks ({error.message}), et
+                  aucune copie locale n'est disponible.
                 </p>
               )}
 
-              {tagOptions.length > 0 && (
-                <div className="showcase-filters" onClick={(e) => e.stopPropagation()}>
-                  <TagFilter
-                    tags={tagOptions}
-                    value={selectedTags}
-                    onChange={setSelectedTags}
-                  />
-                  {selectedTags.length > 0 && (
-                    <p className="showcase-filters__count">
-                      {visibleDecks.length}/{allDecks.length} deck{visibleDecks.length === 1 ? '' : 's'}
-                    </p>
-                  )}
-                </div>
+              {!loading && !error && allDecks.length === 0 && (
+                <p className="decks__empty">Aucun deck n'est encore prêt. Ajoute-en un depuis Mes decks.</p>
               )}
 
-              <main id="decks" className="decks" aria-live="polite">
-                {loading && <p className="decks__loading">Invocation des decks…</p>}
+              {!loading && !error && allDecks.length > 0 && visibleDecks.length === 0 && (
+                <p className="decks__empty">Aucun deck ne correspond à ces tags.</p>
+              )}
 
-                {error && (
-                  <p className="decks__empty">
-                    Impossible de charger le grimoire des decks ({error.message}), et
-                    aucune copie locale n'est disponible.
-                  </p>
-                )}
+              {visibleDecks.map((deck, index) => (
+                <DeckBand key={deck.id} deck={deck} index={index} />
+              ))}
+            </main>
 
-                {!loading && !error && allDecks.length === 0 && (
-                  <p className="decks__empty">Aucun deck n'est encore prêt. Ajoute-en un depuis Mes decks.</p>
-                )}
-
-                {!loading && !error && allDecks.length > 0 && visibleDecks.length === 0 && (
-                  <p className="decks__empty">Aucun deck ne correspond à ces tags.</p>
-                )}
-
-                {visibleDecks.map((deck, index) => (
-                  <DeckBand key={deck.id} deck={deck} index={index} />
-                ))}
-              </main>
-
-              <footer className="site-footer">
-                <p>
-                  Images et données de cartes via{' '}
-                  <a href="https://scryfall.com" target="_blank" rel="noopener">Scryfall</a>.
-                  {' '}Magic: The Gathering est une marque de Wizards of the Coast.
-                </p>
-              </footer>
-            </>
-          )}
-        </div>
+            <footer className="site-footer">
+              <p>
+                Images et données de cartes via{' '}
+                <a href="https://scryfall.com" target="_blank" rel="noopener">Scryfall</a>.
+                {' '}Magic: The Gathering est une marque de Wizards of the Coast.
+              </p>
+            </footer>
+          </>
+        )}
       </div>
     </>
   )

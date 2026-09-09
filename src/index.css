@@ -67,15 +67,9 @@ body.admin-theme .site-shell {
 body.admin-theme .site-main {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
-}
-
-body.admin-theme .deck-menu.is-open {
-  position: relative;
-  top: auto;
-  align-self: stretch;
-  height: auto;
-  max-height: none;
 }
 
 body.admin-theme .site-header {

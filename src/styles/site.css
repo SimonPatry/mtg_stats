@@ -108,76 +108,92 @@
   transform: rotate(-45deg);
 }
 
-/* ---------- Shell : sidebar dans le flux (pas d’overlay) ---------- */
+/* ---------- Menu des decks (tiroir overlay + survol) ---------- */
+
+.deck-menu__hotzone {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .deck-menu__hotzone {
+    display: block;
+    position: fixed;
+    top: var(--header-height, 90px);
+    left: 0;
+    bottom: 0;
+    width: 14px;
+    z-index: 55;
+  }
+}
+
+.deck-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.deck-menu.is-open {
+  visibility: visible;
+}
+
+.deck-menu.is-open .deck-menu__overlay,
+.deck-menu.is-open .deck-menu__panel {
+  pointer-events: auto;
+}
+
+.deck-menu__overlay {
+  position: absolute;
+  top: var(--header-height, 90px);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity var(--t-slow);
+}
+
+.deck-menu.is-open .deck-menu__overlay {
+  opacity: 1;
+}
+
+.deck-menu__panel {
+  position: absolute;
+  top: var(--header-height, 90px);
+  left: 0;
+  bottom: 0;
+  width: min(320px, 84vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border-right: 1px solid var(--line);
+  box-shadow: 0 0 32px var(--shadow);
+  transform: translateX(-100%);
+  transition: transform var(--t-slow);
+  overflow: hidden;
+}
+
+.deck-menu.is-open .deck-menu__panel {
+  transform: translateX(0);
+}
+
+/* ---------- Shell ---------- */
 
 .site-shell {
-  display: flex;
-  align-items: stretch;
   width: 100%;
   min-height: 0;
 }
 
 .site-main {
-  flex: 1 1 auto;
-  min-width: 0;
   width: 100%;
-  transition: width var(--t-slow);
-}
-
-/* Clique sur le contenu → ferme le menu (handler côté PublicSite). */
-.site-shell.is-menu-open .site-main {
-  cursor: default;
-}
-
-/* ---------- Menu des decks (colonne) ---------- */
-
-.deck-menu {
-  flex: 0 0 0;
-  width: 0;
   min-width: 0;
-  max-width: 0;
-  overflow: hidden;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  border-right: 0 solid var(--line);
-  background: var(--bg);
-  transition:
-    flex-basis var(--t-slow),
-    width var(--t-slow),
-    min-width var(--t-slow),
-    max-width var(--t-slow),
-    opacity var(--t),
-    visibility var(--t),
-    border-color var(--t);
 }
 
-.deck-menu.is-open {
-  /* ~15 % / 85 % avec la zone principale. */
-  flex: 0 0 15%;
-  width: 15%;
-  min-width: 12rem;
-  max-width: 18rem;
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  border-right-width: 1px;
-  overflow: hidden;
-  position: sticky;
-  top: var(--header-height, 90px);
-  align-self: flex-start;
-  height: calc(100dvh - var(--header-height, 90px));
-}
-
-.deck-menu__panel {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  width: 100%;
-  min-width: 11rem;
-  overflow: hidden;
-  background: var(--bg);
-}
 
 .deck-menu__section {
   padding: 0.9rem 0 0.75rem;
@@ -1219,25 +1235,6 @@
   background: color-mix(in srgb, var(--accent) 18%, transparent);
   border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
   color: var(--accent);
-}
-
-.showcase-filters {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 0.75rem 1.25rem;
-  padding: 0.65rem var(--gutter) 0.35rem;
-  border-bottom: 1px solid var(--line);
-  background: color-mix(in srgb, var(--bg) 92%, var(--panel, #121212));
-  position: sticky;
-  top: var(--header-height, 90px);
-  z-index: 20;
-}
-
-.showcase-filters__count {
-  margin: 0;
-  font-size: 0.78rem;
-  color: var(--ink-dim);
 }
 
 .deck-menu__tags {
