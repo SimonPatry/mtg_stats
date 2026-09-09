@@ -1,4 +1,4 @@
-import { useLayoutEffect } from 'react'
+import { useLayoutEffect, useMemo } from 'react'
 import { useAuth } from '../hooks/useAuth.js'
 import { useLocation } from '../lib/router.js'
 import { useDecks } from '../hooks/useDecks.js'
@@ -8,19 +8,22 @@ import StatsApp from './StatsApp.jsx'
 import { Link } from '../components/Link.jsx'
 import { SiteHeader } from '../site/SiteHeader.jsx'
 import { DeckMenu } from '../site/DeckMenu.jsx'
+import { collectTagLabels } from '../components/TagFilter.jsx'
 import { OPEN_MEMBER_KEY } from '../site/memberHandoff.js'
 
 import '../index.css'
 
 /**
  * Administration : réservée aux comptes `role = admin`.
- * Même cadre que la vitrine (header + menu) pour naviguer sans se déconnecter.
+ * Même cadre que la vitrine (header + filtres) pour naviguer sans se déconnecter.
  */
 export default function AdminApp() {
   const { authenticated, isAdmin, signIn, user } = useAuth()
   const [, navigate] = useLocation()
   const { decks } = useDecks()
   const { menuOpen, toggleMenu, closeMenu } = useSiteMenu()
+  const allDecks = decks ?? []
+  const tagOptions = useMemo(() => collectTagLabels(allDecks), [allDecks])
 
   useLayoutEffect(() => {
     document.body.classList.add('admin-theme')
@@ -59,15 +62,17 @@ export default function AdminApp() {
 
   return (
     <>
-      <SiteHeader menuOpen={menuOpen} onToggleMenu={toggleMenu} />
-      <DeckMenu
-        decks={decks ?? []}
-        open={menuOpen}
-        onClose={closeMenu}
-        adminActive
-        memberActive={false}
+      <SiteHeader
+        menuOpen={menuOpen}
+        onToggleMenu={toggleMenu}
         onOpenMember={goMember}
         onBackToVitrine={goVitrine}
+      />
+      <DeckMenu
+        decks={allDecks}
+        open={menuOpen}
+        onClose={closeMenu}
+        tagOptions={tagOptions}
         onOpenDeck={(deckId) => {
           closeMenu()
           navigate('/')

@@ -31,13 +31,17 @@
   margin: 0 auto;
 }
 
-/* Les deux pastilles sont positionnées en absolu, donc invisibles au calcul de
-   largeur du titre : sur écran étroit « Forge Arcanique » passait dessous.
-   On réserve leur place ici — le titre se met alors à la ligne au lieu de les
-   chevaucher. Le burger seul posait déjà le problème avant l'ajout de la clé. */
+/* Les pastilles gauche/droite sont en absolu : on réserve leur place pour que
+   le titre se mette à la ligne au lieu de les chevaucher. */
 @media (max-width: 46rem) {
   .site-header__inner {
     padding-inline: 3.3rem;
+  }
+}
+
+@media (max-width: 36rem) {
+  .site-header__inner {
+    padding-inline: 3.1rem 7.5rem;
   }
 }
 
@@ -199,22 +203,12 @@
   padding: 0.9rem 0 0.75rem;
 }
 
-.deck-menu__section--nav {
+/* Bloc filtre (tags, futurs filtres) : fixe en haut, trait comme l’ancien nav. */
+.deck-menu__section--filter {
   flex: 0 0 auto;
   border-bottom: 1px solid var(--line);
   padding-top: 0.75rem;
   padding-bottom: 0.65rem;
-}
-
-.deck-menu__login {
-  margin-top: 0.65rem;
-  padding-top: 0.65rem;
-  border-top: 1px solid var(--line);
-}
-
-.deck-menu__nav-link:disabled {
-  opacity: 0.45;
-  cursor: wait;
 }
 
 .deck-menu__section--decks {
@@ -226,15 +220,6 @@
   padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
 }
 
-.deck-menu__section--member {
-  flex: 0 0 auto;
-  padding-bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px));
-}
-
-.deck-menu__section--member.is-solo {
-  flex: 1 1 auto;
-}
-
 .deck-menu__section-label {
   margin: 0 0 0.55rem;
   padding: 0 1.1rem;
@@ -244,13 +229,6 @@
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--accent-soft);
-}
-
-.deck-menu__hint {
-  margin: 0;
-  padding: 0 1.1rem;
-  color: var(--ink-dim);
-  font-size: 0.85rem;
 }
 
 .deck-menu__search {
@@ -324,159 +302,6 @@
   padding: 0.65rem 1.1rem;
   color: var(--ink-dim);
   font-size: 0.9rem;
-}
-
-/* Liens de navigation : toujours en haut, même place */
-.deck-menu__nav {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  padding: 0 0.45rem;
-}
-
-.deck-menu__nav-link {
-  display: block;
-  width: 100%;
-  margin: 0;
-  padding: 0.6rem 0.65rem;
-  border: 0;
-  border-radius: 10px;
-  background: transparent;
-  font: inherit;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-align: left;
-  text-decoration: none;
-  color: var(--ink-soft);
-  cursor: pointer;
-  box-sizing: border-box;
-}
-
-.deck-menu__nav-link:hover {
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
-  color: var(--ink);
-  text-decoration: none;
-}
-
-.deck-menu__nav-link.is-active {
-  background: color-mix(in srgb, var(--accent) 14%, transparent);
-  color: var(--accent);
-  cursor: default;
-}
-
-.deck-menu__nav-link--muted {
-  color: var(--ink-dim);
-  font-weight: 500;
-}
-
-.deck-menu__nav-link--muted:hover {
-  color: var(--danger, #ff6b6b);
-}
-
-.deck-menu__footer {
-  flex: 0 0 auto;
-  margin-top: auto;
-  padding: 0.45rem 0.45rem calc(0.65rem + env(safe-area-inset-bottom, 0px));
-  border-top: 1px solid var(--line);
-}
-
-.deck-menu__section--nav .admin-login,
-.deck-menu__section--nav .admin-login--compact {
-  padding: 0 1.1rem;
-}
-
-/* Login compact dans le tiroir */
-.deck-menu .admin-login,
-.deck-menu .admin-login--compact {
-  max-width: none;
-  margin: 0;
-  padding: 0 1.1rem;
-  text-align: left;
-}
-
-.deck-menu .admin-login__lead {
-  margin: 0 0 0.4rem;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
-.deck-menu .admin-login label {
-  display: block;
-  margin-bottom: 0.4rem;
-}
-
-.deck-menu .admin-login .field-label {
-  display: block;
-  margin-bottom: 0.2rem;
-  font-size: 0.68rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ink-dim);
-}
-
-.deck-menu .admin-login input[type='password'],
-.deck-menu .admin-login input[type='text'] {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0.4rem 0.55rem;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.35);
-  color: var(--ink);
-  font: inherit;
-  font-size: 0.85rem;
-}
-
-.deck-menu .admin-login input[type='password']:focus,
-.deck-menu .admin-login input[type='text']:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-
-.deck-menu .admin-login .error {
-  margin: 0 0 0.4rem;
-  color: var(--danger, #ff6b6b);
-  font-size: 0.75rem;
-}
-
-.deck-menu .admin-login button[type='submit'] {
-  width: 100%;
-  padding: 0.45rem 0.65rem;
-  border: none;
-  border-radius: var(--radius);
-  background: var(--accent);
-  color: var(--on-accent);
-  font: inherit;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.deck-menu .admin-login button[type='submit']:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.deck-menu .admin-login__switch {
-  display: block;
-  width: 100%;
-  margin-top: 0.45rem;
-  padding: 0;
-  border: none;
-  background: none;
-  color: var(--ink-dim);
-  font: inherit;
-  font-size: 0.72rem;
-  text-align: center;
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-.deck-menu .admin-login__switch:hover {
-  color: var(--accent);
 }
 
 /* Espace membre intégré sous le header Forge */
@@ -1175,24 +1000,183 @@
   text-align: center;
 }
 
-/* Accès à l'administration : la pastille jumelle du burger, ancrée à droite.
-   Volontairement muette — c'est un lien de service, pas une invitation faite
-   au visiteur — d'où l'icône seule, avec son intitulé accessible. */
-.site-header__admin {
+/* Navigation + clé admin : cluster à droite du header. */
+.site-header__actions {
   position: absolute;
   right: var(--gutter);
   top: 50%;
   z-index: 70;
   transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.site-header__nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.15rem;
+  max-width: min(22rem, 58vw);
+}
+
+.site-header__nav-link {
+  margin: 0;
+  padding: 0.35rem 0.55rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-dim);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--t), color var(--t);
+}
+
+.site-header__nav-link:hover,
+.site-header__nav-link:focus-visible {
+  background: var(--line);
+  color: var(--ink);
+}
+
+.site-header__nav-link.is-active {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  cursor: default;
+}
+
+.site-header__nav-link--muted {
+  font-weight: 500;
+}
+
+.site-header__nav-link--muted:hover,
+.site-header__nav-link--muted:focus-visible {
+  color: var(--danger, #ff6b6b);
+}
+
+.site-header__login-wrap {
+  position: relative;
+}
+
+.site-header__login {
+  position: absolute;
+  top: calc(100% + 0.55rem);
+  right: 0;
+  z-index: 80;
+  width: min(17.5rem, calc(100vw - 2 * var(--gutter)));
+  padding: 0.85rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+  box-shadow: 0 12px 32px var(--shadow);
+  text-align: left;
+}
+
+.site-header__login .admin-login,
+.site-header__login .admin-login--compact {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.site-header__login .admin-login__lead {
+  margin: 0 0 0.45rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.site-header__login .admin-login label {
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+.site-header__login .admin-login .field-label {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.site-header__login .admin-login input[type='password'],
+.site-header__login .admin-login input[type='text'] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.site-header__login .admin-login input[type='password']:focus,
+.site-header__login .admin-login input[type='text']:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.site-header__login .admin-login .error {
+  margin: 0 0 0.4rem;
+  color: var(--danger, #ff6b6b);
+  font-size: 0.75rem;
+}
+
+.site-header__login .admin-login button[type='submit'] {
+  width: 100%;
+  padding: 0.45rem 0.65rem;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--on-accent);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.site-header__login .admin-login button[type='submit']:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.site-header__login .admin-login__switch {
+  display: block;
+  width: 100%;
+  margin-top: 0.45rem;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--ink-dim);
+  font: inherit;
+  font-size: 0.72rem;
+  text-align: center;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.site-header__login .admin-login__switch:hover {
+  color: var(--accent);
+}
+
+/* Accès admin : pastille dans le cluster de droite. */
+.site-header__admin {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   width: 2.9rem;
   height: 2.9rem;
   border-radius: 999px;
   background: transparent;
-  /* Plus discret que le burger au repos : on ne veut pas que l'œil du
-     visiteur s'y pose avant les decks. */
   color: var(--ink-dim);
   transition: background var(--t), color var(--t);
 }

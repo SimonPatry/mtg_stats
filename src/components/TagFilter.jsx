@@ -23,8 +23,8 @@ export default function TagFilter({
 
   return (
     <div className="tag-filter">
-      <span className="tag-filter__label">{label}</span>
-      <div className="tag-filter__row" role="group" aria-label={label}>
+      {label ? <span className="tag-filter__label">{label}</span> : null}
+      <div className="tag-filter__row" role="group" aria-label={label || 'Tags'}>
         {tags.map((tag) => {
           const on = selected.includes(String(tag))
           return (

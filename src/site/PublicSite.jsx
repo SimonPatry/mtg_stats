@@ -15,8 +15,7 @@ const formatDate = (date) =>
 
 /**
  * Vitrine Forge : liste des decks + espace membre (stats / parties) après login.
- * Header + menu gauche restent partagés : stats s’ouvre dans le même cadre.
- * Menu = tiroir overlay ; desktop s’ouvre aussi au survol du bord gauche.
+ * Header : navigation membre + clé admin. Menu gauche : filtres (tags, decks).
  */
 export function PublicSite() {
   const { decks, loading, error, stale, savedAt, reload } = useDecks()
@@ -55,6 +54,7 @@ export function PublicSite() {
   function openMember(view = 'dashboard') {
     setMemberView(view === 'myDecks' ? 'myDecks' : 'dashboard')
     setMemberOpen(true)
+    closeMenu()
   }
 
   function backToVitrine() {
@@ -76,20 +76,26 @@ export function PublicSite() {
 
   return (
     <>
-      <SiteHeader menuOpen={menuOpen} onToggleMenu={toggleMenu} />
-      <DeckMenu
-        decks={allDecks}
-        open={menuOpen}
-        onClose={closeMenu}
+      <SiteHeader
+        menuOpen={menuOpen}
+        onToggleMenu={toggleMenu}
+        showMenuToggle={!showMember}
         memberActive={showMember}
         memberView={memberView}
         onOpenMember={openMember}
         onBackToVitrine={backToVitrine}
-        onOpenDeck={openDeck}
-        selectedTags={selectedTags}
-        onSelectedTags={setSelectedTags}
-        tagOptions={tagOptions}
       />
+      {!showMember && (
+        <DeckMenu
+          decks={allDecks}
+          open={menuOpen}
+          onClose={closeMenu}
+          onOpenDeck={openDeck}
+          selectedTags={selectedTags}
+          onSelectedTags={setSelectedTags}
+          tagOptions={tagOptions}
+        />
+      )}
       <div className="site-main">
         {showMember ? (
           <Suspense fallback={<p className="member-shell__loading">Ouverture de l’espace membre…</p>}>
@@ -148,3 +154,4 @@ export function PublicSite() {
     </>
   )
 }
+
