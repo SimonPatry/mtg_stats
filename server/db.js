@@ -46,10 +46,25 @@ export async function migrate(target = pool) {
   try {
     await runSqlFile(connection, 'schema.sql')
     await ensureUsersAccountLink(connection)
+    await ensureDecksArchivedColumn(connection)
     await runSqlFile(connection, 'seed.sql')
   } finally {
     await connection.end()
   }
+}
+
+/** Bases déjà créées avant la colonne decks.archived. */
+async function ensureDecksArchivedColumn(connection) {
+  const [cols] = await connection.query(`
+    SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE()
+       AND TABLE_NAME = 'decks'
+       AND COLUMN_NAME = 'archived'
+  `)
+  if (cols.length > 0) return
+  await connection.query(
+    'ALTER TABLE decks ADD COLUMN archived BOOLEAN NOT NULL DEFAULT FALSE AFTER active',
+  )
 }
 
 /** Bases déjà créées avant le lien comptes↔joueurs. */

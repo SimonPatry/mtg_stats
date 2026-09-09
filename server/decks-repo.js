@@ -41,6 +41,7 @@ function shapeDeck(row) {
     description: row.description || '',
     showcase: Boolean(row.showcase),
     active: Boolean(row.active),
+    archived: Boolean(row.archived),
     created_on: row.created_on,
     commanders: commandersOf(row),
     tags: row.tags ? row.tags.split(SEP) : [],
@@ -57,9 +58,17 @@ function shapeDeck(row) {
   }
 }
 
-export async function listDecks(cx, { activeOnly = false, withVersions = false } = {}) {
+export async function listDecks(cx, {
+  activeOnly = false,
+  withVersions = false,
+  includeArchived = false,
+} = {}) {
+  const where = []
+  if (activeOnly) where.push('d.active = TRUE')
+  if (!includeArchived) where.push('d.archived = FALSE')
+  const clause = where.length ? `WHERE ${where.join(' AND ')}` : ''
   const [rows] = await cx.query(
-    `${DECK_SELECT} ${activeOnly ? 'WHERE d.active = TRUE' : ''} ORDER BY u.name, d.created_on, d.id`)
+    `${DECK_SELECT} ${clause} ORDER BY u.name, d.created_on, d.id`)
   const decks = rows.map(shapeDeck)
   if (!withVersions) return decks
 
@@ -156,11 +165,13 @@ async function writeRelations(cx, deckId, input) {
 export async function createDeck(cx, input, firstVersion) {
   const id = randomUUID()
 
+  const archived = Boolean(input.archived)
+  const showcase = archived ? false : Boolean(input.showcase)
   await cx.execute(
-    `INSERT INTO decks (id, user_id, name, description, showcase, active, created_on)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [id, input.user_id, input.name, input.description, input.showcase,
-     input.active, input.created_on])
+    `INSERT INTO decks (id, user_id, name, description, showcase, active, archived, created_on)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [id, input.user_id, input.name, input.description, showcase,
+     input.active, archived, input.created_on])
   await writeRelations(cx, id, input)
 
   await addVersion(cx, id, {
@@ -172,12 +183,14 @@ export async function createDeck(cx, input, firstVersion) {
 }
 
 export async function updateDeck(cx, id, input) {
+  const archived = Boolean(input.archived)
+  const showcase = archived ? false : Boolean(input.showcase)
   const [result] = await cx.execute(
     `UPDATE decks SET user_id = ?, name = ?, description = ?, showcase = ?,
-                      active = ?, created_on = ?
+                      active = ?, archived = ?, created_on = ?
       WHERE id = ?`,
-    [input.user_id, input.name, input.description, input.showcase,
-     input.active, input.created_on, id])
+    [input.user_id, input.name, input.description, showcase,
+     input.active, archived, input.created_on, id])
   if (result.affectedRows === 0) return false
   await writeRelations(cx, id, input)
   return true
@@ -243,7 +256,7 @@ export async function listShowcase(cx) {
         ON cur.deck_id = d.id
        AND cur.version_number = (SELECT MAX(v.version_number)
                                    FROM deck_versions v WHERE v.deck_id = d.id)
-     WHERE d.showcase = TRUE AND d.active = TRUE
+     WHERE d.showcase = TRUE AND d.active = TRUE AND d.archived = FALSE
      -- Ordre automatique : le plus récent d'abord. C'est ce rang qui donne à
      -- chaque bande sa couleur et son côté d'illustration côté vitrine ; il
      -- n'y a plus de position à régler à la main.

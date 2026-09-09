@@ -53,6 +53,7 @@ export function decksFromApi(decks) {
         bracketVariation: deck.current_version?.bracket_variation ?? null,
         deckUrl: deck.current_version?.deck_url ?? '',
         active: deck.active !== false,
+        archived: Boolean(deck.archived),
         createdAt: deck.created_on ?? null,
         lineageId: deck.id,
         tags: deck.tags ?? [],
@@ -70,6 +71,7 @@ export function decksFromApi(decks) {
         deckUrl: version.deck_url ?? '',
         // Seule la dernière version d'une lignée active reste active.
         active: deck.active !== false && index === versions.length - 1,
+        archived: Boolean(deck.archived),
         createdAt: version.started_on ?? deck.created_on ?? null,
         previousDeckId: index > 0 ? versions[index - 1].id : undefined,
         // Champs propres à la base, ignorés par les composants mais utiles à

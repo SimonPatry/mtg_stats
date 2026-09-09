@@ -130,6 +130,7 @@ function DeckTile({ deck, onZoom, onEdit }) {
           <p className="roster-deck-meta">
             {bracketLine}
             {deck.showcase ? <span className="roster-deck-version">vitrine</span> : null}
+            {deck.archived ? <span className="roster-deck-version">archivé</span> : null}
           </p>
         </div>
         <button type="button" className="roster-deck-edit" onClick={() => onEdit(deck.id)}>
@@ -146,7 +147,9 @@ function DeckTile({ deck, onZoom, onEdit }) {
 export default function MemberDecks({ users, decks, onSave, onZoom }) {
   const { user } = useAuth()
   const playerId = user?.playerId ?? null
-  const myDecks = playerId ? getDecksForUser(decks, playerId, { activeOnly: false }) : []
+  const myDecks = playerId
+    ? getDecksForUser(decks, playerId, { activeOnly: false, includeArchived: false })
+    : []
 
   const [commanders, setCommanders] = useState('')
   const [comPrint, setComPrint] = useState({})

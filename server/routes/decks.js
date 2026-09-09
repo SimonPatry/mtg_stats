@@ -33,9 +33,12 @@ async function assertCanWriteDeck(req, res, deckId) {
 }
 
 router.get('/', handler(async (req, res) => {
+  // Les membres ne voient jamais les lignées archivées ; les admins gardent
+  // la trace dans le roster.
   res.json(await listDecks(pool, {
     activeOnly: req.query.active === '1',
     withVersions: req.query.versions === '1',
+    includeArchived: req.user.role === 'admin',
   }))
 }))
 

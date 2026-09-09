@@ -39,6 +39,7 @@ export const deckInput = z.object({
   // Décidé à la création : ce deck apparaît-il sur la vitrine publique ?
   showcase: z.boolean().default(false),
   active: z.boolean().default(true),
+  archived: z.boolean().default(false),
   created_on: isoDate.nullable().default(null),
   // Un à deux commandants : le second couvre les partenaires.
   commanders: z.array(commanderInput).min(1, 'Au moins un commandant').max(2),

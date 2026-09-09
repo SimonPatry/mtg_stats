@@ -3207,6 +3207,10 @@ body.admin-theme .member-shell {
   transition: transform 160ms ease, box-shadow 160ms ease;
 }
 
+.roster-deck-tile.is-archived {
+  opacity: 0.55;
+}
+
 .roster-deck-tile:hover {
   transform: translateY(-2px);
 }

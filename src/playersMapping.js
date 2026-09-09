@@ -21,7 +21,7 @@ export function getActiveUsers(users) {
 }
 
 export function getActiveDecks(decks) {
-  return decks.filter((d) => d.active !== false)
+  return decks.filter((d) => d.active !== false && !d.archived)
 }
 
 export function getUserById(users, userId) {
@@ -43,10 +43,12 @@ export function getDeckById(decks, deckId) {
   return decks.find((d) => d.id === deckId)
 }
 
-export function getDecksForUser(decks, userId, { activeOnly = true } = {}) {
+export function getDecksForUser(decks, userId, { activeOnly = true, includeArchived = false } = {}) {
   return decks.filter(
     (d) =>
-      d.userId === userId && (!activeOnly || d.active !== false),
+      d.userId === userId
+      && (!activeOnly || d.active !== false)
+      && (includeArchived || !d.archived),
   )
 }
 

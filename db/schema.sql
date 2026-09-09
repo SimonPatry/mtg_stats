@@ -94,6 +94,9 @@ CREATE TABLE IF NOT EXISTS decks (
   showcase    BOOLEAN      NOT NULL DEFAULT FALSE,
   -- Lignée retirée (le joueur ne la joue plus). Les parties passées restent.
   active      BOOLEAN      NOT NULL DEFAULT TRUE,
+  -- Archivé : invisible pour les membres (Mes decks / saisie). Les admins
+  -- gardent une trace dans le roster. Hors vitrine tant qu'archivé.
+  archived    BOOLEAN      NOT NULL DEFAULT FALSE,
   created_on  DATE,
   created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

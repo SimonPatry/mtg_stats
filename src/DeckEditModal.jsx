@@ -57,6 +57,7 @@ export default function DeckEditModal({
   // et non sur la ligne de version que manipulent les composants.
   const [lineage, setLineage] = useState(null)
   const [showcase, setShowcase] = useState(false)
+  const [archived, setArchived] = useState(false)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [colors, setColors] = useState([])
@@ -74,6 +75,7 @@ export default function DeckEditModal({
       if (cancelled || !row) return
       setLineage(row)
       setShowcase(Boolean(row.showcase))
+      setArchived(Boolean(row.archived))
       setName(row.name ?? '')
       setDescription(row.description ?? '')
       setColors(row.colors ?? [])
@@ -109,12 +111,12 @@ export default function DeckEditModal({
       return
     }
 
-    if (showcase && !name.trim()) {
+    if (showcase && !archived && !name.trim()) {
       setError('Un deck affiché sur le site doit avoir un titre.')
       return
     }
     const emptySection = slider.find((s) => !s.title.trim() || s.cards.some((c) => !c.name.trim()))
-    if (showcase && emptySection) {
+    if (showcase && !archived && emptySection) {
       setError('Chaque section de carrousel a besoin d’un titre et de cartes nommées.')
       return
     }
@@ -125,13 +127,14 @@ export default function DeckEditModal({
           user_id: lineage.user_id,
           name: name.trim(),
           description: description.trim(),
-          showcase,
+          showcase: archived ? false : showcase,
           active: lineage.active !== false,
+          archived,
           created_on: lineage.created_on,
           commanders: lineage.commanders,
           colors,
           tag_ids: tagIds,
-          slider: showcase ? slider : [],
+          slider: showcase && !archived ? slider : [],
         })
       }
       // Modifier la seule face vitrine ne doit pas passer par l'édition de
@@ -246,8 +249,28 @@ export default function DeckEditModal({
               <label className="form-check">
                 <input
                   type="checkbox"
-                  checked={showcase}
+                  checked={archived}
                   disabled={!lineage}
+                  onChange={(e) => {
+                    const next = e.target.checked
+                    setArchived(next)
+                    if (next) setShowcase(false)
+                  }}
+                />
+                <span>
+                  <strong>Archiver</strong>
+                  <small>
+                    Masqué dans « Mes decks » et hors vitrine. Les admins gardent
+                    une trace dans le roster ; les parties passées restent.
+                  </small>
+                </span>
+              </label>
+
+              <label className="form-check">
+                <input
+                  type="checkbox"
+                  checked={showcase}
+                  disabled={!lineage || archived}
                   onChange={(e) => setShowcase(e.target.checked)}
                 />
                 <span>
@@ -260,7 +283,7 @@ export default function DeckEditModal({
                 </span>
               </label>
 
-              {showcase && (
+              {showcase && !archived && (
                 <div className="deck-edit-showcase-fields">
                   <label className="form-field">
                     <span>Titre affiché *</span>

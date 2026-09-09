@@ -69,7 +69,7 @@ export async function readWinsByDeck(cx) {
         JOIN deck_versions v ON v.id = s.deck_version_id
        GROUP BY v.deck_id
     ) played ON played.deck_id = d.id
-    WHERE d.active = TRUE
+    WHERE d.active = TRUE AND d.archived = FALSE
     ORDER BY u.name, d.id
   `)
 

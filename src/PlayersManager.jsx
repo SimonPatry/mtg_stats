@@ -178,6 +178,11 @@ function RosterDeckCard({ deck, onZoom, onEdit }) {
               suite v. préc.
             </span>
           ) : null}
+          {deck.archived ? (
+            <span className="roster-deck-version" title="Archivé — visible admin uniquement">
+              archivé
+            </span>
+          ) : null}
         </p>
       </div>
       <button type="button" className="roster-deck-edit" onClick={handleEdit}>
@@ -187,14 +192,18 @@ function RosterDeckCard({ deck, onZoom, onEdit }) {
   )
 
   return (
-    <article className="roster-deck-tile" title={label}>
+    <article
+      className={`roster-deck-tile${deck.archived ? ' is-archived' : ''}`}
+      title={label}
+    >
       {card}
     </article>
   )
 }
 
 function RosterPlayer({ user, decks, onZoom, onEditDeck, onEditUser }) {
-  const userDecks = getDecksForUser(decks, user.id)
+  // Admin : inclut les archivés (trace). Les membres ne les reçoivent pas de l'API.
+  const userDecks = getDecksForUser(decks, user.id, { includeArchived: true })
   const roleLabel = user.accountRole === 'admin' ? 'Admin' : 'Membre'
 
   return (
