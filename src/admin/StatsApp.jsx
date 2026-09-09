@@ -1050,13 +1050,17 @@ function StatsApp({ mode = 'admin', onBackToForge, embedded = false, initialView
     }
   }, [initialView, isMemberMode])
 
+  // Synchronise l’URL quand la vue membre change en interne (ex. tempGame → dashboard).
+  // On ne dépend pas de onMemberViewChange (souvent une nouvelle ref) pour éviter
+  // une boucle navigate → render → effect → navigate.
   useEffect(() => {
     if (!isMemberMode || !onMemberViewChange) return
     if (activeView === 'myDecks') onMemberViewChange('myDecks')
     else if (activeView === 'dashboard' || activeView === 'tempGame') {
       onMemberViewChange('dashboard')
     }
-  }, [activeView, isMemberMode, onMemberViewChange])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sync URL sur activeView seulement
+  }, [activeView, isMemberMode])
 
   // Chargement unique au montage : l'API est la seule source de données.
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate, Navigate } from 'react-router-dom'
 import { useDecks } from '../hooks/useDecks.js'
 import { useAuth } from '../hooks/useAuth.js'
@@ -38,6 +38,16 @@ export function PublicSite() {
     if (!selectedTags.length) return allDecks
     return allDecks.filter((d) => matchesSelectedTags(d.tags, selectedTags))
   }, [allDecks, selectedTags])
+
+  const onMemberViewChange = useCallback((view) => {
+    const next = pathForMemberView(view)
+    if (next !== pathname) navigate(next)
+  }, [navigate, pathname])
+
+  const onBackToForge = useCallback(() => {
+    reload()
+    navigate(ROUTES.vitrine)
+  }, [navigate, reload])
 
   useLayoutEffect(() => {
     if (!showMember) return undefined
@@ -86,11 +96,8 @@ export function PublicSite() {
                 mode="member"
                 embedded
                 initialView={memberView}
-                onMemberViewChange={(view) => navigate(pathForMemberView(view))}
-                onBackToForge={() => {
-                  reload()
-                  navigate(ROUTES.vitrine)
-                }}
+                onMemberViewChange={onMemberViewChange}
+                onBackToForge={onBackToForge}
               />
             </div>
           </Suspense>
