@@ -36,7 +36,7 @@ import {
 } from '../tempGame'
 import { downloadGamesExcel, downloadGamesJson } from '../exportGames'
 import { computeStats, deckLabel, resolveDeck } from '../stats'
-import { Link } from '../components/Link.jsx'
+import { Link } from 'react-router-dom'
 import JsonEditor from '../JsonEditor'
 
 import '../index.css'

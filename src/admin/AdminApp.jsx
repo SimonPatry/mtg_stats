@@ -1,15 +1,14 @@
 import { useLayoutEffect, useMemo } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.js'
-import { useLocation } from '../lib/router.js'
 import { useDecks } from '../hooks/useDecks.js'
 import { useSiteMenu } from '../hooks/useSiteMenu.js'
 import { Login } from './Login.jsx'
 import StatsApp from './StatsApp.jsx'
-import { Link } from '../components/Link.jsx'
 import { SiteHeader } from '../site/SiteHeader.jsx'
 import { DeckMenu } from '../site/DeckMenu.jsx'
 import { collectTagLabels } from '../components/TagFilter.jsx'
-import { OPEN_MEMBER_KEY } from '../site/memberHandoff.js'
+import { ROUTES } from '../lib/routes.js'
 
 import '../index.css'
 
@@ -19,7 +18,7 @@ import '../index.css'
  */
 export default function AdminApp() {
   const { authenticated, isAdmin, signIn, user } = useAuth()
-  const [, navigate] = useLocation()
+  const navigate = useNavigate()
   const { decks } = useDecks()
   const { menuOpen, toggleMenu, closeMenu } = useSiteMenu()
   const allDecks = decks ?? []
@@ -44,20 +43,9 @@ export default function AdminApp() {
         <p className="hint">
           Connecté en tant que <strong>{user?.username}</strong> (membre).
         </p>
-        <Link to="/" className="admin-login__back">← Retour à la vitrine</Link>
+        <Link to={ROUTES.vitrine} className="admin-login__back">← Retour à la vitrine</Link>
       </div>
     )
-  }
-
-  function goVitrine() {
-    navigate('/')
-  }
-
-  function goMember(view = 'dashboard') {
-    try {
-      sessionStorage.setItem(OPEN_MEMBER_KEY, view === 'myDecks' ? 'myDecks' : 'dashboard')
-    } catch { /* ignore */ }
-    navigate('/')
   }
 
   return (
@@ -65,8 +53,6 @@ export default function AdminApp() {
       <SiteHeader
         menuOpen={menuOpen}
         onToggleMenu={toggleMenu}
-        onOpenMember={goMember}
-        onBackToVitrine={goVitrine}
       />
       <DeckMenu
         decks={allDecks}
@@ -75,10 +61,7 @@ export default function AdminApp() {
         tagOptions={tagOptions}
         onOpenDeck={(deckId) => {
           closeMenu()
-          navigate('/')
-          requestAnimationFrame(() => {
-            window.location.hash = `deck-${deckId}`
-          })
+          navigate({ pathname: ROUTES.vitrine, hash: `deck-${deckId}` })
         }}
       />
       <div className="site-main">

@@ -1022,6 +1022,8 @@
 }
 
 .site-header__nav-link {
+  display: inline-flex;
+  align-items: center;
   margin: 0;
   padding: 0.35rem 0.55rem;
   border: 0;
@@ -1031,6 +1033,7 @@
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--ink-dim);
+  text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
   transition: background var(--t), color var(--t);

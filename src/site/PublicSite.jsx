@@ -1,12 +1,17 @@
-import { lazy, Suspense, useLayoutEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import { useLocation, useNavigate, Navigate } from 'react-router-dom'
 import { useDecks } from '../hooks/useDecks.js'
 import { useAuth } from '../hooks/useAuth.js'
 import { useSiteMenu } from '../hooks/useSiteMenu.js'
+import {
+  ROUTES,
+  memberViewFromPath,
+  pathForMemberView,
+} from '../lib/routes.js'
 import { SiteHeader } from './SiteHeader.jsx'
 import { DeckMenu } from './DeckMenu.jsx'
 import { DeckBand } from './DeckBand.jsx'
 import { collectTagLabels, matchesSelectedTags } from '../components/TagFilter.jsx'
-import { consumeOpenMemberIntent } from './memberHandoff.js'
 
 const StatsApp = lazy(() => import('../admin/StatsApp.jsx'))
 
@@ -14,18 +19,19 @@ const formatDate = (date) =>
   date ? date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) : ''
 
 /**
- * Vitrine Forge : liste des decks + espace membre (stats / parties) après login.
- * Header : navigation membre + clé admin. Menu gauche : filtres (tags, decks).
+ * Vitrine Forge + espace membre.
+ * Routes : / (vitrine), /stats, /decks. Header = navigation URL ; menu = filtres.
  */
 export function PublicSite() {
+  const { pathname } = useLocation()
+  const navigate = useNavigate()
   const { decks, loading, error, stale, savedAt, reload } = useDecks()
-  const { isMember } = useAuth()
+  const { isMember, authenticated } = useAuth()
   const { menuOpen, toggleMenu, closeMenu } = useSiteMenu()
-  const [memberOpen, setMemberOpen] = useState(false)
-  const [memberView, setMemberView] = useState('dashboard')
   const [selectedTags, setSelectedTags] = useState([])
 
-  const showMember = memberOpen && isMember
+  const memberView = memberViewFromPath(pathname)
+  const showMember = Boolean(isMember && memberView)
   const allDecks = decks ?? []
   const tagOptions = useMemo(() => collectTagLabels(allDecks), [allDecks])
   const visibleDecks = useMemo(() => {
@@ -39,39 +45,19 @@ export function PublicSite() {
     return () => document.body.classList.remove('admin-theme')
   }, [showMember])
 
-  useLayoutEffect(() => {
-    if (!isMember) {
-      setMemberOpen(false)
-      return
-    }
-    const intent = consumeOpenMemberIntent()
-    if (intent) {
-      setMemberView(intent)
-      setMemberOpen(true)
-    }
-  }, [isMember])
+  useEffect(() => {
+    if (showMember) closeMenu()
+  }, [showMember])
 
-  function openMember(view = 'dashboard') {
-    setMemberView(view === 'myDecks' ? 'myDecks' : 'dashboard')
-    setMemberOpen(true)
-    closeMenu()
-  }
-
-  function backToVitrine() {
-    setMemberOpen(false)
-    reload()
+  // Ceinture : RequireAuth protège déjà /stats et /decks ; si la session tombe
+  // pendant la visite, on renvoie à la vitrine.
+  if (memberView && authenticated === false) {
+    return <Navigate to={ROUTES.vitrine} replace />
   }
 
   function openDeck(deckId) {
     closeMenu()
-    if (showMember) {
-      setMemberOpen(false)
-      requestAnimationFrame(() => {
-        window.location.hash = `deck-${deckId}`
-      })
-      return
-    }
-    window.location.hash = `deck-${deckId}`
+    navigate({ pathname: ROUTES.vitrine, hash: `deck-${deckId}` })
   }
 
   return (
@@ -80,10 +66,6 @@ export function PublicSite() {
         menuOpen={menuOpen}
         onToggleMenu={toggleMenu}
         showMenuToggle={!showMember}
-        memberActive={showMember}
-        memberView={memberView}
-        onOpenMember={openMember}
-        onBackToVitrine={backToVitrine}
       />
       {!showMember && (
         <DeckMenu
@@ -104,8 +86,11 @@ export function PublicSite() {
                 mode="member"
                 embedded
                 initialView={memberView}
-                onMemberViewChange={setMemberView}
-                onBackToForge={backToVitrine}
+                onMemberViewChange={(view) => navigate(pathForMemberView(view))}
+                onBackToForge={() => {
+                  reload()
+                  navigate(ROUTES.vitrine)
+                }}
               />
             </div>
           </Suspense>
@@ -154,4 +139,3 @@ export function PublicSite() {
     </>
   )
 }
-

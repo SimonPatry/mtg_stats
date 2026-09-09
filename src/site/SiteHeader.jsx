@@ -1,31 +1,27 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from '../components/Link.jsx'
-import { useLocation } from '../lib/router.js'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth, signOut } from '../hooks/useAuth.js'
 import { Login } from '../admin/Login.jsx'
+import { ROUTES } from '../lib/routes.js'
 
 /**
  * En-tête collant. Il publie sa hauteur dans --header-height, dont se sert le
  * scroll-margin-top des bandes pour qu'une ancre ne passe pas dessous.
  *
- * Navigation membre + clé admin à droite ; le burger ouvre la sidebar filtres.
+ * Navigation via react-router-dom (/, /stats, /decks, /admin).
  */
 export function SiteHeader({
   menuOpen,
   onToggleMenu,
   showMenuToggle = true,
-  memberActive = false,
-  memberView = 'dashboard',
-  onOpenMember,
-  onBackToVitrine,
 }) {
   const header = useRef(null)
   const loginPanel = useRef(null)
-  const [pathname] = useLocation()
+  const { pathname } = useLocation()
+  const navigate = useNavigate()
   const { authenticated, isAdmin, isMember, signIn } = useAuth()
   const [loginOpen, setLoginOpen] = useState(false)
-  const onAdmin = pathname.startsWith('/admin')
-  const awayFromVitrine = memberActive || onAdmin
+  const onAdmin = pathname.startsWith(ROUTES.admin)
 
   useEffect(() => {
     const el = header.current
@@ -56,9 +52,8 @@ export function SiteHeader({
     }
   }, [loginOpen])
 
-  function goMember(view) {
-    if (isMember) onOpenMember?.(view)
-  }
+  const navClass = ({ isActive }) =>
+    `site-header__nav-link${isActive ? ' is-active' : ''}`
 
   return (
     <header className="site-header" ref={header}>
@@ -82,17 +77,29 @@ export function SiteHeader({
 
       <div className="site-header__actions">
         <nav className="site-header__nav" aria-label="Navigation">
-          {awayFromVitrine ? (
-            <button
-              type="button"
-              className="site-header__nav-link"
-              onClick={() => onBackToVitrine?.()}
-            >
-              Vitrine
-            </button>
-          ) : (
-            <span className="site-header__nav-link is-active">Vitrine</span>
-          )}
+          {isMember ? (
+            <>
+              <NavLink to={ROUTES.vitrine} end className={navClass}>
+                Vitrine
+              </NavLink>
+              <NavLink to={ROUTES.stats} className={navClass}>
+                Stats
+              </NavLink>
+              <NavLink to={ROUTES.decks} className={navClass}>
+                Mes decks
+              </NavLink>
+              <button
+                type="button"
+                className="site-header__nav-link site-header__nav-link--muted"
+                onClick={() => {
+                  signOut()
+                  navigate(ROUTES.vitrine)
+                }}
+              >
+                Quitter
+              </button>
+            </>
+          ) : null}
 
           {authenticated === false && (
             <div className="site-header__login-wrap" ref={loginPanel}>
@@ -113,7 +120,7 @@ export function SiteHeader({
                     onSuccess={(session) => {
                       signIn(session)
                       setLoginOpen(false)
-                      onOpenMember?.('dashboard')
+                      navigate(ROUTES.stats)
                     }}
                   />
                 </div>
@@ -126,46 +133,11 @@ export function SiteHeader({
               Session…
             </span>
           )}
-
-          {isMember && (
-            <>
-              {memberActive && memberView === 'dashboard' ? (
-                <span className="site-header__nav-link is-active">Stats</span>
-              ) : (
-                <button
-                  type="button"
-                  className="site-header__nav-link"
-                  onClick={() => goMember('dashboard')}
-                >
-                  Stats
-                </button>
-              )}
-              {memberActive && memberView === 'myDecks' ? (
-                <span className="site-header__nav-link is-active">Mes decks</span>
-              ) : (
-                <button
-                  type="button"
-                  className="site-header__nav-link"
-                  onClick={() => goMember('myDecks')}
-                >
-                  Mes decks
-                </button>
-              )}
-              <button
-                type="button"
-                className="site-header__nav-link site-header__nav-link--muted"
-                onClick={() => signOut()}
-              >
-                Quitter
-              </button>
-            </>
-          )}
         </nav>
 
-        {/* Clé admin ↔ vitrine : réservée aux comptes admin connectés. */}
         {isAdmin ? (
           <Link
-            to={onAdmin ? '/' : '/admin'}
+            to={onAdmin ? ROUTES.vitrine : ROUTES.admin}
             className={`site-header__admin${onAdmin ? ' is-active' : ''}`}
             title={onAdmin ? 'Retour à la vitrine' : 'Administration'}
             aria-label={onAdmin ? 'Retour à la vitrine' : 'Administration'}

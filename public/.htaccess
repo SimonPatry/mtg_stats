@@ -9,7 +9,7 @@
   # /api est servi par Node (Express). Ne pas le réécrire vers PHP ni vers index.html.
   RewriteRule ^api(/|$) - [L]
 
-  # SPA : URLs front sans fichier → index.html (refresh /admin, /deck/…)
+  # SPA : URLs front sans fichier → index.html (refresh /admin, /stats, /decks…)
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule ^ index.html [QSA,L]

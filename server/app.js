@@ -129,8 +129,8 @@ export function createApp({ clientDir = join(projectRoot, 'dist'), bootError = n
     }))
     app.use(express.static(clientDir, { index: false, maxAge: '1h' }))
 
-    // Le routage est côté client : /admin, /deck/<id>… n'existent pas sur le
-    // disque. Toute requête de PAGE non résolue rend index.html, et c'est
+    // Le routage est côté client : /admin, /stats, /decks… n'existent pas sur
+    // le disque. Toute requête de PAGE non résolue rend index.html, et c'est
     // l'application qui décide quoi afficher.
     //
     // Un fichier manquant, lui, doit rester un 404. Renvoyer index.html à la

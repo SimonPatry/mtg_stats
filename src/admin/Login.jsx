@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { api } from '../lib/api.js'
-import { Link } from '../components/Link.jsx'
+import { Link } from 'react-router-dom'
 
 /**
  * Formulaire de connexion / inscription.
