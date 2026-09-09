@@ -61,7 +61,10 @@ export default function AdminApp() {
         tagOptions={tagOptions}
         onOpenDeck={(deckId) => {
           closeMenu()
-          navigate({ pathname: ROUTES.vitrine, hash: `deck-${deckId}` })
+          navigate(
+            { pathname: ROUTES.vitrine, hash: `deck-${deckId}` },
+            { preventScrollReset: true },
+          )
         }}
       />
       <div className="site-main">

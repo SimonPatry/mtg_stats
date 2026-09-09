@@ -12,6 +12,7 @@ import { SiteHeader } from './SiteHeader.jsx'
 import { DeckMenu } from './DeckMenu.jsx'
 import { DeckBand } from './DeckBand.jsx'
 import { collectTagLabels, matchesSelectedTags } from '../components/TagFilter.jsx'
+import { deckAnchorId, scrollToDeckAnchorWhenReady } from './deckAnchors.js'
 
 const StatsApp = lazy(() => import('../admin/StatsApp.jsx'))
 
@@ -23,7 +24,7 @@ const formatDate = (date) =>
  * Routes : / (vitrine), /stats, /decks. Header = navigation URL ; menu = filtres.
  */
 export function PublicSite() {
-  const { pathname } = useLocation()
+  const { pathname, hash } = useLocation()
   const navigate = useNavigate()
   const { decks, loading, error, stale, savedAt, reload } = useDecks()
   const { isMember, authenticated } = useAuth()
@@ -32,6 +33,7 @@ export function PublicSite() {
 
   const memberView = memberViewFromPath(pathname)
   const showMember = Boolean(isMember && memberView)
+  const onVitrine = pathname === ROUTES.vitrine
   const allDecks = decks ?? []
   const tagOptions = useMemo(() => collectTagLabels(allDecks), [allDecks])
   const visibleDecks = useMemo(() => {
@@ -59,6 +61,16 @@ export function PublicSite() {
     if (showMember) closeMenu()
   }, [showMember])
 
+  // Ancres #deck-… : react-router ne scroll pas tout seul.
+  useEffect(() => {
+    if (!onVitrine || showMember || loading || !hash) return undefined
+    const raw = hash.replace(/^#/, '')
+    if (!raw.startsWith('deck-')) return undefined
+    const deckId = raw.slice('deck-'.length)
+    if (!deckId) return undefined
+    return scrollToDeckAnchorWhenReady(deckId)
+  }, [onVitrine, showMember, loading, hash, visibleDecks])
+
   // Ceinture : RequireAuth protège déjà /stats et /decks ; si la session tombe
   // pendant la visite, on renvoie à la vitrine.
   if (memberView && authenticated === false) {
@@ -67,7 +79,12 @@ export function PublicSite() {
 
   function openDeck(deckId) {
     closeMenu()
-    navigate({ pathname: ROUTES.vitrine, hash: `deck-${deckId}` })
+    const id = deckAnchorId(deckId)
+    // Si un filtre tags masque la cible, on l’enlève pour que la bande existe.
+    if (selectedTags.length) setSelectedTags([])
+    navigate({ pathname: ROUTES.vitrine, hash: id }, { preventScrollReset: true })
+    // Scroll immédiat si la bande est déjà là (même page).
+    scrollToDeckAnchorWhenReady(deckId)
   }
 
   return (
