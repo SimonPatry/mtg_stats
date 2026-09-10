@@ -253,6 +253,7 @@ export function addDeckToUser(decks, users, userId, deck) {
     entry.description = deck.description ?? ''
     entry.colors = deck.colors ?? []
     entry.tagIds = deck.tagIds ?? []
+    entry.slider = deck.slider ?? []
   }
 
   return [...decks, entry]

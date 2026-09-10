@@ -1,12 +1,13 @@
 import ColorPicker from './ColorPicker.jsx'
 import TagPicker from './TagPicker.jsx'
+import SliderEditor from './SliderEditor.jsx'
 
 /**
- * Bloc « vitrine » du formulaire de création d'un deck.
+ * Bloc « vitrine » du formulaire de création / édition d'un deck.
  *
  * Tags toujours visibles : on peut les poser sans déplier toute la vitrine.
- * Les champs longs (titre, description, couleurs) restent derrière la case.
- * Les carrousels s'ajoutent ensuite depuis l'édition du deck.
+ * Titre, description, couleurs et carrousels apparaissent dès que la case
+ * « Afficher sur le site » est cochée.
  */
 export default function ShowcaseFields({ value, onChange, tags, onTagsChange, colors }) {
   const set = (patch) => onChange({ ...value, ...patch })
@@ -57,6 +58,14 @@ export default function ShowcaseFields({ value, onChange, tags, onTagsChange, co
               colors={colors}
             />
           </div>
+
+          <div className="form-field">
+            <span className="form-field-label">Carrousels</span>
+            <SliderEditor
+              sections={value.slider ?? []}
+              onChange={(slider) => set({ slider })}
+            />
+          </div>
         </div>
       )}
 
@@ -80,4 +89,5 @@ export const emptyShowcase = () => ({
   description: '',
   colors: [],
   tagIds: [],
+  slider: [],
 })

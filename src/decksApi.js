@@ -80,6 +80,7 @@ export async function saveDecks(nextDecks, previousDecks) {
         showcase: Boolean(row.showcase),
         colors: row.colors ?? [],
         tag_ids: row.tagIds ?? [],
+        slider: row.showcase ? (row.slider ?? []) : [],
         active: row.active !== false,
         archived: Boolean(row.archived),
         created_on: row.createdAt ?? null,

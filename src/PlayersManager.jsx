@@ -347,6 +347,13 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
       setError('Un deck affiché sur le site doit avoir un titre.')
       return
     }
+    const emptySection = (showcase.slider ?? []).find(
+      (s) => !s.title.trim() || s.cards.some((c) => !c.name.trim()),
+    )
+    if (showcase.showcase && emptySection) {
+      setError('Chaque section de carrousel a besoin d’un titre et de cartes nommées.')
+      return
+    }
 
     try {
       const updatedDecks = addDeckToUser(decks, users, selectedUserId, {
@@ -360,6 +367,7 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
         description: showcase.description.trim(),
         colors: showcase.colors,
         tagIds: showcase.tagIds,
+        slider: showcase.showcase ? (showcase.slider ?? []) : [],
       })
       await persist(users, updatedDecks)
       setCommanders('')
