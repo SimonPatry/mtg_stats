@@ -888,7 +888,7 @@ function SideNav({ open, onClose, activeView, onNavigate, onExportJson, onExport
           ) : null}
         </nav>
 
-        {mode === 'admin' ? (
+        {mode === 'member' ? (
         <div className="side-nav-section">
           <p className="side-nav-section-label">Exports</p>
           <button type="button" className="side-nav-link" onClick={() => { onExportJson(); onClose() }}>
@@ -1452,6 +1452,20 @@ function StatsApp({ mode = 'admin', onBackToForge, embedded = false, initialView
               >
                 {liveGameCount > 0 ? `● Live (${liveGameCount})` : 'Live'}
               </button>
+              <button
+                type="button"
+                className="btn btn-ghost top-bar-export-btn"
+                onClick={() => downloadGamesJson(games, users, decks)}
+              >
+                ↓ JSON
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost top-bar-export-btn"
+                onClick={() => downloadGamesExcel(games, users, decks)}
+              >
+                ↓ Excel
+              </button>
             </div>
           </div>
         ) : null
@@ -1473,22 +1487,6 @@ function StatsApp({ mode = 'admin', onBackToForge, embedded = false, initialView
               Édition JSON
             </button>
           </nav>
-          <div className="member-toolbar__actions">
-            <button
-              type="button"
-              className="btn btn-ghost top-bar-export-btn"
-              onClick={() => downloadGamesJson(games, users, decks)}
-            >
-              ↓ JSON
-            </button>
-            <button
-              type="button"
-              className="btn btn-ghost top-bar-export-btn"
-              onClick={() => downloadGamesExcel(games, users, decks)}
-            >
-              ↓ Excel
-            </button>
-          </div>
         </div>
       ) : (
       <header className="page-header top-bar">
@@ -1549,11 +1547,6 @@ function StatsApp({ mode = 'admin', onBackToForge, embedded = false, initialView
               >
                 {liveGameCount > 0 ? `● Live (${liveGameCount})` : 'Live'}
               </button>
-              <span className="top-bar-divider" aria-hidden="true" />
-            </>
-          ) : null}
-          {isAdminMode ? (
-            <>
               <button
                 type="button"
                 className="btn btn-ghost top-bar-export-btn"

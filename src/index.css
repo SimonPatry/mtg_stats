@@ -129,7 +129,8 @@ body.admin-theme .member-shell {
   }
 
   .member-toolbar .top-bar-add-btn,
-  .member-toolbar .top-bar-live-btn {
+  .member-toolbar .top-bar-live-btn,
+  .member-toolbar .top-bar-export-btn {
     padding: 0.22rem 0.45rem;
     font-size: 0.72rem;
   }
@@ -291,7 +292,8 @@ body.admin-theme .member-shell {
 }
 
 .member-toolbar .top-bar-add-btn,
-.member-toolbar .top-bar-live-btn {
+.member-toolbar .top-bar-live-btn,
+.member-toolbar .top-bar-export-btn {
   padding: 0.3rem 0.55rem;
   font-size: 0.78rem;
   min-height: 0;
@@ -1019,9 +1021,10 @@ body.admin-theme .member-shell {
   }
 
   .top-bar-nav-desktop,
-  .top-bar-export-btn,
-  /* Exports et déconnexion passent dans le tiroir : la barre du haut n'a la
-     place que du titre et des deux gestes de saisie. */
+  .top-bar .top-bar-export-btn,
+  /* Déconnexion passe dans le tiroir : la barre du haut n'a la place que
+     du titre et des gestes de saisie. Les exports restent dans Stats & parties
+     (member-toolbar), visibles aussi sur mobile. */
   .top-bar-logout,
   .top-bar-divider {
     display: none !important;
