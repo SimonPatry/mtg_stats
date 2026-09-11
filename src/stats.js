@@ -67,6 +67,7 @@ export function computeStats(games, users, decks) {
       bracket: record.bracket,
       bracketVariation: record.bracketVariation ?? null,
       tags: record.tags ?? [],
+      comPrint: record.comPrint,
     }
   }
 
@@ -119,6 +120,7 @@ export function computeStats(games, users, decks) {
           bracket: deck.bracket,
           bracketVariation: deck.bracketVariation,
           tags: [],
+          comPrint: deck.comPrint,
         }
       }
       winsByDeck[key].games += 1

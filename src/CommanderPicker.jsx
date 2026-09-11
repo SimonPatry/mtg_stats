@@ -8,7 +8,7 @@ import {
 } from './scryfall'
 import { formatComPrint, formatComPrintLabel, parseCommandersInput } from './playersMapping'
 
-function CommanderPreview({ name, printing, zoomNames, onZoom, onShowPrintings }) {
+function CommanderPreview({ name, printing, prints, zoomNames, onZoom, onShowPrintings }) {
   const [src, setSrc] = useState(null)
   const printLabel = formatComPrintLabel(printing)
 
@@ -23,7 +23,7 @@ function CommanderPreview({ name, printing, zoomNames, onZoom, onShowPrintings }
       }
     }
 
-    fetchCommanderImage(name, 'normal')
+    fetchCommanderImage(name, 'normal', printing)
       .then((url) => {
         if (!cancelled) setSrc(url)
       })
@@ -43,7 +43,7 @@ function CommanderPreview({ name, printing, zoomNames, onZoom, onShowPrintings }
       zoomNames.length > 1 && preview
         ? preview.getBoundingClientRect()
         : art?.getBoundingClientRect() || e.currentTarget.getBoundingClientRect()
-    onZoom(zoomNames, rect)
+    onZoom(zoomNames, rect, prints)
   }
 
   return (
@@ -329,6 +329,7 @@ export default function CommanderPicker({
               <CommanderPreview
                 name={name}
                 printing={comPrint[name]}
+                prints={comPrint}
                 zoomNames={selected}
                 onZoom={onZoom}
                 onShowPrintings={onComPrintChange ? setPrintingsCard : null}

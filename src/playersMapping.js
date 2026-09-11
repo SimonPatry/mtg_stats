@@ -156,6 +156,7 @@ export function resolveDeckFromCatalog(decks, users, gameDeck) {
         userId: record.userId,
         previousDeckId: record.previousDeckId,
         history: record.history,
+        comPrint: record.comPrint,
       }
     }
   }
@@ -182,6 +183,7 @@ export function resolveDeckFromCatalog(decks, users, gameDeck) {
     userId: owned.userId,
     previousDeckId: owned.previousDeckId,
     history: owned.history,
+    comPrint: owned.comPrint,
   }
 }
 

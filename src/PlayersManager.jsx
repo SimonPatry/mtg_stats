@@ -122,7 +122,7 @@ function RosterDeckCard({ deck, onZoom, onEdit }) {
   function handleArtZoom(e) {
     if (!onZoom) return
     e.stopPropagation()
-    onZoom(commanders, e.currentTarget.getBoundingClientRect())
+    onZoom(commanders, e.currentTarget.getBoundingClientRect(), deck.comPrint)
   }
 
   function handleEdit(e) {

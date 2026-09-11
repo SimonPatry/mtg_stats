@@ -98,7 +98,7 @@ function DeckTile({ deck, onZoom, onEdit }) {
           onClick={(e) => {
             if (!onZoom) return
             e.stopPropagation()
-            onZoom(commanders, e.currentTarget.getBoundingClientRect())
+            onZoom(commanders, e.currentTarget.getBoundingClientRect(), deck.comPrint)
           }}
           title={label}
         >

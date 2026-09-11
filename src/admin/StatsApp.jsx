@@ -62,8 +62,14 @@ function formatBracket({ bracket, bracketVariation }) {
   return `B${bracket} · ${bracketVariation}`
 }
 
-function useFloatImages(names) {
+function useFloatImages(names, prints) {
   const [srcs, setSrcs] = useState([])
+  const printKey = (names || [])
+    .map((name) => {
+      const p = prints?.[name]
+      return `${name}|${p?.set || ''}|${p?.collectorNumber || ''}|${p?.imageUrl || ''}`
+    })
+    .join('~')
 
   useEffect(() => {
     if (!names?.length) {
@@ -73,13 +79,17 @@ function useFloatImages(names) {
     let cancelled = false
 
     // Show cached/normal first for instant paint, then upgrade to large
-    Promise.all(names.map((name) => fetchCommanderImage(name, 'normal')))
+    Promise.all(
+      names.map((name) => fetchCommanderImage(name, 'normal', prints?.[name])),
+    )
       .then((urls) => {
         if (!cancelled) setSrcs(urls)
       })
       .catch(() => {})
 
-    Promise.all(names.map((name) => fetchCommanderImage(name, 'large')))
+    Promise.all(
+      names.map((name) => fetchCommanderImage(name, 'large', prints?.[name])),
+    )
       .then((urls) => {
         if (!cancelled) setSrcs(urls)
       })
@@ -88,13 +98,13 @@ function useFloatImages(names) {
     return () => {
       cancelled = true
     }
-  }, [names])
+  }, [names, printKey])
 
   return srcs
 }
 
-function CardFloat({ names, origin, onClose }) {
-  const srcs = useFloatImages(names)
+function CardFloat({ names, prints, origin, onClose }) {
+  const srcs = useFloatImages(names, prints)
   const [grown, setGrown] = useState(false)
 
   useEffect(() => {
@@ -171,16 +181,32 @@ function CardFloat({ names, origin, onClose }) {
   )
 }
 
-function CommanderImage({ name, size = 'normal', className = '', onZoom }) {
+function CommanderImage({
+  name,
+  size = 'normal',
+  className = '',
+  onZoom,
+  printing = null,
+  zoomNames,
+  prints,
+}) {
   const [src, setSrc] = useState(null)
   const [failed, setFailed] = useState(false)
+  const printKey = `${printing?.set || ''}|${printing?.collectorNumber || ''}|${printing?.imageUrl || ''}`
 
   useEffect(() => {
     let cancelled = false
     setSrc(null)
     setFailed(false)
 
-    fetchCommanderImage(name, size)
+    if (printing?.imageUrl) {
+      setSrc(printing.imageUrl)
+      return () => {
+        cancelled = true
+      }
+    }
+
+    fetchCommanderImage(name, size, printing)
       .then((url) => {
         if (!cancelled) setSrc(url)
       })
@@ -191,12 +217,12 @@ function CommanderImage({ name, size = 'normal', className = '', onZoom }) {
     return () => {
       cancelled = true
     }
-  }, [name, size])
+  }, [name, size, printKey])
 
   function handleClick(e) {
     if (!onZoom) return
     e.stopPropagation()
-    onZoom([name], e.currentTarget.getBoundingClientRect())
+    onZoom(zoomNames || [name], e.currentTarget.getBoundingClientRect(), prints)
   }
 
   if (failed) {
@@ -233,11 +259,22 @@ function DeckCard({ deck, onZoom, onDetail }) {
         className="deck-card-art zoomable"
         title="Agrandir"
         onClick={(e) =>
-          onZoom?.(deck.commanders, e.currentTarget.getBoundingClientRect())
+          onZoom?.(
+            deck.commanders,
+            e.currentTarget.getBoundingClientRect(),
+            deck.comPrint,
+          )
         }
       >
         {deck.commanders.map((name) => (
-          <CommanderImage key={name} name={name} onZoom={onZoom} />
+          <CommanderImage
+            key={name}
+            name={name}
+            printing={deck.comPrint?.[name]}
+            prints={deck.comPrint}
+            zoomNames={deck.commanders}
+            onZoom={onZoom}
+          />
         ))}
       </div>
 
@@ -337,12 +374,21 @@ function GameRow({ game, users, decks, onZoom, onDetails, onDelete }) {
             className={`game-com-thumb ${deck.result}`}
             title={`${deckLabel(deck)} · ${deck.player} · ${deck.result}${isLastDeck(game, deck) ? ' · last' : ''}`}
             onClick={(e) =>
-              onZoom?.(deck.commanders, e.currentTarget.getBoundingClientRect())
+              onZoom?.(
+                deck.commanders,
+                e.currentTarget.getBoundingClientRect(),
+                deck.comPrint,
+              )
             }
           >
             <div className="game-com-art">
               {deck.commanders.map((name) => (
-                <CommanderImage key={name} name={name} size="small" />
+                <CommanderImage
+                  key={name}
+                  name={name}
+                  size="small"
+                  printing={deck.comPrint?.[name]}
+                />
               ))}
             </div>
             <div className="game-com-caption">
@@ -1348,9 +1394,10 @@ function StatsApp({ mode = 'admin', onBackToForge, embedded = false, initialView
     setDecks(freshDecks)
   }
 
-  function handleZoom(names, origin) {
+  function handleZoom(names, origin, prints) {
     setCardFloat({
       names,
+      prints,
       origin: {
         left: origin.left,
         top: origin.top,
@@ -1392,8 +1439,11 @@ function StatsApp({ mode = 'admin', onBackToForge, embedded = false, initialView
       )}
       {cardFloat && (
         <CardFloat
-          key={cardFloat.names.join('|')}
+          key={`${cardFloat.names.join('|')}~${Object.entries(cardFloat.prints || {})
+            .map(([n, p]) => `${n}|${p?.set || ''}|${p?.collectorNumber || ''}`)
+            .join('~')}`}
           names={cardFloat.names}
+          prints={cardFloat.prints}
           origin={cardFloat.origin}
           onClose={() => setCardFloat(null)}
         />
