@@ -11,6 +11,8 @@ function formatReleaseDate(iso) {
 export default function CardPrintingsModal({
   cardName,
   selectedScryfallId,
+  selectedSet = '',
+  selectedCollectorNumber = '',
   onSelect,
   onClose,
 }) {
@@ -90,7 +92,11 @@ export default function CardPrintingsModal({
         {!loading && !error && printings.length > 0 && (
           <div className="printings-grid">
             {printings.map((printing) => {
-              const isSelected = printing.id === selectedScryfallId
+              const samePrint =
+                selectedSet
+                && String(printing.setCode).toLowerCase() === String(selectedSet).toLowerCase()
+                && String(printing.collectorNumber) === String(selectedCollectorNumber)
+              const isSelected = printing.id === selectedScryfallId || samePrint
               return (
                 <button
                   key={printing.id}

@@ -176,10 +176,12 @@ CREATE TABLE IF NOT EXISTS slider_sections (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS slider_cards (
-  id         CHAR(36)     NOT NULL PRIMARY KEY,
-  section_id CHAR(36)     NOT NULL,
-  name       VARCHAR(200) NOT NULL,
-  position   INT          NOT NULL,
+  id               CHAR(36)     NOT NULL PRIMARY KEY,
+  section_id       CHAR(36)     NOT NULL,
+  name             VARCHAR(200) NOT NULL,
+  set_code         VARCHAR(10)  NOT NULL DEFAULT '',
+  collector_number VARCHAR(20)  NOT NULL DEFAULT '',
+  position         INT          NOT NULL,
   CONSTRAINT fk_slider_cards_section FOREIGN KEY (section_id) REFERENCES slider_sections(id) ON DELETE CASCADE,
   KEY idx_slider_cards_section (section_id, position)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

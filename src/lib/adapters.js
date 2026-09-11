@@ -32,6 +32,19 @@ export const userToApi = (user) => ({
 const commanderNames = (deck) =>
   (deck.commanders ?? []).map((c) => (typeof c === 'string' ? c : c.name))
 
+/** Reconstruit comPrint depuis les impressions stockées en base. */
+function comPrintFromApi(commanders) {
+  const print = {}
+  for (const c of commanders ?? []) {
+    if (typeof c === 'string') continue
+    const set = c.set_code || ''
+    const collectorNumber = c.collector_number || ''
+    if (!set && !collectorNumber) continue
+    print[c.name] = { set, collectorNumber, imageUrl: '' }
+  }
+  return Object.keys(print).length > 0 ? print : undefined
+}
+
 /**
  * Une lignée devient N lignes historiques, une par version, chaînées entre
  * elles. Seule la dernière est « active » — c'est la convention qu'appliquait
@@ -43,6 +56,7 @@ export function decksFromApi(decks) {
     const versions = (deck.versions ?? []).slice()
       .sort((a, b) => a.version_number - b.version_number)
     const commanders = commanderNames(deck)
+    const comPrint = comPrintFromApi(deck.commanders)
 
     if (versions.length === 0) {
       rows.push({
@@ -57,6 +71,7 @@ export function decksFromApi(decks) {
         createdAt: deck.created_on ?? null,
         lineageId: deck.id,
         tags: deck.tags ?? [],
+        ...(comPrint ? { comPrint } : {}),
       })
       continue
     }
@@ -80,6 +95,7 @@ export function decksFromApi(decks) {
         versionNumber: version.version_number,
         cause: version.cause,
         tags: deck.tags ?? [],
+        ...(comPrint ? { comPrint } : {}),
       })
     })
   }

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { formatBracketLine, formatCommanders, getDeckChainHistory } from './playersMapping'
+import { formatBracketLine, formatCommanders, formatComPrint, formatComPrintLabel, getDeckChainHistory } from './playersMapping'
 import Select from './Select'
 import { api } from './lib/api.js'
 import ColorPicker from './admin/fields/ColorPicker.jsx'
 import TagPicker from './admin/fields/TagPicker.jsx'
 import SliderEditor from './admin/fields/SliderEditor.jsx'
+import CardPrintingsModal from './CardPrintingsModal.jsx'
 
 const BRACKET_OPTIONS = [1, 2, 3, 4].flatMap((b) => [
   { value: String(b), label: `B${b}` },
@@ -63,6 +64,8 @@ export default function DeckEditModal({
   const [colors, setColors] = useState([])
   const [tagIds, setTagIds] = useState([])
   const [slider, setSlider] = useState([])
+  const [commanders, setCommanders] = useState([])
+  const [printingsCard, setPrintingsCard] = useState(null) // commander name
 
   useEffect(() => {
     if (!deck.lineageId) return undefined
@@ -81,6 +84,17 @@ export default function DeckEditModal({
       setColors(row.colors ?? [])
       setTagIds(row.tag_ids ?? [])
       setSlider(row.slider ?? [])
+      setCommanders(
+        (row.commanders ?? []).map((c) => (
+          typeof c === 'string'
+            ? { name: c, set_code: '', collector_number: '' }
+            : {
+                name: c.name,
+                set_code: c.set_code || '',
+                collector_number: c.collector_number || '',
+              }
+        )),
+      )
     }).catch(() => { /* la face vitrine reste fermée, l'édition du bracket marche */ })
 
     return () => { cancelled = true }
@@ -131,7 +145,9 @@ export default function DeckEditModal({
           active: lineage.active !== false,
           archived,
           created_on: lineage.created_on,
-          commanders: lineage.commanders,
+          commanders: commanders.length
+            ? commanders
+            : lineage.commanders,
           colors,
           tag_ids: tagIds,
           slider: showcase && !archived ? slider : [],
@@ -179,6 +195,32 @@ export default function DeckEditModal({
               Niveau actuel :{' '}
               <strong>{formatBracketLine(deck.bracket, deck.bracketVariation)}</strong>
             </p>
+
+            {commanders.length > 0 && (
+              <div className="deck-edit-commander-prints">
+                {commanders.map((commander) => {
+                  const printLabel = formatComPrintLabel({
+                    set: commander.set_code,
+                    collectorNumber: commander.collector_number,
+                  })
+                  return (
+                    <div className="deck-edit-commander-print" key={commander.name}>
+                      <span className="deck-edit-commander-print__name">{commander.name}</span>
+                      <span className="deck-edit-commander-print__meta">
+                        {printLabel || 'Version Scryfall par défaut'}
+                      </span>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-tiny"
+                        onClick={() => setPrintingsCard(commander.name)}
+                      >
+                        {printLabel ? 'Changer version' : 'Versions'}
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
 
             <label className="form-field">
               <span>URL du deck</span>
@@ -380,6 +422,34 @@ export default function DeckEditModal({
           </button>
         </div>
       </form>
+
+      {printingsCard ? (
+        <CardPrintingsModal
+          cardName={printingsCard}
+          selectedSet={
+            commanders.find((c) => c.name === printingsCard)?.set_code || ''
+          }
+          selectedCollectorNumber={
+            commanders.find((c) => c.name === printingsCard)?.collector_number || ''
+          }
+          onSelect={(printing) => {
+            const formatted = formatComPrint(printing)
+            setCommanders((prev) =>
+              prev.map((c) =>
+                c.name === printingsCard
+                  ? {
+                      ...c,
+                      set_code: formatted.set || '',
+                      collector_number: formatted.collectorNumber || '',
+                    }
+                  : c,
+              ),
+            )
+            setPrintingsCard(null)
+          }}
+          onClose={() => setPrintingsCard(null)}
+        />
+      ) : null}
     </div>
   )
 }

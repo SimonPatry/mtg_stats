@@ -5141,6 +5141,52 @@ body.admin-theme .member-shell {
   margin-bottom: 8px;
 }
 
+.slider-card-line__main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.slider-card-print {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-soft);
+  white-space: nowrap;
+}
+
+.deck-edit-commander-prints {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin: 0 0 1rem;
+}
+
+.deck-edit-commander-print {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.deck-edit-commander-print__name {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.deck-edit-commander-print__meta {
+  font-size: 0.78rem;
+  color: var(--ink-dim);
+}
+
 /* ─── Champs de saisie des écrans repris d'edh-forge ──────────────────────
    Le projet ne stylait les champs que sous `.form-field` ; ceux-ci, écrits
    sans cette enveloppe, tombaient sur l'apparence par défaut du navigateur —

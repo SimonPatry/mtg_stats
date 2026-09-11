@@ -32,7 +32,8 @@ const DECK_SELECT = `
 `
 
 /** Forme rendue par l'API pour un deck, vitrine comprise. */
-function shapeDeck(row) {
+function shapeDeck(row, commanders = null) {
+  const names = commandersOf(row)
   return {
     id: row.id,
     user_id: row.user_id,
@@ -43,7 +44,12 @@ function shapeDeck(row) {
     active: Boolean(row.active),
     archived: Boolean(row.archived),
     created_on: row.created_on,
-    commanders: commandersOf(row),
+    // Objets { name, set_code, collector_number } quand fournis ; sinon noms seuls.
+    commanders: commanders ?? names.map((name) => ({
+      name,
+      set_code: '',
+      collector_number: '',
+    })),
     tags: row.tags ? row.tags.split(SEP) : [],
     current_version: row.version_id
       ? {
@@ -58,6 +64,28 @@ function shapeDeck(row) {
   }
 }
 
+async function loadCommandersByDeck(cx, deckIds) {
+  const byDeck = new Map()
+  if (!deckIds.length) return byDeck
+  const placeholders = deckIds.map(() => '?').join(',')
+  const [rows] = await cx.query(
+    `SELECT deck_id, name, set_code, collector_number
+       FROM deck_commanders
+      WHERE deck_id IN (${placeholders})
+      ORDER BY deck_id, position`,
+    deckIds,
+  )
+  for (const row of rows) {
+    if (!byDeck.has(row.deck_id)) byDeck.set(row.deck_id, [])
+    byDeck.get(row.deck_id).push({
+      name: row.name,
+      set_code: row.set_code || '',
+      collector_number: row.collector_number || '',
+    })
+  }
+  return byDeck
+}
+
 export async function listDecks(cx, {
   activeOnly = false,
   withVersions = false,
@@ -69,7 +97,8 @@ export async function listDecks(cx, {
   const clause = where.length ? `WHERE ${where.join(' AND ')}` : ''
   const [rows] = await cx.query(
     `${DECK_SELECT} ${clause} ORDER BY u.name, d.created_on, d.id`)
-  const decks = rows.map(shapeDeck)
+  const commandersByDeck = await loadCommandersByDeck(cx, rows.map((r) => r.id))
+  const decks = rows.map((row) => shapeDeck(row, commandersByDeck.get(row.id) ?? null))
   if (!withVersions) return decks
 
   // Toutes les versions d'un coup plutôt qu'une requête par deck : la liste
@@ -121,8 +150,16 @@ async function readSlider(cx, deckId) {
   const out = []
   for (const section of sections) {
     const [cards] = await cx.query(
-      'SELECT name FROM slider_cards WHERE section_id = ? ORDER BY position', [section.id])
-    out.push({ title: section.title, cards: cards.map((c) => ({ name: c.name })) })
+      `SELECT name, set_code, collector_number
+         FROM slider_cards WHERE section_id = ? ORDER BY position`, [section.id])
+    out.push({
+      title: section.title,
+      cards: cards.map((c) => ({
+        name: c.name,
+        set_code: c.set_code || '',
+        collector_number: c.collector_number || '',
+      })),
+    })
   }
   return out
 }
@@ -134,7 +171,9 @@ async function writeRelations(cx, deckId, input) {
     await cx.execute(
       `INSERT INTO deck_commanders (deck_id, position, name, set_code, collector_number)
        VALUES (?, ?, ?, ?, ?)`,
-      [deckId, index + 1, commander.name, commander.set_code ?? '', commander.collector_number ?? ''])
+      [deckId, index + 1, commander.name,
+       String(commander.set_code ?? '').toLowerCase(),
+       commander.collector_number ?? ''])
   }
 
   await cx.execute('DELETE FROM deck_colors WHERE deck_id = ?', [deckId])
@@ -156,8 +195,16 @@ async function writeRelations(cx, deckId, input) {
       [sectionId, deckId, section.title, si])
     for (const [ci, card] of section.cards.entries()) {
       await cx.execute(
-        'INSERT INTO slider_cards (id, section_id, name, position) VALUES (?, ?, ?, ?)',
-        [randomUUID(), sectionId, card.name, ci])
+        `INSERT INTO slider_cards (id, section_id, name, set_code, collector_number, position)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          randomUUID(),
+          sectionId,
+          card.name,
+          String(card.set_code ?? '').toLowerCase(),
+          card.collector_number ?? '',
+          ci,
+        ])
     }
   }
 }

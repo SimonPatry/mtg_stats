@@ -2,12 +2,11 @@ import { useCardImage } from '../hooks/useCardImage.js'
 import { previewHandlers } from './preview-store.js'
 
 /**
- * Une carte du carrousel : résout sa propre illustration, et déclenche
- * l'aperçu au survol. Tant que l'image n'est pas là, la vignette garde sa
- * place — la page ne saute pas quand les images arrivent.
+ * Une carte du carrousel : résout sa propre illustration (impression choisie
+ * si set/collector fournis), et déclenche l'aperçu au survol.
  */
-export function CardImage({ name }) {
-  const { image, status } = useCardImage({ name })
+export function CardImage({ name, set = '', collectorNumber = '' }) {
+  const { image, status } = useCardImage({ name, set, collectorNumber })
   const card = { name, image }
 
   return (

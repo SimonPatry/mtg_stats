@@ -51,8 +51,13 @@ export function DeckCarousel({ sections }) {
             <div className="deck-slider__slide" key={section.title || i}>
               {section.title && <h3 className="deck-slider__title">{section.title}</h3>}
               <ul className="deck-slider__cards">
-                {section.cards.map((card) => (
-                  <CardImage key={card.name} name={card.name} />
+                {section.cards.map((card, i) => (
+                  <CardImage
+                    key={`${card.name}|${card.set_code || ''}|${card.collector_number || ''}|${i}`}
+                    name={card.name}
+                    set={card.set_code || ''}
+                    collectorNumber={card.collector_number || ''}
+                  />
                 ))}
               </ul>
             </div>

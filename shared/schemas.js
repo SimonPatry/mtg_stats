@@ -48,7 +48,11 @@ export const deckInput = z.object({
   tag_ids: z.array(uuid).default([]),
   slider: z.array(z.object({
     title: z.string().trim().min(1, 'Titre de section requis').max(120),
-    cards: z.array(z.object({ name: z.string().trim().min(1).max(200) })).min(1),
+    cards: z.array(z.object({
+      name: z.string().trim().min(1).max(200),
+      set_code: z.string().trim().max(10).default(''),
+      collector_number: z.string().trim().max(20).default(''),
+    })).min(1),
   })).default([]),
 })
   // Un deck de statistiques se reconnaît à ses commandants et n'a pas besoin de

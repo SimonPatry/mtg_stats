@@ -61,7 +61,14 @@ export async function saveDecks(nextDecks, previousDecks) {
     const parent = row.previousDeckId ? byId.get(row.previousDeckId) : null
     const commanders = (Array.isArray(row.com) ? row.com : [row.com])
       .filter(Boolean)
-      .map((name) => ({ name }))
+      .map((name) => {
+        const print = row.comPrint?.[name]
+        return {
+          name,
+          set_code: print?.set ?? '',
+          collector_number: print?.collectorNumber ?? '',
+        }
+      })
 
     if (parent?.lineageId) {
       // Nouvelle version d'une lignée existante.

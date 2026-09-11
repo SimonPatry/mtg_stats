@@ -47,9 +47,31 @@ export async function migrate(target = pool) {
     await runSqlFile(connection, 'schema.sql')
     await ensureUsersAccountLink(connection)
     await ensureDecksArchivedColumn(connection)
+    await ensureSliderCardsPrintColumns(connection)
     await runSqlFile(connection, 'seed.sql')
   } finally {
     await connection.end()
+  }
+}
+
+/** Bases déjà créées avant set_code / collector_number sur slider_cards. */
+async function ensureSliderCardsPrintColumns(connection) {
+  const [cols] = await connection.query(`
+    SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE()
+       AND TABLE_NAME = 'slider_cards'
+       AND COLUMN_NAME IN ('set_code', 'collector_number')
+  `)
+  const have = new Set(cols.map((c) => c.COLUMN_NAME))
+  if (!have.has('set_code')) {
+    await connection.query(
+      "ALTER TABLE slider_cards ADD COLUMN set_code VARCHAR(10) NOT NULL DEFAULT '' AFTER name",
+    )
+  }
+  if (!have.has('collector_number')) {
+    await connection.query(
+      "ALTER TABLE slider_cards ADD COLUMN collector_number VARCHAR(20) NOT NULL DEFAULT '' AFTER set_code",
+    )
   }
 }
 

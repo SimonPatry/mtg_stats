@@ -64,7 +64,7 @@ export function deckMappingMatches(a, b) {
 export function formatComPrint(printing) {
   return {
     scryfallId: printing.id,
-    set: printing.setCode,
+    set: String(printing.setCode || '').toLowerCase(),
     collectorNumber: printing.collectorNumber,
     setName: printing.setName,
     imageUrl: printing.imageUrl || '',
@@ -73,7 +73,7 @@ export function formatComPrint(printing) {
 
 export function formatComPrintLabel(print) {
   if (!print?.set) return ''
-  return `${print.set} #${print.collectorNumber}`
+  return `${String(print.set).toUpperCase()} #${print.collectorNumber}`
 }
 
 export function buildDeckEntry({

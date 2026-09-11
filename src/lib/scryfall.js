@@ -42,13 +42,15 @@ function extractImageUrl(card) {
 export async function resolveCard({ name, set = '', collectorNumber = '' }) {
   if (!name) return null
 
-  const key = cacheKey(name, set, collectorNumber)
+  const setCode = String(set || '').toLowerCase()
+  const number = String(collectorNumber || '')
+  const key = cacheKey(name, setCode, number)
   const cached = readCache(key)
   if (cached) return cached
 
   const url =
-    set && collectorNumber
-      ? `https://api.scryfall.com/cards/${encodeURIComponent(set)}/${encodeURIComponent(collectorNumber)}`
+    setCode && number
+      ? `https://api.scryfall.com/cards/${encodeURIComponent(setCode)}/${encodeURIComponent(number)}`
       : `https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(name)}`
 
   const res = await throttledFetch(url)
