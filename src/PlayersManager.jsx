@@ -70,6 +70,12 @@ function RosterAvatar({ userId, name }) {
 
 function useDeckImages(deck) {
   const commanders = asCommanderList(deck.com)
+  const printKey = commanders
+    .map((name) => {
+      const p = deck.comPrint?.[name]
+      return `${name}|${p?.set || ''}|${p?.collectorNumber || ''}|${p?.imageUrl || ''}`
+    })
+    .join('~')
   const [images, setImages] = useState(() =>
     commanders.map((name) => deck.comPrint?.[name]?.imageUrl || null),
   )
@@ -79,10 +85,10 @@ function useDeckImages(deck) {
 
     Promise.all(
       commanders.map(async (name) => {
-        const stored = deck.comPrint?.[name]?.imageUrl
-        if (stored) return stored
+        const print = deck.comPrint?.[name]
+        if (print?.imageUrl) return print.imageUrl
         try {
-          return await fetchCommanderImage(name, 'small')
+          return await fetchCommanderImage(name, 'small', print)
         } catch {
           return null
         }
@@ -94,7 +100,7 @@ function useDeckImages(deck) {
     return () => {
       cancelled = true
     }
-  }, [deck.id, deck.com, deck.comPrint])
+  }, [deck.id, printKey])
 
   return { commanders, images, isPartner: commanders.length > 1 }
 }

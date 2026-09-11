@@ -259,31 +259,36 @@ export function fetchAllPrintings(cardName) {
 /**
  * Illustration d'une carte, dans la taille demandée.
  *
- * La clé du cache est le NOM SEUL, plus le couple nom+taille comme
- * auparavant : une réponse de Scryfall contient toutes les tailles à la fois,
- * si bien que demander la même carte en « small » puis en « normal » lançait
- * deux appels pour une donnée déjà reçue. Sur le tableau de bord, où le roster
- * veut des vignettes et les parties des images moyennes, cela doublait le
- * nombre de requêtes.
+ * Clé de cache = nom, ou nom+set+collector si une impression est précisée —
+ * sinon deux versions du même commandant partageraient la mauvaise vignette.
  */
-export function fetchCommanderImage(name, size = 'normal') {
-  const known = storedImages[name]
+export function fetchCommanderImage(name, size = 'normal', print = null) {
+  const set = String(print?.set || '').toLowerCase()
+  const collector = String(print?.collectorNumber || '')
+  const key = set && collector ? `${name}|${set}|${collector}` : name
+
+  const known = storedImages[key]
   if (known) {
-    // Une taille manquante ne doit pas relancer un appel : la réponse est déjà
-    // connue, on retombe sur la plus proche.
     const url = known[size] || known.normal || known.small
     if (url) return Promise.resolve(url)
   }
 
-  if (!cardImages.has(name)) {
-    cardImages.set(name, enqueue(async () => {
+  if (!cardImages.has(key)) {
+    cardImages.set(key, enqueue(async () => {
       const headers = { Accept: 'application/json' }
-      const exactUrl = `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`
-      let res = await fetch(exactUrl, { headers })
-
-      if (res.status === 404) {
-        const fuzzyUrl = `https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(name)}`
-        res = await fetch(fuzzyUrl, { headers })
+      let res
+      if (set && collector) {
+        res = await fetch(
+          `https://api.scryfall.com/cards/${encodeURIComponent(set)}/${encodeURIComponent(collector)}`,
+          { headers },
+        )
+      } else {
+        const exactUrl = `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`
+        res = await fetch(exactUrl, { headers })
+        if (res.status === 404) {
+          const fuzzyUrl = `https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(name)}`
+          res = await fetch(fuzzyUrl, { headers })
+        }
       }
 
       if (!res.ok) throw new Error(`Scryfall: ${name}`)
@@ -295,17 +300,15 @@ export function fetchCommanderImage(name, size = 'normal') {
         large: pickImageUrl(card, 'large'),
       }
       if (!urls.normal && !urls.small) throw new Error(`No image: ${name}`)
-      rememberImages(name, urls)
+      rememberImages(key, urls)
       return urls
     }).catch((err) => {
-      // Un échec ne doit pas se figer dans le cache : la prochaine visite
-      // retentera au lieu de rendre un trou définitif.
-      cardImages.delete(name)
+      cardImages.delete(key)
       throw err
     }))
   }
 
-  return cardImages.get(name).then((urls) => {
+  return cardImages.get(key).then((urls) => {
     const url = urls[size] || urls.normal || urls.small
     if (!url) throw new Error(`No image: ${name}`)
     return url
