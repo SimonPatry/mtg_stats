@@ -1227,6 +1227,32 @@
   color: var(--accent-soft);
 }
 
+.tag-filter__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.tag-filter__clear {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ink-dim);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+}
+
+.tag-filter__clear:hover,
+.tag-filter__clear:focus-visible {
+  color: var(--accent);
+}
+
 .tag-filter__row {
   display: flex;
   flex-wrap: wrap;

@@ -11,6 +11,7 @@ export default function TagFilter({
   if (!tags.length) return null
 
   const selected = value.map(String)
+  const hasSelection = selected.length > 0
 
   function toggle(tag) {
     const key = String(tag)
@@ -23,7 +24,20 @@ export default function TagFilter({
 
   return (
     <div className="tag-filter">
-      {label ? <span className="tag-filter__label">{label}</span> : null}
+      {(label || hasSelection) ? (
+        <div className="tag-filter__head">
+          {label ? <span className="tag-filter__label">{label}</span> : null}
+          {hasSelection ? (
+            <button
+              type="button"
+              className="tag-filter__clear"
+              onClick={() => onChange([])}
+            >
+              Retirer les tags
+            </button>
+          ) : null}
+        </div>
+      ) : null}
       <div className="tag-filter__row" role="group" aria-label={label || 'Tags'}>
         {tags.map((tag) => {
           const on = selected.includes(String(tag))

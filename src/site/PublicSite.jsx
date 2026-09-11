@@ -1,8 +1,9 @@
-import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo } from 'react'
 import { useLocation, useNavigate, Navigate } from 'react-router-dom'
 import { useDecks } from '../hooks/useDecks.js'
 import { useAuth } from '../hooks/useAuth.js'
 import { useSiteMenu } from '../hooks/useSiteMenu.js'
+import { useVitrineTags } from '../hooks/useVitrineTags.js'
 import {
   ROUTES,
   memberViewFromPath,
@@ -29,7 +30,7 @@ export function PublicSite() {
   const { decks, loading, error, stale, savedAt, reload } = useDecks()
   const { isMember, authenticated } = useAuth()
   const { menuOpen, toggleMenu, closeMenu } = useSiteMenu()
-  const [selectedTags, setSelectedTags] = useState([])
+  const { selectedTags, setSelectedTags } = useVitrineTags()
 
   const memberView = memberViewFromPath(pathname)
   const showMember = Boolean(isMember && memberView)
@@ -80,10 +81,7 @@ export function PublicSite() {
   function openDeck(deckId) {
     closeMenu()
     const id = deckAnchorId(deckId)
-    // Si un filtre tags masque la cible, on l’enlève pour que la bande existe.
-    if (selectedTags.length) setSelectedTags([])
     navigate({ pathname: ROUTES.vitrine, hash: id }, { preventScrollReset: true })
-    // Scroll immédiat si la bande est déjà là (même page).
     scrollToDeckAnchorWhenReady(deckId)
   }
 
