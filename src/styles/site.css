@@ -1292,6 +1292,93 @@
   color: var(--accent-soft);
 }
 
+.vitrine-tag-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.vitrine-tag-filter__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.vitrine-tag-filter__show-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ink-dim);
+  cursor: pointer;
+  user-select: none;
+}
+
+.vitrine-tag-filter__show-all input {
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.vitrine-tag-filter__search {
+  position: relative;
+}
+
+.vitrine-tag-filter__suggest {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 0.25rem);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 0.25rem 0;
+  list-style: none;
+  max-height: 12rem;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--ink) 12%, transparent);
+}
+
+.vitrine-tag-filter__suggest-empty {
+  padding: 0.55rem 0.75rem;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--ink-dim);
+}
+
+.vitrine-tag-filter__suggest-item {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0.45rem 0.75rem;
+  border: 0;
+  background: none;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.vitrine-tag-filter__suggest-item:hover,
+.vitrine-tag-filter__suggest-item.is-active {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent-soft);
+}
+
+/* Sélectionnés : vert franc (toujours visibles hors mode « tous »). */
+.deck-menu__tags .tag-filter__chip.is-on {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  border-color: var(--accent);
+  color: var(--accent-soft);
+}
+
 body.admin-theme .tag-filter {
   padding: 0.45rem 0.6rem;
   background: var(--surface-2);

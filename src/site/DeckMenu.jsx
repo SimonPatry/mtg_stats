@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import TagFilter, { matchesSelectedTags } from '../components/TagFilter.jsx'
+import { matchesSelectedTags } from '../components/TagFilter.jsx'
+import VitrineTagFilter from '../components/VitrineTagFilter.jsx'
 
 /**
  * Tiroir latéral (overlay) : filtres de la vitrine.
@@ -90,11 +91,10 @@ export function DeckMenu({
             <div className="deck-menu__section deck-menu__section--filter">
               <p className="deck-menu__section-label">Tags</p>
               <div className="deck-menu__tags">
-                <TagFilter
+                <VitrineTagFilter
                   tags={tagOptions}
                   value={selectedTags}
                   onChange={onSelectedTags}
-                  label=""
                 />
               </div>
             </div>
