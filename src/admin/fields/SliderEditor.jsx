@@ -36,6 +36,7 @@ export default function SliderEditor({ sections, onChange, errors }) {
       name: printTarget.name || printing.name,
       set_code: formatted.set || '',
       collector_number: formatted.collectorNumber || '',
+      image_url: formatted.imageUrl || '',
     })
     setPrintTarget(null)
   }
@@ -85,6 +86,7 @@ export default function SliderEditor({ sections, onChange, errors }) {
                         // Changer le nom invalide l’ancienne impression.
                         set_code: name === card.name ? (card.set_code || '') : '',
                         collector_number: name === card.name ? (card.collector_number || '') : '',
+                        image_url: name === card.name ? (card.image_url || '') : '',
                       })
                     }
                   />
@@ -122,7 +124,7 @@ export default function SliderEditor({ sections, onChange, errors }) {
             className="btn btn-ghost btn-tiny"
             onClick={() => replace(si, {
               ...section,
-              cards: [...section.cards, { name: '', set_code: '', collector_number: '' }],
+              cards: [...section.cards, { name: '', set_code: '', collector_number: '', image_url: '' }],
             })}
           >
             + Ajouter une carte
@@ -137,7 +139,7 @@ export default function SliderEditor({ sections, onChange, errors }) {
         className="btn btn-ghost"
         onClick={() => onChange([
           ...sections,
-          { title: '', cards: [{ name: '', set_code: '', collector_number: '' }] },
+          { title: '', cards: [{ name: '', set_code: '', collector_number: '', image_url: '' }] },
         ])}
       >
         + Ajouter une section

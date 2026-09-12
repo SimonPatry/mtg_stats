@@ -30,6 +30,7 @@ export const commanderInput = z.object({
   name: z.string().trim().min(1, 'Nom de commandant requis').max(200),
   set_code: z.string().trim().max(10).default(''),
   collector_number: z.string().trim().max(20).default(''),
+  image_url: z.string().trim().max(500).default(''),
 })
 
 export const deckInput = z.object({
@@ -52,6 +53,7 @@ export const deckInput = z.object({
       name: z.string().trim().min(1).max(200),
       set_code: z.string().trim().max(10).default(''),
       collector_number: z.string().trim().max(20).default(''),
+      image_url: z.string().trim().max(500).default(''),
     })).min(1),
   })).default([]),
 })

@@ -39,8 +39,9 @@ function comPrintFromApi(commanders) {
     if (typeof c === 'string') continue
     const set = c.set_code || ''
     const collectorNumber = c.collector_number || ''
-    if (!set && !collectorNumber) continue
-    print[c.name] = { set, collectorNumber, imageUrl: '' }
+    const imageUrl = c.image_url || ''
+    if (!set && !collectorNumber && !imageUrl) continue
+    print[c.name] = { set, collectorNumber, imageUrl }
   }
   return Object.keys(print).length > 0 ? print : undefined
 }

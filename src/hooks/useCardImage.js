@@ -1,20 +1,46 @@
 import { useEffect, useState } from 'react'
-import { resolveCard } from '../lib/scryfall.js'
+import { peekCard, resolveCard } from '../lib/scryfall.js'
 
 /**
- * Résout l'illustration d'une carte. Rend { image, uri, status } où status
- * vaut 'loading' | 'ready' | 'missing'.
+ * Résout l'illustration d'une carte. Rend { image, uri, status }.
  *
- * Chaque carte résout la sienne : la file d'attente de lib/scryfall.js se
- * charge d'espacer les appels, et le cache évite de les refaire.
+ * Si `imageUrl` est fourni (URL déjà en base), aucun appel Scryfall.
+ * Sinon cache local, puis API.
  */
-export function useCardImage({ name, set = '', collectorNumber = '' }) {
-  const [state, setState] = useState({ image: null, uri: null, status: 'loading' })
+export function useCardImage({
+  name,
+  set = '',
+  collectorNumber = '',
+  imageUrl = '',
+}) {
+  const stored = String(imageUrl || '').trim()
+
+  const [state, setState] = useState(() => {
+    if (stored) {
+      return { image: stored, uri: null, status: 'ready' }
+    }
+    const cached = peekCard(name, set, collectorNumber)
+    if (cached?.image) {
+      return { image: cached.image, uri: cached.uri, status: 'ready' }
+    }
+    return { image: null, uri: null, status: name ? 'loading' : 'missing' }
+  })
 
   useEffect(() => {
     let cancelled = false
     if (!name) {
       setState({ image: null, uri: null, status: 'missing' })
+      return undefined
+    }
+
+    if (stored) {
+      setState({ image: stored, uri: null, status: 'ready' })
+      return undefined
+    }
+
+    const cached = peekCard(name, set, collectorNumber)
+    if (cached?.image) {
+      setState({ image: cached.image, uri: cached.uri, status: 'ready' })
       return undefined
     }
 
@@ -25,15 +51,17 @@ export function useCardImage({ name, set = '', collectorNumber = '' }) {
         setState(
           card?.image
             ? { image: card.image, uri: card.uri, status: 'ready' }
-            : { image: null, uri: null, status: 'missing' }
+            : { image: null, uri: null, status: 'missing' },
         )
       })
       .catch(() => {
         if (!cancelled) setState({ image: null, uri: null, status: 'missing' })
       })
 
-    return () => { cancelled = true }
-  }, [name, set, collectorNumber])
+    return () => {
+      cancelled = true
+    }
+  }, [name, set, collectorNumber, stored])
 
   return state
 }

@@ -2,11 +2,21 @@ import { useCardImage } from '../hooks/useCardImage.js'
 import { previewHandlers } from './preview-store.js'
 
 /**
- * Une carte du carrousel : résout sa propre illustration (impression choisie
- * si set/collector fournis), et déclenche l'aperçu au survol.
+ * Une carte du carrousel : utilise `image_url` en base si présent, sinon
+ * résout via Scryfall (cache / collection).
  */
-export function CardImage({ name, set = '', collectorNumber = '' }) {
-  const { image, status } = useCardImage({ name, set, collectorNumber })
+export function CardImage({
+  name,
+  set = '',
+  collectorNumber = '',
+  imageUrl = '',
+}) {
+  const { image, status } = useCardImage({
+    name,
+    set,
+    collectorNumber,
+    imageUrl,
+  })
   const card = { name, image }
 
   return (

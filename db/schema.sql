@@ -116,6 +116,9 @@ CREATE TABLE IF NOT EXISTS deck_commanders (
   name             VARCHAR(200) NOT NULL,
   set_code         VARCHAR(10)  NOT NULL DEFAULT '',
   collector_number VARCHAR(20)  NOT NULL DEFAULT '',
+  -- URL CDN Scryfall (cards.scryfall.io/…) figée à la sélection d’impression.
+  -- La vitrine l’affiche sans rappeler l’API ; vide = decks pas encore re-sauvegardés.
+  image_url        VARCHAR(500) NOT NULL DEFAULT '',
   PRIMARY KEY (deck_id, position),
   CONSTRAINT fk_deck_commanders_deck FOREIGN KEY (deck_id) REFERENCES decks(id) ON DELETE CASCADE,
   KEY idx_deck_commanders_name (name)
@@ -181,6 +184,7 @@ CREATE TABLE IF NOT EXISTS slider_cards (
   name             VARCHAR(200) NOT NULL,
   set_code         VARCHAR(10)  NOT NULL DEFAULT '',
   collector_number VARCHAR(20)  NOT NULL DEFAULT '',
+  image_url        VARCHAR(500) NOT NULL DEFAULT '',
   position         INT          NOT NULL,
   CONSTRAINT fk_slider_cards_section FOREIGN KEY (section_id) REFERENCES slider_sections(id) ON DELETE CASCADE,
   KEY idx_slider_cards_section (section_id, position)

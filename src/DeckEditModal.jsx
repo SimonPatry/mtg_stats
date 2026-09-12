@@ -87,11 +87,12 @@ export default function DeckEditModal({
       setCommanders(
         (row.commanders ?? []).map((c) => (
           typeof c === 'string'
-            ? { name: c, set_code: '', collector_number: '' }
+            ? { name: c, set_code: '', collector_number: '', image_url: '' }
             : {
                 name: c.name,
                 set_code: c.set_code || '',
                 collector_number: c.collector_number || '',
+                image_url: c.image_url || '',
               }
         )),
       )
@@ -441,6 +442,7 @@ export default function DeckEditModal({
                       ...c,
                       set_code: formatted.set || '',
                       collector_number: formatted.collectorNumber || '',
+                      image_url: formatted.imageUrl || '',
                     }
                   : c,
               ),

@@ -67,6 +67,7 @@ export async function saveDecks(nextDecks, previousDecks) {
           name,
           set_code: print?.set ?? '',
           collector_number: print?.collectorNumber ?? '',
+          image_url: print?.imageUrl ?? '',
         }
       })
 

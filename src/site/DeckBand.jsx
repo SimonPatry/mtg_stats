@@ -27,6 +27,7 @@ function CommanderArt({ deck }) {
     name: deck.commander,
     set: deck.set_code,
     collectorNumber: deck.collector_number,
+    imageUrl: deck.image_url,
   })
 
   // Tant que Scryfall n'a pas répondu, un cadre vide occupe exactement la place

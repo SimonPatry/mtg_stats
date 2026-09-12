@@ -5,12 +5,8 @@ import { hidePreview } from '../components/preview-store.js'
 /**
  * Carrousel de sections : une section = une diapositive.
  *
- * Le défilement est natif (scroll-snap CSS) et non plus calculé en
- * JavaScript. L'ancienne version mesurait la largeur de chaque diapositive
- * après insertion dans le DOM, calculait un translateX, et recalculait tout
- * à chaque redimensionnement — environ 80 lignes et deux écouteurs globaux.
- * Ici le navigateur fait le travail : on se contente de lire la position
- * pour allumer le bon point, et de la pousser quand on clique une flèche.
+ * Le défilement est natif (scroll-snap CSS). Les illustrations sont
+ * résolues via lib/scryfall (coalescence /collection sur le même tick).
  */
 export function DeckCarousel({ sections }) {
   const track = useRef(null)
@@ -24,8 +20,6 @@ export function DeckCarousel({ sections }) {
     el.scrollTo({ left: next * el.clientWidth, behavior: 'smooth' })
   }
 
-  // La position réelle du conteneur fait autorité : molette, geste tactile et
-  // clic sur une flèche passent tous par là, donc les points restent justes.
   function handleScroll(event) {
     const el = event.currentTarget
     const current = Math.round(el.scrollLeft / el.clientWidth)
@@ -57,6 +51,7 @@ export function DeckCarousel({ sections }) {
                     name={card.name}
                     set={card.set_code || ''}
                     collectorNumber={card.collector_number || ''}
+                    imageUrl={card.image_url || ''}
                   />
                 ))}
               </ul>

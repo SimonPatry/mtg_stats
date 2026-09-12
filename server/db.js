@@ -48,9 +48,34 @@ export async function migrate(target = pool) {
     await ensureUsersAccountLink(connection)
     await ensureDecksArchivedColumn(connection)
     await ensureSliderCardsPrintColumns(connection)
+    await ensureCardImageUrlColumns(connection)
     await runSqlFile(connection, 'seed.sql')
   } finally {
     await connection.end()
+  }
+}
+
+/**
+ * Bases déjà créées avant image_url sur deck_commanders / slider_cards.
+ * Sans cette colonne, la vitrine rappelle Scryfall à chaque visite.
+ */
+async function ensureCardImageUrlColumns(connection) {
+  for (const table of ['deck_commanders', 'slider_cards']) {
+    const [cols] = await connection.query(
+      `
+      SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+       WHERE TABLE_SCHEMA = DATABASE()
+         AND TABLE_NAME = ?
+         AND COLUMN_NAME = 'image_url'
+    `,
+      [table],
+    )
+    if (cols.length > 0) continue
+    const after = table === 'slider_cards' ? 'collector_number' : 'collector_number'
+    await connection.query(
+      `ALTER TABLE ${table}
+         ADD COLUMN image_url VARCHAR(500) NOT NULL DEFAULT '' AFTER ${after}`,
+    )
   }
 }
 

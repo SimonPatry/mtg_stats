@@ -44,11 +44,12 @@ function shapeDeck(row, commanders = null) {
     active: Boolean(row.active),
     archived: Boolean(row.archived),
     created_on: row.created_on,
-    // Objets { name, set_code, collector_number } quand fournis ; sinon noms seuls.
+    // Objets { name, set_code, collector_number, image_url } quand fournis ; sinon noms seuls.
     commanders: commanders ?? names.map((name) => ({
       name,
       set_code: '',
       collector_number: '',
+      image_url: '',
     })),
     tags: row.tags ? row.tags.split(SEP) : [],
     current_version: row.version_id
@@ -69,7 +70,7 @@ async function loadCommandersByDeck(cx, deckIds) {
   if (!deckIds.length) return byDeck
   const placeholders = deckIds.map(() => '?').join(',')
   const [rows] = await cx.query(
-    `SELECT deck_id, name, set_code, collector_number
+    `SELECT deck_id, name, set_code, collector_number, image_url
        FROM deck_commanders
       WHERE deck_id IN (${placeholders})
       ORDER BY deck_id, position`,
@@ -81,6 +82,7 @@ async function loadCommandersByDeck(cx, deckIds) {
       name: row.name,
       set_code: row.set_code || '',
       collector_number: row.collector_number || '',
+      image_url: row.image_url || '',
     })
   }
   return byDeck
@@ -124,7 +126,7 @@ export async function getDeck(cx, id) {
     `SELECT id, version_number, bracket, bracket_variation, deck_url, cause, started_on
        FROM deck_versions WHERE deck_id = ? ORDER BY version_number`, [id])
   const [commanders] = await cx.query(
-    `SELECT name, set_code, collector_number FROM deck_commanders
+    `SELECT name, set_code, collector_number, image_url FROM deck_commanders
       WHERE deck_id = ? ORDER BY position`, [id])
   const [colors] = await cx.query(
     `SELECT c.code FROM deck_colors dc JOIN colors c ON c.code = dc.color_code
@@ -150,7 +152,7 @@ async function readSlider(cx, deckId) {
   const out = []
   for (const section of sections) {
     const [cards] = await cx.query(
-      `SELECT name, set_code, collector_number
+      `SELECT name, set_code, collector_number, image_url
          FROM slider_cards WHERE section_id = ? ORDER BY position`, [section.id])
     out.push({
       title: section.title,
@@ -158,6 +160,7 @@ async function readSlider(cx, deckId) {
         name: c.name,
         set_code: c.set_code || '',
         collector_number: c.collector_number || '',
+        image_url: c.image_url || '',
       })),
     })
   }
@@ -169,11 +172,13 @@ async function writeRelations(cx, deckId, input) {
   await cx.execute('DELETE FROM deck_commanders WHERE deck_id = ?', [deckId])
   for (const [index, commander] of input.commanders.entries()) {
     await cx.execute(
-      `INSERT INTO deck_commanders (deck_id, position, name, set_code, collector_number)
-       VALUES (?, ?, ?, ?, ?)`,
+      `INSERT INTO deck_commanders
+         (deck_id, position, name, set_code, collector_number, image_url)
+       VALUES (?, ?, ?, ?, ?, ?)`,
       [deckId, index + 1, commander.name,
        String(commander.set_code ?? '').toLowerCase(),
-       commander.collector_number ?? ''])
+       commander.collector_number ?? '',
+       String(commander.image_url ?? '').slice(0, 500)])
   }
 
   await cx.execute('DELETE FROM deck_colors WHERE deck_id = ?', [deckId])
@@ -195,14 +200,16 @@ async function writeRelations(cx, deckId, input) {
       [sectionId, deckId, section.title, si])
     for (const [ci, card] of section.cards.entries()) {
       await cx.execute(
-        `INSERT INTO slider_cards (id, section_id, name, set_code, collector_number, position)
-         VALUES (?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO slider_cards
+           (id, section_id, name, set_code, collector_number, image_url, position)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           randomUUID(),
           sectionId,
           card.name,
           String(card.set_code ?? '').toLowerCase(),
           card.collector_number ?? '',
+          String(card.image_url ?? '').slice(0, 500),
           ci,
         ])
     }
@@ -291,8 +298,12 @@ export async function listShowcase(cx) {
            cur.deck_url,
            (SELECT GROUP_CONCAT(c.name ORDER BY c.position SEPARATOR '|~|')
               FROM deck_commanders c WHERE c.deck_id = d.id) AS commanders,
-           (SELECT CONCAT(COALESCE(c.set_code,''), '|', COALESCE(c.collector_number,''))
-              FROM deck_commanders c WHERE c.deck_id = d.id AND c.position = 1) AS print,
+           (SELECT c.set_code
+              FROM deck_commanders c WHERE c.deck_id = d.id AND c.position = 1) AS set_code,
+           (SELECT c.collector_number
+              FROM deck_commanders c WHERE c.deck_id = d.id AND c.position = 1) AS collector_number,
+           (SELECT c.image_url
+              FROM deck_commanders c WHERE c.deck_id = d.id AND c.position = 1) AS image_url,
            (SELECT GROUP_CONCAT(col.code ORDER BY col.position SEPARATOR '')
               FROM deck_colors dc JOIN colors col ON col.code = dc.color_code
              WHERE dc.deck_id = d.id) AS colors,
@@ -314,7 +325,6 @@ export async function listShowcase(cx) {
 
   const out = []
   for (const row of rows) {
-    const [setCode = '', collectorNumber = ''] = String(row.print ?? '|').split('|')
     out.push({
       id: row.id,
       name: row.name || commandersOf(row)[0] || 'Deck',
@@ -322,8 +332,9 @@ export async function listShowcase(cx) {
       author: row.author || '',
       commander: commandersOf(row)[0] ?? '',
       commanders: commandersOf(row),
-      set_code: setCode,
-      collector_number: collectorNumber,
+      set_code: row.set_code || '',
+      collector_number: row.collector_number || '',
+      image_url: row.image_url || '',
       link: row.deck_url || '',
       colors: row.colors ? row.colors.split('') : [],
       tags: row.tags ? row.tags.split(SEP) : [],
