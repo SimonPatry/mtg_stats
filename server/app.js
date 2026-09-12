@@ -8,6 +8,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { requireAuth } from './auth.js'
+import { pool } from './db.js'
 import authRoutes from './routes/auth.js'
 import showcaseRoutes from './routes/showcase.js'
 import referenceRoutes from './routes/reference.js'
@@ -74,7 +75,7 @@ export function createApp({ clientDir = join(projectRoot, 'dist'), bootError = n
   app.use(express.json({ limit: '1mb' }))
   app.use(cookieParser())
 
-  app.get('/api/health', (req, res) => {
+  app.get('/api/health', async (req, res) => {
     if (bootError) {
       return res.status(503).json({
         ok: false,
@@ -82,7 +83,26 @@ export function createApp({ clientDir = join(projectRoot, 'dist'), bootError = n
         code: bootError.code || null,
       })
     }
-    return res.json({ ok: true })
+    // Marqueur de déploiement : si `inspirations` est absent ici, Passenger
+    // tourne encore sur un vieux process (le front `dist/` peut être à jour).
+    let deckInspirationsTable = false
+    try {
+      const [rows] = await pool.query(`
+        SELECT 1 AS ok FROM INFORMATION_SCHEMA.TABLES
+         WHERE TABLE_SCHEMA = DATABASE()
+           AND TABLE_NAME = 'deck_inspirations'
+         LIMIT 1
+      `)
+      deckInspirationsTable = rows.length > 0
+    } catch {
+      deckInspirationsTable = false
+    }
+    return res.json({
+      ok: true,
+      api: '1.6.3',
+      features: { inspirations: true },
+      db: { deck_inspirations: deckInspirationsTable },
+    })
   })
 
   // Si la DB n'a pas démarré, mieux vaut un JSON clair qu'une cascade de 500.
