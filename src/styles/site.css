@@ -964,7 +964,7 @@
     scroll-behavior: smooth;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    touch-action: pan-x;
+    /* pan-x seul bloquait le scroll vertical de la page sur la carte. */
   }
 
   .deck-banner__faces::-webkit-scrollbar {
@@ -1132,7 +1132,6 @@
     padding: 0.25rem 0.1rem 0.45rem;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    touch-action: pan-x;
   }
 
   .deck-slider__cards::-webkit-scrollbar {
