@@ -627,6 +627,10 @@
   color: var(--ink-dim);
 }
 
+.deck-banner__author-name {
+  text-transform: capitalize;
+}
+
 /* La description s'étire sur toute la largeur de la colonne (au lieu de
    se limiter à ~46ch) : comme le carrousel est centré dans cette même
    colonne, le texte dépasse ainsi le carrousel d'autant à droite qu'à

@@ -123,7 +123,9 @@ export function DeckBand({ deck, index }) {
               </div>
 
               {deck.author ? (
-                <p className="deck-banner__author">par {deck.author}</p>
+                <p className="deck-banner__author">
+                  par <span className="deck-banner__author-name">{deck.author}</span>
+                </p>
               ) : null}
 
               {deck.tags?.length > 0 && (

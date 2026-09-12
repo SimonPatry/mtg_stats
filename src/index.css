@@ -14,8 +14,9 @@ body.admin-theme {
   --bg-1: #0c1411;
   --ink: #eef5f2;
   --ink-soft: #9bb5ab;
-  --surface: #10201b;
-  --surface-2: #0d1814;
+  /* Surfaces légèrement translucides (~18 %) pour laisser voir le fond art. */
+  --surface: color-mix(in srgb, #10201b 82%, transparent);
+  --surface-2: color-mix(in srgb, #0d1814 80%, transparent);
   --line: rgba(238, 245, 242, 0.14);
   --accent: #2fd6a0;
   --accent-soft: #22b78a;
