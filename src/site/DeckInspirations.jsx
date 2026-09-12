@@ -1,13 +1,39 @@
-import { useId, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
+import { fetchYoutubeTitle, isYoutubeUrl } from '../lib/youtubeTitle.js'
 
-function inspirationLabel(item) {
-  const label = String(item.label || '').trim()
-  if (label) return label
+function hostnameFallback(url) {
   try {
-    return new URL(item.url).hostname.replace(/^www\./, '')
+    return new URL(url).hostname.replace(/^www\./, '')
   } catch {
-    return item.url
+    return url
   }
+}
+
+function InspirationLink({ item }) {
+  const manual = String(item.label || '').trim()
+  const [title, setTitle] = useState(null)
+
+  useEffect(() => {
+    if (manual || !isYoutubeUrl(item.url)) return undefined
+    let cancelled = false
+    fetchYoutubeTitle(item.url).then((next) => {
+      if (!cancelled && next) setTitle(next)
+    })
+    return () => { cancelled = true }
+  }, [item.url, manual])
+
+  const text = manual || title || hostnameFallback(item.url)
+
+  return (
+    <a
+      className="deck-inspirations__link"
+      href={item.url}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {text}
+    </a>
+  )
 }
 
 /**
@@ -43,14 +69,7 @@ export function DeckInspirations({ items = [] }) {
           <ul className="deck-inspirations__list">
             {list.map((item) => (
               <li key={item.url}>
-                <a
-                  className="deck-inspirations__link"
-                  href={item.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {inspirationLabel(item)}
-                </a>
+                <InspirationLink item={item} />
               </li>
             ))}
           </ul>

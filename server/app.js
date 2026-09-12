@@ -55,7 +55,8 @@ export function createApp({ clientDir = join(projectRoot, 'dist'), bootError = n
           'https://svgs.scryfall.io',
           'https://api.dicebear.com',
         ],
-        'connect-src': ["'self'", 'https://api.scryfall.com'],
+        // youtube.com : titres oEmbed des liens d’inspiration vitrine.
+        'connect-src': ["'self'", 'https://api.scryfall.com', 'https://www.youtube.com'],
         'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         'font-src': ["'self'", 'https://fonts.gstatic.com'],
         'script-src': ["'self'"],

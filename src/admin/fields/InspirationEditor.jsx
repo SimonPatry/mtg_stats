@@ -1,6 +1,7 @@
 /**
  * Éditeur des liens d'inspiration (URL + libellé optionnel).
  * Les lignes vides sont ignorées à la sauvegarde côté parent.
+ * Sur la vitrine, les URLs YouTube sans libellé affichent le titre de la vidéo.
  */
 export default function InspirationEditor({ items = [], onChange }) {
   function setRow(index, patch) {
@@ -20,7 +21,8 @@ export default function InspirationEditor({ items = [], onChange }) {
       {items.length === 0 && (
         <p className="form-hint">
           Aucun lien. Ajoute des sources (EDHREC, article, vidéo…) révélées sur
-          la vitrine.
+          la vitrine. YouTube : le titre de la vidéo s’affiche tout seul si le
+          libellé est vide.
         </p>
       )}
 
