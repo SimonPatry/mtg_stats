@@ -631,6 +631,84 @@
   text-transform: capitalize;
 }
 
+/* ---------- Sources d’inspiration (révélation douce) ---------- */
+
+.deck-inspirations {
+  align-self: stretch;
+  width: 100%;
+}
+
+.deck-inspirations__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0.2rem 0;
+  border: 0;
+  background: none;
+  color: var(--accent-soft);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color var(--t);
+}
+
+.deck-inspirations__toggle:hover,
+.deck-inspirations__toggle:focus-visible {
+  color: var(--accent);
+}
+
+.deck-inspirations__chevron {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.deck-inspirations__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s ease;
+}
+
+.deck-inspirations.is-open .deck-inspirations__panel {
+  grid-template-rows: 1fr;
+}
+
+.deck-inspirations__panel-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.deck-inspirations__list {
+  list-style: none;
+  margin: 0.45rem 0 0;
+  padding: 0.55rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--panel) 70%, transparent);
+}
+
+.deck-inspirations__link {
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  text-decoration-thickness: 1px;
+  transition: color var(--t);
+}
+
+.deck-inspirations__link:hover,
+.deck-inspirations__link:focus-visible {
+  color: var(--accent);
+}
+
 /* La description s'étire sur toute la largeur de la colonne (au lieu de
    se limiter à ~46ch) : comme le carrousel est centré dans cette même
    colonne, le texte dépasse ainsi le carrousel d'autant à droite qu'à

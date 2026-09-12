@@ -49,10 +49,32 @@ export async function migrate(target = pool) {
     await ensureDecksArchivedColumn(connection)
     await ensureSliderCardsPrintColumns(connection)
     await ensureCardImageUrlColumns(connection)
+    await ensureDeckInspirationsTable(connection)
     await runSqlFile(connection, 'seed.sql')
   } finally {
     await connection.end()
   }
+}
+
+/** Bases créées avant la table des liens d'inspiration vitrine. */
+async function ensureDeckInspirationsTable(connection) {
+  const [rows] = await connection.query(`
+    SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+     WHERE TABLE_SCHEMA = DATABASE()
+       AND TABLE_NAME = 'deck_inspirations'
+  `)
+  if (rows.length > 0) return
+  await connection.query(`
+    CREATE TABLE deck_inspirations (
+      id       CHAR(36)     NOT NULL PRIMARY KEY,
+      deck_id  CHAR(36)     NOT NULL,
+      url      VARCHAR(500) NOT NULL,
+      label    VARCHAR(120) NOT NULL DEFAULT '',
+      position INT          NOT NULL,
+      CONSTRAINT fk_deck_inspirations_deck FOREIGN KEY (deck_id) REFERENCES decks(id) ON DELETE CASCADE,
+      KEY idx_deck_inspirations_deck (deck_id, position)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `)
 }
 
 /**

@@ -256,6 +256,7 @@ export function addDeckToUser(decks, users, userId, deck) {
     entry.colors = deck.colors ?? []
     entry.tagIds = deck.tagIds ?? []
     entry.slider = deck.slider ?? []
+    entry.inspirations = deck.inspirations ?? []
   }
 
   return [...decks, entry]

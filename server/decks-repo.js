@@ -143,7 +143,20 @@ export async function getDeck(cx, id) {
     tags: tags.map((t) => t.label),
     tag_ids: tags.map((t) => t.id),
     slider: await readSlider(cx, id),
+    inspirations: await readInspirations(cx, id),
   }
+}
+
+async function readInspirations(cx, deckId) {
+  const [rows] = await cx.query(
+    `SELECT url, label FROM deck_inspirations
+      WHERE deck_id = ? ORDER BY position`,
+    [deckId],
+  )
+  return rows.map((r) => ({
+    url: r.url || '',
+    label: r.label || '',
+  }))
 }
 
 async function readSlider(cx, deckId) {
@@ -213,6 +226,23 @@ async function writeRelations(cx, deckId, input) {
           ci,
         ])
     }
+  }
+
+  await cx.execute('DELETE FROM deck_inspirations WHERE deck_id = ?', [deckId])
+  for (const [index, item] of (input.inspirations ?? []).entries()) {
+    const url = String(item.url ?? '').trim()
+    if (!url) continue
+    await cx.execute(
+      `INSERT INTO deck_inspirations (id, deck_id, url, label, position)
+       VALUES (?, ?, ?, ?, ?)`,
+      [
+        randomUUID(),
+        deckId,
+        url.slice(0, 500),
+        String(item.label ?? '').trim().slice(0, 120),
+        index,
+      ],
+    )
   }
 }
 
@@ -339,6 +369,7 @@ export async function listShowcase(cx) {
       colors: row.colors ? row.colors.split('') : [],
       tags: row.tags ? row.tags.split(SEP) : [],
       slider: await readSlider(cx, row.id),
+      inspirations: await readInspirations(cx, row.id),
     })
   }
   return out

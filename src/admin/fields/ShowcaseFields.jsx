@@ -1,6 +1,7 @@
 import ColorPicker from './ColorPicker.jsx'
 import TagPicker from './TagPicker.jsx'
 import SliderEditor from './SliderEditor.jsx'
+import InspirationEditor from './InspirationEditor.jsx'
 
 /**
  * Bloc « vitrine » du formulaire de création / édition d'un deck.
@@ -60,6 +61,14 @@ export default function ShowcaseFields({ value, onChange, tags, onTagsChange, co
           </div>
 
           <div className="form-field">
+            <span className="form-field-label">Sources d’inspiration</span>
+            <InspirationEditor
+              items={value.inspirations ?? []}
+              onChange={(inspirations) => set({ inspirations })}
+            />
+          </div>
+
+          <div className="form-field">
             <span className="form-field-label">Carrousels</span>
             <SliderEditor
               sections={value.slider ?? []}
@@ -90,4 +99,5 @@ export const emptyShowcase = () => ({
   colors: [],
   tagIds: [],
   slider: [],
+  inspirations: [],
 })

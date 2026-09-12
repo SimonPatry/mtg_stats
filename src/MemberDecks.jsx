@@ -14,6 +14,7 @@ import {
   getDecksForUser,
 } from './playersMapping'
 import { emptyShowcase } from './admin/fields/ShowcaseFields.jsx'
+import { cleanInspirations } from './admin/fields/InspirationEditor.jsx'
 import { fetchCommanderImage } from './scryfall'
 import { useAuth } from './hooks/useAuth.js'
 
@@ -239,6 +240,9 @@ export default function MemberDecks({ users, decks, onSave, onZoom }) {
         colors: showcase.colors,
         tagIds: showcase.tagIds,
         slider: showcase.showcase ? (showcase.slider ?? []) : [],
+        inspirations: showcase.showcase
+          ? cleanInspirations(showcase.inspirations)
+          : [],
       })
       await persist(users, updatedDecks)
       setCommanders('')

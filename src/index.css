@@ -14,9 +14,9 @@ body.admin-theme {
   --bg-1: #0c1411;
   --ink: #eef5f2;
   --ink-soft: #9bb5ab;
-  /* Surfaces translucides (~30 %) pour laisser voir le fond art. */
-  --surface: color-mix(in srgb, #10201b 70%, transparent);
-  --surface-2: color-mix(in srgb, #0d1814 70%, transparent);
+  /* Surfaces translucides (~50 %) pour laisser voir le fond art. */
+  --surface: color-mix(in srgb, #10201b 50%, transparent);
+  --surface-2: color-mix(in srgb, #0d1814 50%, transparent);
   --line: rgba(238, 245, 242, 0.14);
   --accent: #2fd6a0;
   --accent-soft: #22b78a;
@@ -4905,6 +4905,38 @@ body.admin-theme .member-shell {
   margin-top: 0.65rem;
   padding-top: 0.65rem;
   border-top: 1px solid var(--line);
+}
+
+.inspiration-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.inspiration-editor__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.inspiration-editor__url,
+.inspiration-editor__label {
+  flex: 1 1 10rem;
+  min-width: 0;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-0);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.inspiration-editor__url:focus,
+.inspiration-editor__label:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
 .showcase-tags {

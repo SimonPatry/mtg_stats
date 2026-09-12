@@ -190,6 +190,17 @@ CREATE TABLE IF NOT EXISTS slider_cards (
   KEY idx_slider_cards_section (section_id, position)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Liens d'inspiration affichés sur la vitrine (révélés à la demande).
+CREATE TABLE IF NOT EXISTS deck_inspirations (
+  id       CHAR(36)     NOT NULL PRIMARY KEY,
+  deck_id  CHAR(36)     NOT NULL,
+  url      VARCHAR(500) NOT NULL,
+  label    VARCHAR(120) NOT NULL DEFAULT '',
+  position INT          NOT NULL,
+  CONSTRAINT fk_deck_inspirations_deck FOREIGN KEY (deck_id) REFERENCES decks(id) ON DELETE CASCADE,
+  KEY idx_deck_inspirations_deck (deck_id, position)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ─── Parties ───────────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS games (

@@ -52,6 +52,7 @@ export async function saveDecks(nextDecks, previousDecks) {
       colors: deck.colors,
       tag_ids: deck.tag_ids,
       slider: deck.slider,
+      inspirations: deck.inspirations ?? [],
     })
     await api.updateDeckVersion(row.lineageId, row.id, versionPayload(row))
   }
@@ -89,6 +90,7 @@ export async function saveDecks(nextDecks, previousDecks) {
         colors: row.colors ?? [],
         tag_ids: row.tagIds ?? [],
         slider: row.showcase ? (row.slider ?? []) : [],
+        inspirations: row.showcase ? (row.inspirations ?? []) : [],
         active: row.active !== false,
         archived: Boolean(row.archived),
         created_on: row.createdAt ?? null,

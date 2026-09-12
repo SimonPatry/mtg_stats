@@ -17,6 +17,7 @@ import {
 import { fetchCommanderImage } from './scryfall'
 import { api } from './lib/api.js'
 import { emptyShowcase } from './admin/fields/ShowcaseFields.jsx'
+import { cleanInspirations } from './admin/fields/InspirationEditor.jsx'
 
 function unpackBracket(value) {
   if (!value) return { bracket: null, bracketVariation: null }
@@ -374,6 +375,9 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
         colors: showcase.colors,
         tagIds: showcase.tagIds,
         slider: showcase.showcase ? (showcase.slider ?? []) : [],
+        inspirations: showcase.showcase
+          ? cleanInspirations(showcase.inspirations)
+          : [],
       })
       await persist(users, updatedDecks)
       setCommanders('')

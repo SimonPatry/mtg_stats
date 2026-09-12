@@ -4,6 +4,7 @@ import { manaSymbolUrl } from '../lib/scryfall.js'
 import { ManaSymbols } from '../components/ManaSymbols.jsx'
 import { DeckDescription } from './DeckDescription.jsx'
 import { DeckCarousel } from './DeckCarousel.jsx'
+import { DeckInspirations } from './DeckInspirations.jsx'
 
 // La couleur de la bande et le côté de l'illustration suivent la POSITION du
 // deck, pas ses couleurs : les bandes s'enchaînent blanc → bleu → noir →
@@ -140,6 +141,8 @@ export function DeckBand({ deck, index }) {
               )}
 
               <DeckDescription text={deck.description} />
+
+              <DeckInspirations items={deck.inspirations} />
 
               {sections.length > 0 && <DeckCarousel sections={sections} />}
             </div>

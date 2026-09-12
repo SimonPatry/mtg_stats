@@ -5,6 +5,7 @@ import { api } from './lib/api.js'
 import ColorPicker from './admin/fields/ColorPicker.jsx'
 import TagPicker from './admin/fields/TagPicker.jsx'
 import SliderEditor from './admin/fields/SliderEditor.jsx'
+import InspirationEditor, { cleanInspirations } from './admin/fields/InspirationEditor.jsx'
 import CardPrintingsModal from './CardPrintingsModal.jsx'
 
 const BRACKET_OPTIONS = [1, 2, 3, 4].flatMap((b) => [
@@ -64,6 +65,7 @@ export default function DeckEditModal({
   const [colors, setColors] = useState([])
   const [tagIds, setTagIds] = useState([])
   const [slider, setSlider] = useState([])
+  const [inspirations, setInspirations] = useState([])
   const [commanders, setCommanders] = useState([])
   const [printingsCard, setPrintingsCard] = useState(null) // commander name
 
@@ -84,6 +86,7 @@ export default function DeckEditModal({
       setColors(row.colors ?? [])
       setTagIds(row.tag_ids ?? [])
       setSlider(row.slider ?? [])
+      setInspirations(row.inspirations ?? [])
       setCommanders(
         (row.commanders ?? []).map((c) => (
           typeof c === 'string'
@@ -152,6 +155,7 @@ export default function DeckEditModal({
           colors,
           tag_ids: tagIds,
           slider: showcase && !archived ? slider : [],
+          inspirations: showcase && !archived ? cleanInspirations(inspirations) : [],
         })
       }
       // Modifier la seule face vitrine ne doit pas passer par l'édition de
@@ -362,6 +366,14 @@ export default function DeckEditModal({
                       onChange={setTagIds}
                       tags={tags ?? []}
                       onTagsChange={onTagsChange}
+                    />
+                  </div>
+
+                  <div className="form-field">
+                    <span className="form-field-label">Sources d’inspiration</span>
+                    <InspirationEditor
+                      items={inspirations}
+                      onChange={setInspirations}
                     />
                   </div>
 

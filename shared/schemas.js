@@ -56,6 +56,10 @@ export const deckInput = z.object({
       image_url: z.string().trim().max(500).default(''),
     })).min(1),
   })).default([]),
+  inspirations: z.array(z.object({
+    url: z.string().trim().url('Lien invalide').max(500),
+    label: z.string().trim().max(120).default(''),
+  })).default([]),
 })
   // Un deck de statistiques se reconnaît à ses commandants et n'a pas besoin de
   // titre. Un deck affiché sur la vitrine, si : c'est ce qu'on lit dans le menu
