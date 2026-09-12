@@ -39,8 +39,15 @@ export async function runSqlFile(connection, filename) {
  * Idempotent : appelé au démarrage du serveur comme au début des tests.
  */
 export async function migrate(target = pool) {
+  // Ne jamais lire la config interne d'un Pool mysql2 : selon la version elle
+  // est partielle → Access denied au boot, et les ensure* (dont
+  // deck_inspirations) ne tournent jamais. Les scripts d'import passent un
+  // faux objet `{ config: { connectionConfig } }` sans getConnection.
+  const isPool = target && typeof target.getConnection === 'function'
+  const overrides = !isPool ? (target?.config?.connectionConfig ?? {}) : {}
   const connection = await mysql.createConnection({
-    ...target.config?.connectionConfig ?? dbConfig,
+    ...dbConfig,
+    ...overrides,
     multipleStatements: true,
   })
   try {
