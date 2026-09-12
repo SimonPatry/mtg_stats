@@ -38,7 +38,16 @@ export async function saveDecks(nextDecks, previousDecks) {
 
   for (const row of updated) {
     if (!row.lineageId) continue
-    // Les champs de lignée et ceux de version se mettent à jour séparément.
+    // Ne toucher qu’à la version (bracket / URL). Réécrire toute la lignée ici
+    // (commandants, slider, inspirations…) écrasait des champs venant d’être
+    // sauvés par le modal d’édition vitrine.
+    await api.updateDeckVersion(row.lineageId, row.id, versionPayload(row))
+
+    const prev = (previousDecks ?? []).find((d) => d.id === row.id)
+    const activeChanged = prev && (prev.active !== false) !== (row.active !== false)
+    const archivedChanged = prev && Boolean(prev.archived) !== Boolean(row.archived)
+    if (!activeChanged && !archivedChanged) continue
+
     const deck = await api.getDeck(row.lineageId)
     await api.updateDeck(row.lineageId, {
       user_id: row.userId,
@@ -54,7 +63,6 @@ export async function saveDecks(nextDecks, previousDecks) {
       slider: deck.slider,
       inspirations: deck.inspirations ?? [],
     })
-    await api.updateDeckVersion(row.lineageId, row.id, versionPayload(row))
   }
 
   const createdIds = new Map()

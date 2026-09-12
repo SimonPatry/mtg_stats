@@ -27,11 +27,13 @@ export default function InspirationEditor({ items = [], onChange }) {
       {items.map((item, index) => (
         <div className="inspiration-editor__row" key={index}>
           <input
-            type="url"
+            type="text"
+            inputMode="url"
             className="inspiration-editor__url"
             value={item.url}
             placeholder="https://…"
             maxLength={500}
+            autoComplete="off"
             onChange={(e) => setRow(index, { url: e.target.value })}
           />
           <input
@@ -64,9 +66,21 @@ export default function InspirationEditor({ items = [], onChange }) {
 /** Ne garde que les URLs non vides, prêtes pour l’API. */
 export function cleanInspirations(items = []) {
   return items
-    .map((item) => ({
-      url: String(item.url || '').trim(),
-      label: String(item.label || '').trim(),
-    }))
-    .filter((item) => item.url.length > 0)
+    .map((item) => {
+      let url = String(item.url || '').trim()
+      // Zod / type=url exigent un schéma : on normalise les collages « edhrec.com/… ».
+      if (url && !/^[a-z][a-z0-9+.-]*:/i.test(url)) url = `https://${url}`
+      return {
+        url,
+        label: String(item.label || '').trim(),
+      }
+    })
+    .filter((item) => {
+      if (!item.url) return false
+      try {
+        return Boolean(new URL(item.url))
+      } catch {
+        return false
+      }
+    })
 }

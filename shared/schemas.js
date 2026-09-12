@@ -57,7 +57,14 @@ export const deckInput = z.object({
     })).min(1),
   })).default([]),
   inspirations: z.array(z.object({
-    url: z.string().trim().url('Lien invalide').max(500),
+    url: z.preprocess(
+      (value) => {
+        const raw = String(value ?? '').trim()
+        if (!raw) return raw
+        return /^[a-z][a-z0-9+.-]*:/i.test(raw) ? raw : `https://${raw}`
+      },
+      z.string().url('Lien invalide').max(500),
+    ),
     label: z.string().trim().max(120).default(''),
   })).default([]),
 })

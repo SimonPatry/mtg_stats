@@ -140,24 +140,39 @@ export default function DeckEditModal({
     }
 
     try {
-      if (lineage) {
-        await api.updateDeck(lineage.id, {
-          user_id: lineage.user_id,
-          name: name.trim(),
-          description: description.trim(),
-          showcase: archived ? false : showcase,
-          active: lineage.active !== false,
-          archived,
-          created_on: lineage.created_on,
-          commanders: commanders.length
-            ? commanders
-            : lineage.commanders,
-          colors,
-          tag_ids: tagIds,
-          slider: showcase && !archived ? slider : [],
-          inspirations: showcase && !archived ? cleanInspirations(inspirations) : [],
-        })
+      if (!lineage) {
+        setError('Deck encore en cours de chargement — réessaie dans une seconde.')
+        return
       }
+
+      const nextInspirations =
+        showcase && !archived ? cleanInspirations(inspirations) : []
+      if (
+        showcase
+        && !archived
+        && inspirations.some((item) => String(item.url || '').trim())
+        && nextInspirations.length === 0
+      ) {
+        setError('Lien d’inspiration invalide — utilise une URL complète (https://…).')
+        return
+      }
+
+      await api.updateDeck(lineage.id, {
+        user_id: lineage.user_id,
+        name: name.trim(),
+        description: description.trim(),
+        showcase: archived ? false : showcase,
+        active: lineage.active !== false,
+        archived,
+        created_on: lineage.created_on,
+        commanders: commanders.length
+          ? commanders
+          : lineage.commanders,
+        colors,
+        tag_ids: tagIds,
+        slider: showcase && !archived ? slider : [],
+        inspirations: nextInspirations,
+      })
       // Modifier la seule face vitrine ne doit pas passer par l'édition de
       // version : celle-ci refuse un enregistrement sans changement, et on
       // afficherait « aucune modification » alors qu'on vient d'en écrire.
@@ -170,9 +185,13 @@ export default function DeckEditModal({
         reason: bracketChanged ? reason : '',
         deckUrl: deckUrl.trim(),
         versionChanged,
+        showcaseSaved: true,
       })
     } catch (err) {
-      setError(err.message)
+      const fields = err.body?.fields
+      const inspirationError = fields?.inspirations?.[0]
+        || fields?.['inspirations.0.url']?.[0]
+      setError(inspirationError || err.message || 'Enregistrement impossible')
     }
   }
 

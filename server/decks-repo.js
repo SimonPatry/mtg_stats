@@ -229,6 +229,8 @@ async function writeRelations(cx, deckId, input) {
   }
 
   await cx.execute('DELETE FROM deck_inspirations WHERE deck_id = ?', [deckId])
+  // Toujours réécrire explicitement (y compris liste vide) pour que retirer
+  // tous les liens côté formulaire les efface bien en base.
   for (const [index, item] of (input.inspirations ?? []).entries()) {
     const url = String(item.url ?? '').trim()
     if (!url) continue

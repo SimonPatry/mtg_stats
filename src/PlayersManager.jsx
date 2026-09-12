@@ -396,13 +396,11 @@ export default function PlayersManager({ users, decks, onSave, onZoom }) {
   async function handleEditDeckSave(payload) {
     if (!editingDeckId) return
 
-    // La face vitrine a déjà été écrite par le modal, qui parle directement à
-    // l'API : ici on ne s'occupe que de la version, et seulement si elle bouge.
+    // La face vitrine a déjà été écrite par le modal via api.updateDeck.
     if (!payload.versionChanged) {
-      await persist(users, decks)
       setEditingDeckId(null)
       setError('')
-      setSuccess('Vitrine mise à jour.')
+      setSuccess(payload.showcaseSaved ? 'Vitrine mise à jour.' : 'Enregistré.')
       return
     }
 

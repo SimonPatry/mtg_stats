@@ -261,10 +261,11 @@ export default function MemberDecks({ users, decks, onSave, onZoom }) {
   async function handleEditDeckSave(payload) {
     if (!editingDeckId) return
     if (!payload.versionChanged) {
-      await persist(users, decks)
+      // La vitrine (dont les inspirations) a déjà été poussée via api.updateDeck
+      // dans le modal — ne pas rappeler saveDecks, qui réécrirait la lignée.
       setEditingDeckId(null)
       setError('')
-      setSuccess('Vitrine mise à jour.')
+      setSuccess(payload.showcaseSaved ? 'Vitrine mise à jour.' : 'Enregistré.')
       return
     }
     const updatedDecks = editDeckPowerLevel(decks, editingDeckId, payload)
