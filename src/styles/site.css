@@ -466,16 +466,20 @@
 }
 
 /* Grille à 2 sections : 1 tier pour le commandant, 2 tiers pour le texte.
-   Chaque section centre son contenu (horizontalement et verticalement). */
+   Chaque section centre son contenu (horizontalement et verticalement).
+   Sur mobile, .deck-banner__faces devient un carrousel horizontal (carte → détail). */
 .deck-banner {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  align-items: stretch;
-  gap: clamp(2rem, 5vw, 4.5rem);
   color: var(--ink);
   opacity: 0;
   transform: translateY(24px);
   animation: deck-rise 0.7s ease forwards;
+}
+
+.deck-banner__faces {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  align-items: stretch;
+  gap: clamp(2rem, 5vw, 4.5rem);
 }
 
 @keyframes deck-rise {
@@ -487,7 +491,7 @@
 
 /* Alternance gauche/droite : les proportions 1/2 tiers restent identiques,
    seul l'ordre des sections change. */
-.deck-banner--reverse {
+.deck-banner--reverse .deck-banner__faces {
   grid-template-columns: 2fr 1fr;
 }
 
@@ -497,6 +501,12 @@
 
 .deck-banner--reverse .deck-banner__content {
   order: 1;
+}
+
+/* Indices mobile (swipe) : masqués sur desktop. */
+.deck-banner__swipe-hint,
+.deck-banner__face-dots {
+  display: none;
 }
 
 .deck-banner__media {
@@ -938,10 +948,27 @@
 /* ---------- Responsive ---------- */
 
 @media (max-width: 760px) {
-  .deck-banner,
-  .deck-banner--reverse {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+  .deck-band__inner {
+    padding: 1.25rem var(--gutter) 1.5rem;
+  }
+
+  /* Deux faces plein écran : commandant, puis détail condensé. */
+  .deck-banner__faces {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    touch-action: pan-x;
+  }
+
+  .deck-banner__faces::-webkit-scrollbar {
+    display: none;
   }
 
   .deck-banner--reverse .deck-banner__media,
@@ -949,27 +976,177 @@
     order: initial;
   }
 
-  .deck-banner__media {
-    max-width: 320px;
-    justify-self: center;
+  .deck-banner__media,
+  .deck-banner__content {
+    flex: 0 0 100%;
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    box-sizing: border-box;
   }
 
-  /* Une seule colonne : le texte (et donc le carrousel, qui en fait partie)
-     reste centré plutôt que collé à un bord. */
+  .deck-banner__media {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    justify-self: stretch;
+    padding: 0.25rem 0.35rem 1.75rem;
+  }
+
+  .deck-banner__media-link {
+    width: min(100%, 22rem);
+  }
+
+  .deck-banner__image {
+    width: min(100%, 22rem);
+    margin-inline: auto;
+  }
+
+  .deck-banner__swipe-hint {
+    display: block;
+    margin: 0.85rem 0 0;
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    animation: deck-swipe-hint 1.8s ease-in-out infinite;
+  }
+
+  @keyframes deck-swipe-hint {
+    0%,
+    100% {
+      opacity: 0.45;
+      transform: translateX(0);
+    }
+    50% {
+      opacity: 1;
+      transform: translateX(4px);
+    }
+  }
+
+  .deck-banner__face-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.85rem;
+  }
+
+  .deck-banner__face-dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: var(--line);
+    cursor: pointer;
+    transition: background var(--t), transform var(--t);
+  }
+
+  .deck-banner__face-dot.is-active {
+    background: var(--accent);
+    transform: scale(1.25);
+  }
+
+  /* Fiche condensée pour tenir sur une largeur téléphone. */
   .deck-banner__content,
   .deck-banner--reverse .deck-banner__content {
-    align-items: center;
-    text-align: center;
+    align-items: stretch;
+    text-align: left;
+    gap: 0.65rem;
+    padding: 0.15rem 0.15rem 0.35rem;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    max-height: min(78vh, 40rem);
   }
 
-  /* Tout étant centré en pile, repousser le lien Archidekt à droite le
-     laisserait seul contre le bord : il suit simplement le titre. */
   .deck-banner__meta {
-    justify-content: center;
+    justify-content: flex-start;
+    column-gap: 0.45rem;
+    row-gap: 0.25rem;
+  }
+
+  .deck-banner__title {
+    font-size: clamp(1.2rem, 5.5vw, 1.55rem);
+  }
+
+  .deck-banner__author {
+    margin-top: -0.15rem;
+    font-size: 0.9rem;
   }
 
   .deck-banner__archidekt-btn {
-    margin-left: 0;
+    margin-left: auto;
+    font-size: 0.8rem;
+  }
+
+  .deck-banner__tags-separator {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .deck-banner__tags {
+    gap: 0.35rem;
+  }
+
+  .deck-banner__tag {
+    padding: 0.18rem 0.55rem;
+    font-size: 0.72rem;
+  }
+
+  .deck-banner__description {
+    font-size: 0.98rem;
+    line-height: 1.45;
+    text-align: left;
+  }
+
+  .deck-slider {
+    align-self: stretch;
+    max-width: 100%;
+    margin-top: 0.35rem;
+    padding-top: 0.15rem;
+  }
+
+  .deck-slider__viewport {
+    gap: 0.35rem;
+  }
+
+  .deck-slider__nav {
+    /* Zone tactile réduite : le swipe du track porte surtout la navigation. */
+    font-size: 1.4rem;
+  }
+
+  .deck-slider__cards {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 0.65rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    padding: 0.25rem 0.1rem 0.45rem;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    touch-action: pan-x;
+  }
+
+  .deck-slider__cards::-webkit-scrollbar {
+    display: none;
+  }
+
+  .deck-slider__card {
+    scroll-snap-align: start;
+    width: clamp(96px, 28vw, 128px);
+  }
+
+  .deck-slider__title {
+    margin-bottom: 0.65rem;
+    font-size: 0.7rem;
   }
 }
 
